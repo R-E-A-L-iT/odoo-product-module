@@ -389,6 +389,7 @@ class RentalCustomerPortal(cPortal):
                     partner_record.write({'state_id': int(shipping_state)})
             else:
                 order_sudo.partner_shipping_id.child_ids.sudo().create({
+                    'name': order_sudo.partner_shipping_id.name,
                     'type': 'delivery',
                     'street': shipping_street,
                     'city': shipping_city,
