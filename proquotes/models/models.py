@@ -1669,7 +1669,7 @@ class ticket(models.Model):
         elif "Chidiak" in current_user.name:
             return self.env['header.footer'].search([('id', '=', 'footer_mael')], limit=1).id
 
-    footer_id = fields.Many2one("header.footer", default=_default_footer, required=True, domain=[('name', 'ilike', 'EMAIL')],)
+    footer_id = fields.Many2one("header.footer", default=_default_footer, required=False, domain=[('name', 'ilike', 'EMAIL')],)
 
 # pdf footer
 
