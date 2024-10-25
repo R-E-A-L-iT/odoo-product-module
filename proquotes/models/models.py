@@ -1546,6 +1546,8 @@ class MailComposeMessage(models.TransientModel):
     def default_get(self, fields_list):
         res = super(MailComposeMessage, self).default_get(fields_list)
         
+        res['user'] = message.create_uid
+        
         if self.env.context.get('active_model') == 'sale.order' and self.env.context.get('active_ids'):
             sale_orders = self.env['sale.order'].browse(self.env.context['active_ids'])
             res['email_contacts'] = [(6, 0, sale_orders.mapped('email_contacts').ids)]
@@ -1654,6 +1656,20 @@ class owner(models.Model):
         # Form Button Needs a Python Target Function
         return
 
+
+class ticket(models.Model):
+    _inherit = 'helpdesk.ticket'
+
+    def _default_footer(self):
+        current_user = self.env.user
+        if "Horia" in current_user.name:
+            return self.env['header.footer'].search([('id', '=', 'footer_horia')], limit=1).id
+        elif "Bill" in current_user.name:
+            return self.env['header.footer'].search([('id', '=', 'footer_bill')], limit=1).id
+        elif "Chidiak" in current_user.name:
+            return self.env['header.footer'].search([('id', '=', 'footer_mael')], limit=1).id
+
+    footer_id = fields.Many2one("header.footer", default=_default_footer, required=False, domain=[('name', 'ilike', 'EMAIL')],)
 
 # pdf footer
 
