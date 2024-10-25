@@ -313,54 +313,87 @@ class RentalCustomerPortal(cPortal):
         order_sudo.write({'partner_shipping_id': int(delivery_address_id)})
         return
 
-    # For delivery address stree
-    @http.route(["/my/orders/<int:order_id>/shipping_street"], type="json", auth="public", website=True)
-    def delivery_address_shipping_street(self, order_id, shipping_street, access_token=None, **post):
-        try:
-            order_sudo = self._document_check_access("sale.order", order_id, access_token=access_token)
-        except (AccessError, MissingError):
-            return request.redirect("/my")
-        if not self.validate(shipping_street):
-            return
-        partner_id = order_sudo.partner_shipping_id
-        partner_id.write({'street': shipping_street})
-        return
+    # # For delivery address stree
+    # @http.route(["/my/orders/<int:order_id>/shipping_street"], type="json", auth="public", website=True)
+    # def delivery_address_shipping_street(self, order_id, shipping_street, access_token=None, **post):
+    #     try:
+    #         order_sudo = self._document_check_access("sale.order", order_id, access_token=access_token)
+    #     except (AccessError, MissingError):
+    #         return request.redirect("/my")
+    #     if not self.validate(shipping_street):
+    #         return
+    #     partner_id = order_sudo.partner_shipping_id
+    #     partner_id.write({'street': shipping_street})
+    #     return
 
-    # For delivery address city
-    @http.route(["/my/orders/<int:order_id>/shipping_city"], type="json", auth="public", website=True)
-    def delivery_address_shipping_city(self, order_id, shipping_city, access_token=None, **post):
-        try:
-            order_sudo = self._document_check_access("sale.order", order_id, access_token=access_token)
-        except (AccessError, MissingError):
-            return request.redirect("/my")
-        if not self.validate(shipping_city):
-            return
-        partner_id = order_sudo.partner_shipping_id
-        partner_id.write({'city': shipping_city})
-        return
+    # # For delivery address city
+    # @http.route(["/my/orders/<int:order_id>/shipping_city"], type="json", auth="public", website=True)
+    # def delivery_address_shipping_city(self, order_id, shipping_city, access_token=None, **post):
+    #     try:
+    #         order_sudo = self._document_check_access("sale.order", order_id, access_token=access_token)
+    #     except (AccessError, MissingError):
+    #         return request.redirect("/my")
+    #     if not self.validate(shipping_city):
+    #         return
+    #     partner_id = order_sudo.partner_shipping_id
+    #     partner_id.write({'city': shipping_city})
+    #     return
+    #
+    # # For delivery address country
+    # @http.route(["/my/orders/<int:order_id>/shipping_country"], type="json", auth="public", website=True)
+    # def delivery_address_shipping_country(self, order_id, shipping_country, access_token=None, **post):
+    #     try:
+    #         order_sudo = self._document_check_access("sale.order", order_id, access_token=access_token)
+    #     except (AccessError, MissingError):
+    #         return request.redirect("/my")
+    #     if not self.validate(shipping_country):
+    #         return
+    #     partner_id = order_sudo.partner_shipping_id
+    #     partner_id.write({'country_id': int(shipping_country)})
+    #     return
+    #
+    # # For delivery address state
+    # @http.route(["/my/orders/<int:order_id>/shipping_state"], type="json", auth="public", website=True)
+    # def delivery_address_shipping_state(self, order_id, shipping_state, access_token=None, **post):
+    #     try:
+    #         order_sudo = self._document_check_access("sale.order", order_id, access_token=access_token)
+    #     except (AccessError, MissingError):
+    #         return request.redirect("/my")
+    #     if not self.validate(shipping_state):
+    #         return
+    #     partner_id = order_sudo.partner_shipping_id
+    #     partner_id.write({'state_id': int(shipping_state)})
+    #     return
 
-    # For delivery address country
-    @http.route(["/my/orders/<int:order_id>/shipping_country"], type="json", auth="public", website=True)
-    def delivery_address_shipping_country(self, order_id, shipping_country, access_token=None, **post):
+    # For Delivery address
+    @http.route(["/my/orders/<int:order_id>/update_shipping_address"], type="json", auth="public", website=True)
+    def update_shipping_address(self, order_id, shipping_street=None, shipping_city=None, shipping_country=None,
+                                shipping_state=None, access_token=None, **post):
         try:
             order_sudo = self._document_check_access("sale.order", order_id, access_token=access_token)
         except (AccessError, MissingError):
             return request.redirect("/my")
-        if not self.validate(shipping_country):
-            return
-        partner_id = order_sudo.partner_shipping_id
-        partner_id.write({'country_id': int(shipping_country)})
-        return
-
-    # For delivery address state
-    @http.route(["/my/orders/<int:order_id>/shipping_state"], type="json", auth="public", website=True)
-    def delivery_address_shipping_state(self, order_id, shipping_state, access_token=None, **post):
-        try:
-            order_sudo = self._document_check_access("sale.order", order_id, access_token=access_token)
-        except (AccessError, MissingError):
-            return request.redirect("/my")
-        if not self.validate(shipping_state):
-            return
-        partner_id = order_sudo.partner_shipping_id
-        partner_id.write({'state_id': int(shipping_state)})
+        if order_sudo and order_sudo.partner_shipping_id:
+            child_ids = order_sudo.partner_shipping_id.child_ids
+            partner_id = (child_ids.filtered(lambda p: p.type == 'delivery') and
+                          child_ids.filtered(lambda p: p.type == 'delivery')[0].id)
+            partner_record = request.env['res.partner'].sudo().browse(partner_id)
+            if partner_record:
+                if shipping_street and self.validate(shipping_street):
+                    partner_record.write({'street': shipping_street})
+                if shipping_city and self.validate(shipping_city):
+                    partner_record.write({'city': shipping_city})
+                if shipping_country and self.validate(shipping_country):
+                    partner_record.write({'country_id': int(shipping_country)})
+                if shipping_state and self.validate(shipping_state):
+                    partner_record.write({'state_id': int(shipping_state)})
+            else:
+                order_sudo.partner_shipping_id.child_ids.sudo().create({
+                    'type': 'delivery',
+                    'street': shipping_street,
+                    'city': shipping_city,
+                    'country_id': int(shipping_country),
+                    'state_id': int(shipping_state),
+                    'parent_id': order_sudo.partner_shipping_id.id
+                })
         return
