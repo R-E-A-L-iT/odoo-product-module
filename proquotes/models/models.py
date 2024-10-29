@@ -1672,14 +1672,21 @@ class ticket(models.Model):
 
     def _default_footer(self):
         current_user = self.env.user
+        footer = False
         if "Horia" in current_user.name:
-            return self.env['header.footer'].search([('id', '=', 'footer_horia')], limit=1).id
+            footer = self.env.ref('proquotes.footer_horia', raise_if_not_found=False)
         elif "Bill" in current_user.name:
-            return self.env['header.footer'].search([('id', '=', 'footer_bill')], limit=1).id
+            footer = self.env.ref('proquotes.footer_bill', raise_if_not_found=False)
         elif "Chidiak" in current_user.name:
-            return self.env['header.footer'].search([('id', '=', 'footer_mael')], limit=1).id
+            footer = self.env.ref('proquotes.footer_mael', raise_if_not_found=False)
+        return footer.id if footer else False
 
-    footer_id = fields.Many2one("header.footer", default=_default_footer, required=False, domain=[('name', 'ilike', 'EMAIL')],)
+    footer_id = fields.Many2one(
+        "header.footer",
+        default=_default_footer,
+        required=False,
+        domain=[('name', 'ilike', 'EMAIL')],
+    )
 
 # pdf footer
 
