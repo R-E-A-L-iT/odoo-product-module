@@ -834,6 +834,7 @@ class order(models.Model):
             for line in selected_order_lines:
                 line._action_launch_stock_rule()
             quote.write({'state': 'sale'})
+            # this creates an invoice automatically, uncomment to turn on
             # quote._create_invoices()
         return True
      
@@ -1555,6 +1556,10 @@ class MailComposeMessage(models.TransientModel):
     def default_get(self, fields_list):
         res = super(MailComposeMessage, self).default_get(fields_list)
         
+        message = False
+        if self.env.context.get('active_model') == 'mail.message' and self.env.context.get('active_id'):
+            message = self.env['mail.message'].browse(self.env.context['active_id'])
+        
         if message:
             res['user'] = message.create_uid
         
@@ -1571,7 +1576,9 @@ class MailComposeMessage(models.TransientModel):
             # set recipients
             order = self.env['sale.order'].search([('id', '=', self.env.context.get('default_res_id'))], limit=1)
             if order and order.email_contacts:
-                res['partner_ids'] = [(4, order.user_id)]
+                res['partner_ids'] = [(4, order.user_id.id)]
+        
+        return res
         
         return res
     
