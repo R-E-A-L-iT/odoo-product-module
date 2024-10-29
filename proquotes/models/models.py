@@ -832,7 +832,7 @@ class order(models.Model):
         for order in self:
             selected_order_lines = order.order_line.filtered(lambda line: line.selected)
             order.order_line = selected_order_lines
-            super(SaleOrder, order)._action_confirm()
+            super(order, order)._action_confirm()
             order.order_line = self.env['sale.order.line'].browse([line.id for line in order.order_line])
         return True
      
