@@ -1555,7 +1555,8 @@ class MailComposeMessage(models.TransientModel):
     def default_get(self, fields_list):
         res = super(MailComposeMessage, self).default_get(fields_list)
         
-        res['user'] = message.create_uid
+        if message:
+            res['user'] = message.create_uid
         
         if self.env.context.get('active_model') == 'sale.order' and self.env.context.get('active_ids'):
             sale_orders = self.env['sale.order'].browse(self.env.context['active_ids'])
@@ -1698,8 +1699,8 @@ class StockMove(models.Model):
     def create(self, vals):
         if 'sale_line_id' in vals:
             sale_line = self.env['sale.order.line'].browse(vals['sale_line_id'])
-            if not sale_line.selected:
-                return False
+            # if not sale_line.selected:
+            #     return False
             vals['selected'] = sale_line.selected
         return super(StockMove, self).create(vals)
     
