@@ -1680,19 +1680,21 @@ class pdf_quote(models.Model):
     footer_field = fields.Selection("")
     # footer_field = fields.Selection(related="order_id.footer")
 
+class StockMove(models.Model):
+    _inherit = 'stock.move'
 
-# override error message about 0 units being processed of unselect items
-class StockPicking(models.Model):
-    _inherit = 'stock.picking'
-    
     selected = fields.Boolean(string="Selected")
-    
+
     @api.model
     def create(self, vals):
         if 'sale_line_id' in vals:
             sale_line = self.env['sale.order.line'].browse(vals['sale_line_id'])
             vals['selected'] = sale_line.selected
         return super(StockMove, self).create(vals)
+
+# override error message about 0 units being processed of unselect items
+class StockPicking(models.Model):
+    _inherit = 'stock.picking'
 
     def button_validate(self):
         for move in self.move_ids_without_package:
