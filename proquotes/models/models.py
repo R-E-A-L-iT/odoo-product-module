@@ -830,11 +830,11 @@ class order(models.Model):
             
     def _action_confirm(self):
         for quote in self:
-            selected_order_lines = order.order_line.filtered(lambda line: line.selected)
-            original_order_lines = order.order_line
-            order.order_line = selected_order_lines
+            selected_order_lines = quote.order_line.filtered(lambda line: line.selected)
+            original_order_lines = quote.order_line
+            quote.order_line = selected_order_lines
             super(order, quote)._action_confirm()
-            order.order_line = original_order_lines
+            quote.order_line = original_order_lines
         return True
      
     def message_post(self, **kwargs):
