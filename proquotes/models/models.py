@@ -1679,3 +1679,14 @@ class pdf_quote(models.Model):
 
     footer_field = fields.Selection("")
     # footer_field = fields.Selection(related="order_id.footer")
+
+
+# override error message about 0 units being processed of unselect items
+class StockPicking(models.Model):
+    _inherit = 'stock.picking'
+
+    def button_validate(self):
+        for move in self.move_lines:
+            if not move.selected:
+                move.state = 'cancel'
+        return super(StockPicking, self).button_validate()
