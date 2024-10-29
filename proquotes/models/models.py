@@ -827,6 +827,14 @@ class order(models.Model):
                     'pricelist_id': [('name', 'ilike', 'rental')]
                 }
             }
+            
+    def _action_confirm(self):
+        for order in self:
+            selected_order_lines = order.order_line.filtered(lambda line: line.selected)
+            order.order_line = selected_order_lines
+            super(SaleOrder, order)._action_confirm()
+            order.order_line = self.env['sale.order.line'].browse([line.id for line in order.order_line])
+        return True
      
     def message_post(self, **kwargs):
         
@@ -1689,9 +1697,10 @@ class StockMove(models.Model):
     def create(self, vals):
         if 'sale_line_id' in vals:
             sale_line = self.env['sale.order.line'].browse(vals['sale_line_id'])
+            if not sale_line.selected:
+                return False
             vals['selected'] = sale_line.selected
         return super(StockMove, self).create(vals)
-
 # override error message about 0 units being processed of unselect items
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
