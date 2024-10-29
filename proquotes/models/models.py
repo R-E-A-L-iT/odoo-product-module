@@ -1686,7 +1686,7 @@ class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
     def button_validate(self):
-        for move in self.move_lines:
+        for move in self.self.move_ids_without_package:
             if not move.selected:
                 move.state = 'cancel'
         return super(StockPicking, self).button_validate()
