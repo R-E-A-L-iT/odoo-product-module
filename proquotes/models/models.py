@@ -829,11 +829,12 @@ class order(models.Model):
             }
             
     def _action_confirm(self):
-        for order in self:
+        for quote in self:
             selected_order_lines = order.order_line.filtered(lambda line: line.selected)
+            original_order_lines = order.order_line
             order.order_line = selected_order_lines
-            super(order, order)._action_confirm()
-            order.order_line = self.env['sale.order.line'].browse([line.id for line in order.order_line])
+            super(order, quote)._action_confirm()
+            order.order_line = original_order_lines
         return True
      
     def message_post(self, **kwargs):
@@ -1701,6 +1702,7 @@ class StockMove(models.Model):
                 return False
             vals['selected'] = sale_line.selected
         return super(StockMove, self).create(vals)
+    
 # override error message about 0 units being processed of unselect items
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
