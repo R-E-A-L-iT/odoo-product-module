@@ -831,10 +831,10 @@ class order(models.Model):
     def _action_confirm(self):
         for quote in self:
             selected_order_lines = quote.order_line.filtered(lambda line: line.selected)
-            original_order_lines = quote.order_line
-            quote.order_line = selected_order_lines
-            super(order, quote)._action_confirm()
-            quote.order_line = original_order_lines
+            for line in selected_order_lines:
+                line._action_launch_stock_rule()
+            quote.write({'state': 'sale'})
+            quote._create_invoices()
         return True
      
     def message_post(self, **kwargs):
