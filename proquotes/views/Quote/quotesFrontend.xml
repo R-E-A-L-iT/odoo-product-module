@@ -647,6 +647,16 @@
                 </div>
             </section>
         </xpath>
+
+        <!-- financing available -->
+        <xpath expr="//span[@t-field=&quot;line.price_subtotal&quot;]" position="after">
+            <t t-if="sale_order.financing_available">
+                <div style="text-align: right; margin-top: 10px;">
+                    <em>Financing is available for this quote. Please contact us to apply.</em>
+                </div>
+            </t>
+        </xpath>
+
     </template>
 
     <!--Sign Page-->
