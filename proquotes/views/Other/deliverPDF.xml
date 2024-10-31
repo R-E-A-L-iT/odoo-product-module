@@ -93,8 +93,15 @@
 					<span style="color: #fff;">________________________________________</span>
 				</span>
 				<br />
+				<t t-if="o.note">
+					<div style="margin-top: 20px;">
+						<strong>Note:</strong>
+						<p t-field="o.note" style="color: #555; font-size: 0.9rem;"/>
+					</div>
+				</t>
 				<br />
 				<br />
+				
 				<t t-set="footer" t-value="o.footer_id"></t>
 			</div>
 		</xpath>
