@@ -1720,27 +1720,27 @@ class pdf_quote(models.Model):
     
 # override error message about 0 units being processed of unselect items
 
-class StockPicking(models.Model):
-    _inherit = 'stock.picking'
+# class StockPicking(models.Model):
+#     _inherit = 'stock.picking'
     
-    @api.model
-    def create(self, vals):
-        picking = super(StockPicking, self).create(vals)
+#     @api.model
+#     def create(self, vals):
+#         picking = super(StockPicking, self).create(vals)
 
-        # Retrieve the related sale order if available via origin
-        sale_order = self.env['sale.order'].search([('name', '=', picking.origin)], limit=1)
-        if sale_order:
-            unselected_moves = picking.move_ids_without_package.filtered(
-                lambda move: move.sale_line_id and not move.sale_line_id.selected
-            )
+#         # Retrieve the related sale order if available via origin
+#         sale_order = self.env['sale.order'].search([('name', '=', picking.origin)], limit=1)
+#         if sale_order:
+#             unselected_moves = picking.move_ids_without_package.filtered(
+#                 lambda move: move.sale_line_id and not move.sale_line_id.selected
+#             )
             
-            # Log the unselected moves if any are found
-            if unselected_moves:
-                _logger.info("Unselected items to be removed: %s", unselected_moves)
+#             # Log the unselected moves if any are found
+#             if unselected_moves:
+#                 _logger.info("Unselected items to be removed: %s", unselected_moves)
                 
-            # Remove the unselected items
-            unselected_moves.unlink()
-        else:
-            _logger.info("No sale order found for picking origin: %s", picking.origin)
+#             # Remove the unselected items
+#             unselected_moves.unlink()
+#         else:
+#             _logger.info("No sale order found for picking origin: %s", picking.origin)
 
-        return picking
+#         return picking
