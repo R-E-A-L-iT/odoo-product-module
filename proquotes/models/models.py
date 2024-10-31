@@ -830,7 +830,9 @@ class order(models.Model):
 
     def action_confirm(self):
         for quote in self:
-            quote.order_line = order.order_line.filtered(lambda line: line.selected)
+            selected_lines = quote.order_line.filtered(lambda line: line.selected)
+            
+        quote.order_line = selected_lines
         
         return super(order, self).action_confirm()
      
