@@ -828,15 +828,15 @@ class order(models.Model):
                 }
             }
 
-    def action_confirm(self):
-        res = super(order, self).action_confirm()
+    # def action_confirm(self):
+    #     res = super(order, self).action_confirm()
         
-        for quote in self:
-            for picking in quote.picking_ids.filtered(lambda p: p.state not in ['done', 'cancel']):
-                unselected_moves = picking.move_ids_without_package.filtered(lambda move: not move.sale_line_id.selected)
-                unselected_moves.unlink()
+    #     for quote in self:
+    #         for picking in quote.picking_ids.filtered(lambda p: p.state not in ['done', 'cancel']):
+    #             unselected_moves = picking.move_ids_without_package.filtered(lambda move: not move.sale_line_id.selected)
+    #             unselected_moves.unlink()
 
-        return res
+    #     return res
      
     def message_post(self, **kwargs):
         
@@ -1719,11 +1719,21 @@ class pdf_quote(models.Model):
 #         return super(StockMove, self).create(vals)
     
 # override error message about 0 units being processed of unselect items
-class StockPicking(models.Model):
-    _inherit = 'stock.picking'
 
-    def button_validate(self):
-        for move in self.move_ids_without_package:
-            if not move.selected:
-                move.state = 'cancel'
-        return super(StockPicking, self).button_validate()
+class StockMove(models.Model):
+    _inherit = 'stock.move'
+    
+    @api.model
+    def create(self, vals):
+        # Create the picking record first
+        picking = super(StockPicking, self).create(vals)
+
+        # Check if the picking is related to a sale order, then filter moves
+        if picking.origin and picking.sale_id:
+            # Filter out move lines with unselected quote lines
+            unselected_moves = picking.move_ids_without_package.filtered(
+                lambda move: move.sale_line_id and not move.sale_line_id.selected
+            )
+            unselected_moves.unlink()
+
+        return picking
