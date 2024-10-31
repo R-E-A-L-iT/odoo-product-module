@@ -1725,15 +1725,15 @@ class StockPicking(models.Model):
     
     @api.model
     def create(self, vals):
-        # Create the picking record first
         picking = super(StockPicking, self).create(vals)
 
-        # Check if the picking is related to a sale order, then filter moves
         if picking.origin and picking.sale_id:
-            # Filter out move lines with unselected quote lines
             unselected_moves = picking.move_ids_without_package.filtered(
                 lambda move: move.sale_line_id and not move.sale_line_id.selected
             )
+            
+            _logger.info("Unselected items: " str(unselected_moves), level="info")
+            
             unselected_moves.unlink()
 
         return picking
