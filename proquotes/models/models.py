@@ -1732,7 +1732,7 @@ class StockPicking(models.Model):
                 lambda move: move.sale_line_id and not move.sale_line_id.selected
             )
             
-            _logger.info("Unselected items: " str(unselected_moves), level="info")
+            _logger.info("Unselected items: " + str(unselected_moves), level="info")
             
             unselected_moves.unlink()
 
