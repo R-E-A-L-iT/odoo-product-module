@@ -829,14 +829,11 @@ class order(models.Model):
             }
 
     def action_confirm(self):
-         # Call the original confirm action to create the delivery order
         res = super(order, self).action_confirm()
-
-        # After confirmation, remove unselected items from the delivery slip
+        
         for quote in self:
             for picking in quote.picking_ids.filtered(lambda p: p.state not in ['done', 'cancel']):
-                # Remove stock moves where the corresponding sale order line is unselected
-                unselected_moves = picking.move_lines.filtered(lambda move: not move.sale_line_id.selected)
+                unselected_moves = picking.move_ids_without_package.filtered(lambda move: not move.sale_line_id.selected)
                 unselected_moves.unlink()
 
         return res
