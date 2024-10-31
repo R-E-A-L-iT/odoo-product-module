@@ -829,13 +829,10 @@ class order(models.Model):
             }
 
     def action_confirm(self):
-        # Filter out sale order lines where selected is False
-        for order in self:
-            # Filter out lines that should not be included in the delivery
-            order.order_line = order.order_line.filtered(lambda line: line.selected)
+        for quote in self:
+            quote.order_line = order.order_line.filtered(lambda line: line.selected)
         
-        # Call the original confirm action, which will only include selected lines
-        return super(SaleOrder, self).action_confirm()
+        return super(order, self).action_confirm()
      
     def message_post(self, **kwargs):
         
