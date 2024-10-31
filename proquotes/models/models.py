@@ -827,16 +827,15 @@ class order(models.Model):
                     'pricelist_id': [('name', 'ilike', 'rental')]
                 }
             }
-            
-    def _action_confirm(self):
-        for quote in self:
-            selected_order_lines = quote.order_line.filtered(lambda line: line.selected)
-            for line in selected_order_lines:
-                line._action_launch_stock_rule()
-            quote.write({'state': 'sale'})
-            # this creates an invoice automatically, uncomment to turn on
-            # quote._create_invoices()
-        return True
+
+    def action_confirm(self):
+        # Filter out sale order lines where selected is False
+        for order in self:
+            # Filter out lines that should not be included in the delivery
+            order.order_line = order.order_line.filtered(lambda line: line.selected)
+        
+        # Call the original confirm action, which will only include selected lines
+        return super(SaleOrder, self).action_confirm()
      
     def message_post(self, **kwargs):
         
@@ -1704,19 +1703,19 @@ class pdf_quote(models.Model):
     footer_field = fields.Selection("")
     # footer_field = fields.Selection(related="order_id.footer")
 
-class StockMove(models.Model):
-    _inherit = 'stock.move'
+# class StockMove(models.Model):
+#     _inherit = 'stock.move'
 
-    selected = fields.Boolean(string="Selected")
+#     selected = fields.Boolean(string="Selected")
 
-    @api.model
-    def create(self, vals):
-        if 'sale_line_id' in vals:
-            sale_line = self.env['sale.order.line'].browse(vals['sale_line_id'])
-            # if not sale_line.selected:
-            #     return False
-            vals['selected'] = sale_line.selected
-        return super(StockMove, self).create(vals)
+#     @api.model
+#     def create(self, vals):
+#         if 'sale_line_id' in vals:
+#             sale_line = self.env['sale.order.line'].browse(vals['sale_line_id'])
+#             # if not sale_line.selected:
+#             #     return False
+#             vals['selected'] = sale_line.selected
+#         return super(StockMove, self).create(vals)
     
 # override error message about 0 units being processed of unselect items
 class StockPicking(models.Model):
