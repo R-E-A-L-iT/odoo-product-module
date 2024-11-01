@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t owl="1" t-name="CodexDiagram">
+        <iframe
+            t-ref="CodexDiagram"
+            frameborder="0"
+            class="codex_diagram"
+            t-att-src="url"
+        />
+    </t>
+    <t owl="1" t-name="CodexDiagramField">
+        <div>
+            <a
+                class="o_form_uri"
+                t-on-click.stop="startEditing"
+                style="cursor: pointer"
+                href="javascript:void(0)"
+            >Edit Diagram</a>
+            <span t-if="mode === 'edit'"/>
+        </div>
+    </t>
+</templates>
