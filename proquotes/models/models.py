@@ -1699,23 +1699,54 @@ class ticket(models.Model):
     def create(self, vals):
         
         helpdesk_ticket = super(ticket, self).create(vals)
+        helpdesk_team = helpdesk_ticket.team_id
 
-        support_group = self.env['helpdesk.team'].search([('name', '=', 'Support')], limit=1)
+        if not helpdesk_team:
+            _logger.info("No helpdesk team assigned to this ticket.")
+            return helpdesk_ticket
 
-        if helpdesk_ticket.team_id == support_group:
-            
-            horia = self.env['res.users'].search([('login', '=', 'horia@r-e-a-l.it')], limit=1)
-            mael = self.env['res.users'].search([('login', '=', 'mael@r-e-a-l.it')], limit=1)
+        partners_with_emails = helpdesk_team.message_partner_ids.filtered(lambda partner: partner.email)
 
-            if horia and mael:
-                message = "A new helpdesk ticket has been created: %s" % helpdesk_ticket.name
+        if not partners_with_emails:
+            _logger.info("No users with emails found in the helpdesk team: %s", helpdesk_team.name)
+            return helpdesk_ticket
 
-                helpdesk_ticket.message_post(
-                    body=message,
-                    message_type='notification',
-                    subtype_id=self.env.ref('mail.mt_comment').id,
-                    partner_ids=[horia.partner_id.id, mael.partner_id.id]
-                )
+        _logger.info("Sending email to the following users: %s", ", ".join([partner.name for partner in partners_with_emails]))
+
+        subject = _("New Helpdesk Ticket: %s") % helpdesk_ticket.name
+        
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        ticket_url = f"{base_url}/web#id={helpdesk_ticket.id}&model=helpdesk.ticket&view_type=form"
+        
+        button_html = f"""
+            <a href="{ticket_url}" style="background-color: #875A7B; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                View Helpdesk Ticket
+            </a>
+        """
+        
+        body_html = f"""
+            <p>Dear Team,</p>
+            <p>A new helpdesk ticket has been created:</p>
+            <ul>
+                <li><strong>Ticket:</strong> {helpdesk_ticket.name}</li>
+                <li><strong>Description:</strong> {helpdesk_ticket.description or "No description provided."}</li>
+            </ul>
+            <p>{button_html}</p>
+            <p>Please view this ticket and respond swiftly. Thank you.</p>
+        """
+        
+        email_to = ",".join(partner.email for partner in partners_with_emails if partner.email)
+
+        if email_to:
+            mail_values = {
+                'subject': subject,
+                'body_html': body_html,
+                'email_to': email_to,
+            }
+            # Create and send the email
+            mail = self.env['mail.mail'].create(mail_values)
+            mail.send()
+
         return helpdesk_ticket
 
 # pdf footer
