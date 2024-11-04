@@ -1706,23 +1706,20 @@ class ticket(models.Model):
             _logger.info("No helpdesk team assigned to this ticket.")
             return helpdesk_ticket
         
-        users_with_emails = self.env['res.users'].search([
-            ('groups_id', 'in', helpdesk_team.user_ids.ids),  # Users assigned to the team
-            ('email', '!=', False)  # Only include users with an email
-        ])
+        users_with_emails = helpdesk_team.message_partner_ids.filtered(lambda partner: partner.email)
 
         if not users_with_emails:
             _logger.info("No users with emails found in the helpdesk team: %s", helpdesk_team.name)
             return helpdesk_ticket
 
         # Collect partner IDs of users with emails
-        partner_ids = [user.partner_id.id for user in users_with_emails]
+        partner_ids = [partner.id for partner in users_with_emails]
 
         # Send the notification message to all team users
         message = "A new helpdesk ticket has been created: %s" % helpdesk_ticket.name
 
         # Log the users to confirm the code works
-        _logger.info("Sending message to the following users: %s", ", ".join([user.partner_id.name for user in users_with_emails]))
+        _logger.info("Sending message to the following users: %s", ", ".join([partner.name for partner in users_with_emails]))
 
         # Send the message to all users
         helpdesk_ticket.message_post(
@@ -1732,7 +1729,7 @@ class ticket(models.Model):
             partner_ids=partner_ids  # Ensure all team users receive the message
         )
 
-        return tickhelpdesk_ticketet
+        return helpdesk_ticket
 
 # pdf footer
 
