@@ -56,6 +56,8 @@
         "views/companyBackend.xml",
         "views/partner_internal.xml",
         "views/notification_email.xml",
+        "views/storePage.xml",
+        "views/portalAppointment.xml"
     ],
     # only loaded in demonstration mode
     "demo": [

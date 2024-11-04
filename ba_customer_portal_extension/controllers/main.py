@@ -344,6 +344,12 @@ class CustomerPortalReal(CustomerPortal):
                 body = _('Quotation viewed by customer %s',
                          order_sudo.partner_id.name if request.env.user._is_public() else request.env.user.partner_id.name)
                 order_sudo.message_post(body=body)
+                
+        backend_url = f'/web#model={order_sudo._name}'\
+                      f'&id={order_sudo.id}'\
+                      f'&action={order_sudo._get_portal_return_action().id}'\
+                      f'&view_type=form'
+
 
         values = {
             'sale_order': order_sudo,
@@ -354,6 +360,7 @@ class CustomerPortalReal(CustomerPortal):
             'partner_id': order_sudo.partner_id.id,
             'report_type': 'html',
             'action': order_sudo._get_portal_return_action(),
+            'backend_url': backend_url,
         }
         if order_sudo.company_id:
             values['res_company'] = order_sudo.company_id
