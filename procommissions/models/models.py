@@ -1,7 +1,7 @@
 from odoo import models, fields
 
-class ProCommissions(models.Model):
-    _name = 'pro.commissions'
+class Commissions(models.Model):
+    _name = 'procom.commission'
     _description = 'Commissions Records'
 
     name = fields.Char(string="Commission Name", required=True)
