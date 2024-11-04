@@ -1694,6 +1694,33 @@ class ticket(models.Model):
         required=False,
         domain=[('name', 'ilike', 'EMAIL')],
     )
+    
+    @api.model
+    def create(self, vals):
+        # Create the helpdesk ticket
+        ticket = super(ticket, self).create(vals)
+
+        # Find the support group (replace with the correct group identification)
+        support_group = self.env['helpdesk.team'].search([('email_alias', '=', 'support@r-e-a-l.it')], limit=1)
+
+        # If the helpdesk ticket is for the specific group, send a message
+        if ticket.team_id == support_group:
+            # Define the two specific internal users (replace with correct user IDs or search logic)
+            horia = self.env['res.users'].search([('login', '=', 'horia@r-e-a-l.it')], limit=1)
+            mael = self.env['res.users'].search([('login', '=', 'mael@r-e-a-l.it')], limit=1)
+
+            # Check if both users exist
+            if horia and mael:
+                message = "A new helpdesk ticket has been created: %s" % ticket.name
+
+                # Send a message to the Discuss module (to each user)
+                ticket.message_post(
+                    body=message,
+                    message_type='notification',
+                    subtype_id=self.env.ref('mail.mt_comment').id,
+                    partner_ids=[horia.partner_id.id, mael.partner_id.id]  # Send to the user's partner (internal user)
+                )
+        return ticket
 
 # pdf footer
 
