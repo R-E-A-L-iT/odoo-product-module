@@ -652,18 +652,19 @@
         <xpath expr="//div[@id='total']" position="after">
             <div id="financing_options">
 				<t t-if="sale_order.is_rental != True">
-				<t t-if="'solutions' in sale_order.company_id.name.lower()">
-					<t t-set="ca_financing_lowest" t-value="(sale_order.amount_untaxed / 60) * 0.01947" />
-					<span style="color: #fff;">
-						Contact us to see if you are eligible for financing on this quote for as low as <span t-raw="ca_financing_lowest"/> per month.
-					</span>
-				</t>
-				<t t-else="">
-					<!-- <t t-set="us_financing_lowest" t-value="str(sale_order.amount_untaxed * 0.01904)" /> -->
-					<t t-set="us_financing_lowest" t-value="(sale_order.amount_untaxed / 60) * 0.01904" />
-					<span style="color: #fff;">
-						Contact us to see if you are eligible for financing on this quote for as low as $<span style="background: url(https://cdn.r-e-a-l.it/images/header/FieryGIF.gif); background-size: cover;background-clip: text; text-fill-color: transparent;" t-raw="us_financing_lowest"/> per month.
-					</span>
+                    <t t-if="'solutions' in sale_order.company_id.name.lower()">
+                        <t t-set="ca_financing_lowest" t-value="(sale_order.amount_untaxed / 60) * 0.01947" />
+                        <span style="color: #fff;">
+                            Contact us to see if you are eligible for financing on this quote for as low as <span t-raw="ca_financing_lowest"/> per month.
+                        </span>
+                    </t>
+                    <t t-else="">
+                        <!-- <t t-set="us_financing_lowest" t-value="str(sale_order.amount_untaxed * 0.01904)" /> -->
+                        <t t-set="us_financing_lowest" t-value="(sale_order.amount_untaxed / 60) * 0.01904" />
+                        <span style="color: #fff;">
+                            Contact us to see if you are eligible for financing on this quote for as low as $<span style="background: url(https://cdn.r-e-a-l.it/images/header/FieryGIF.gif); background-size: cover;background-clip: text; text-fill-color: transparent;" t-raw="us_financing_lowest"/> per month.
+                        </span>
+                    </t>
                 </t>
             </div>
         </xpath>
