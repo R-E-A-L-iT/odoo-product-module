@@ -1699,35 +1699,39 @@ class ticket(models.Model):
     def create(self, vals):
         
         helpdesk_ticket = super(ticket, self).create(vals)
-
         helpdesk_team = helpdesk_ticket.team_id
-        
+
         if not helpdesk_team:
             _logger.info("No helpdesk team assigned to this ticket.")
             return helpdesk_ticket
-        
-        users_with_emails = helpdesk_team.message_partner_ids.filtered(lambda partner: partner.email)
 
-        if not users_with_emails:
+        # Get all partners (followers) linked to the helpdesk team with an email
+        partners_with_emails = helpdesk_team.message_partner_ids.filtered(lambda partner: partner.email)
+
+        if not partners_with_emails:
             _logger.info("No users with emails found in the helpdesk team: %s", helpdesk_team.name)
             return helpdesk_ticket
 
-        # Collect partner IDs of users with emails
-        partner_ids = [partner.id for partner in users_with_emails]
-
-        # Send the notification message to all team users
-        message = "A new helpdesk ticket has been created: %s" % helpdesk_ticket.name
-
         # Log the users to confirm the code works
-        _logger.info("Sending message to the following users: %s", ", ".join([partner.name for partner in users_with_emails]))
+        _logger.info("Sending email to the following users: %s", ", ".join([partner.name for partner in partners_with_emails]))
 
-        # Send the message to all users
-        helpdesk_ticket.message_post(
-            body=message,
-            message_type='notification',
-            subtype_id=self.env.ref('mail.mt_comment').id,
-            partner_ids=partner_ids  # Ensure all team users receive the message
-        )
+        # Prepare the email message
+        subject = _("New Helpdesk Ticket: %s") % helpdesk_ticket.name
+        body = _("A new helpdesk ticket has been created:\n\nTicket: %s\nDescription: %s\n\n") % (helpdesk_ticket.name, helpdesk_ticket.description or "")
+        
+        # Collect partner emails
+        email_to = ",".join(partner.email for partner in partners_with_emails if partner.email)
+
+        if email_to:
+            # Use the mail template system to send an email
+            mail_values = {
+                'subject': subject,
+                'body_html': body,
+                'email_to': email_to,
+            }
+            # Create and send the email
+            mail = self.env['mail.mail'].create(mail_values)
+            mail.send()
 
         return helpdesk_ticket
 
