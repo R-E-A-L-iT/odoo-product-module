@@ -92,6 +92,9 @@
                 #quote_content {
                 padding: 0px !important;
                 }
+                .is-subtotal {
+                    display: none !important;
+                }
                 #portal_sale_content {
                 padding: 30px !important;
                 padding-right: 40px !important;
