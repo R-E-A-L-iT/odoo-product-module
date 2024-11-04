@@ -1700,23 +1700,39 @@ class ticket(models.Model):
         
         helpdesk_ticket = super(ticket, self).create(vals)
 
-        support_group = self.env['helpdesk.team'].search([('name', '=', 'Support')], limit=1)
+        helpdesk_team = helpdesk_ticket.team_id
+        
+        if not helpdesk_team:
+            _logger.info("No helpdesk team assigned to this ticket.")
+            return helpdesk_ticket
+        
+        users_with_emails = self.env['res.users'].search([
+            ('groups_id', 'in', helpdesk_team.user_ids.ids),  # Users assigned to the team
+            ('email', '!=', False)  # Only include users with an email
+        ])
 
-        if helpdesk_ticket.team_id == support_group:
-            
-            horia = self.env['res.users'].search([('login', '=', 'horia@r-e-a-l.it')], limit=1)
-            mael = self.env['res.users'].search([('login', '=', 'mael@r-e-a-l.it')], limit=1)
+        if not users_with_emails:
+            _logger.info("No users with emails found in the helpdesk team: %s", helpdesk_team.name)
+            return helpdesk_ticket
 
-            if horia and mael:
-                message = "A new helpdesk ticket has been created: %s" % helpdesk_ticket.name
+        # Collect partner IDs of users with emails
+        partner_ids = [user.partner_id.id for user in users_with_emails]
 
-                helpdesk_ticket.message_post(
-                    body=message,
-                    message_type='notification',
-                    subtype_id=self.env.ref('mail.mt_comment').id,
-                    partner_ids=[horia.partner_id.id, mael.partner_id.id]
-                )
-        return helpdesk_ticket
+        # Send the notification message to all team users
+        message = "A new helpdesk ticket has been created: %s" % helpdesk_ticket.name
+
+        # Log the users to confirm the code works
+        _logger.info("Sending message to the following users: %s", ", ".join([user.partner_id.name for user in users_with_emails]))
+
+        # Send the message to all users
+        helpdesk_ticket.message_post(
+            body=message,
+            message_type='notification',
+            subtype_id=self.env.ref('mail.mt_comment').id,
+            partner_ids=partner_ids  # Ensure all team users receive the message
+        )
+
+        return tickhelpdesk_ticketet
 
 # pdf footer
 
