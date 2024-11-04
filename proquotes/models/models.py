@@ -1716,7 +1716,7 @@ class ticket(models.Model):
                     subtype_id=self.env.ref('mail.mt_comment').id,
                     partner_ids=[horia.partner_id.id, mael.partner_id.id]
                 )
-        return ticket
+        return helpdesk_ticket
 
 # pdf footer
 
