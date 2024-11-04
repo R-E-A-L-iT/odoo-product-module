@@ -1700,7 +1700,7 @@ class ticket(models.Model):
         
         helpdesk_ticket = super(ticket, self).create(vals)
 
-        support_group = self.env['helpdesk.team'].search([('email_alias', '=', 'support@r-e-a-l.it')], limit=1)
+        support_group = self.env['helpdesk.team'].search([('name', '=', 'Support')], limit=1)
 
         if helpdesk_ticket.team_id == support_group:
             
