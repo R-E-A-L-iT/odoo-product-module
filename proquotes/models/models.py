@@ -1694,6 +1694,29 @@ class ticket(models.Model):
         required=False,
         domain=[('name', 'ilike', 'EMAIL')],
     )
+    
+    @api.model
+    def create(self, vals):
+        
+        helpdesk_ticket = super(ticket, self).create(vals)
+
+        support_group = self.env['helpdesk.team'].search([('name', '=', 'Support')], limit=1)
+
+        if helpdesk_ticket.team_id == support_group:
+            
+            horia = self.env['res.users'].search([('login', '=', 'horia@r-e-a-l.it')], limit=1)
+            mael = self.env['res.users'].search([('login', '=', 'mael@r-e-a-l.it')], limit=1)
+
+            if horia and mael:
+                message = "A new helpdesk ticket has been created: %s" % helpdesk_ticket.name
+
+                helpdesk_ticket.message_post(
+                    body=message,
+                    message_type='notification',
+                    subtype_id=self.env.ref('mail.mt_comment').id,
+                    partner_ids=[horia.partner_id.id, mael.partner_id.id]
+                )
+        return helpdesk_ticket
 
 # pdf footer
 
