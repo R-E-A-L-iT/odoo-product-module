@@ -21,7 +21,7 @@
                     <notebook>
                         <page string="Salespeople">
                             <group>
-                                <field name="salesperson_one" string="Salesperson #1"/>
+                                <!-- <field name="salesperson_one" string="Salesperson #1"/> -->
                             </group>
                         </page>
                     </notebook>
