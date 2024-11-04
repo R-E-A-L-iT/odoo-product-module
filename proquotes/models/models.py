@@ -1705,28 +1705,42 @@ class ticket(models.Model):
             _logger.info("No helpdesk team assigned to this ticket.")
             return helpdesk_ticket
 
-        # Get all partners (followers) linked to the helpdesk team with an email
         partners_with_emails = helpdesk_team.message_partner_ids.filtered(lambda partner: partner.email)
 
         if not partners_with_emails:
             _logger.info("No users with emails found in the helpdesk team: %s", helpdesk_team.name)
             return helpdesk_ticket
 
-        # Log the users to confirm the code works
         _logger.info("Sending email to the following users: %s", ", ".join([partner.name for partner in partners_with_emails]))
 
-        # Prepare the email message
         subject = _("New Helpdesk Ticket: %s") % helpdesk_ticket.name
-        body = _("A new helpdesk ticket has been created:\n\nTicket: %s\nDescription: %s\n\n") % (helpdesk_ticket.name, helpdesk_ticket.description or "")
         
-        # Collect partner emails
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        ticket_url = f"{base_url}/web#id={helpdesk_ticket.id}&model=helpdesk.ticket&view_type=form"
+        
+        button_html = f"""
+            <a href="{ticket_url}" style="background-color: #875A7B; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                View Helpdesk Ticket
+            </a>
+        """
+        
+        body_html = f"""
+            <p>Dear Team,</p>
+            <p>A new helpdesk ticket has been created:</p>
+            <ul>
+                <li><strong>Ticket:</strong> {helpdesk_ticket.name}</li>
+                <li><strong>Description:</strong> {helpdesk_ticket.description or "No description provided."}</li>
+            </ul>
+            <p>{button_html}</p>
+            <p>Please view this ticket and respond swiftly. Thank you.</p>
+        """
+        
         email_to = ",".join(partner.email for partner in partners_with_emails if partner.email)
 
         if email_to:
-            # Use the mail template system to send an email
             mail_values = {
                 'subject': subject,
-                'body_html': body,
+                'body_html': body_html,
                 'email_to': email_to,
             }
             # Create and send the email
