@@ -10,7 +10,7 @@ class Commissions(models.Model):
     # domain=[('move_type', '=', 'out_invoice')]
     related_invoice = fields.Many2one('account.move', string="Related Invoice")
     
-    partner_id = fields.Many2one('res.partner', string="Customer", related='related_order.company_id', readonly=True, store=True)
+    related_partner = fields.Many2one('res.partner', string="Customer", related='related_order.partner_id', readonly=True, store=True)
 
 
     # name = fields.Char(string="Commission Name", required=True)
