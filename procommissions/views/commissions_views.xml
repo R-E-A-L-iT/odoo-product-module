@@ -6,8 +6,9 @@
         <field name="priority" eval="16" />
         <field name="arch" type="xml">
             <tree string="Commissions List">
-                <field name="name" string="Name"/>
-                <field name="amount" string="Amount"/>
+                <field name="invoice_id" string="Invoice"/>
+                <field name="partner_id" string="Customer"/>
+                <field name="invoice_date" string="Invoice Date"/>
             </tree>
         </field>
     </record>
@@ -21,6 +22,9 @@
                     <notebook>
                         <page string="Salespeople">
                             <group>
+                                <field name="invoice_id" string="Invoice"/>
+                                <field name="partner_id" string="Customer"/>
+                                <field name="invoice_date" string="Invoice Date"/>
                                 <!-- <field name="salesperson_one" string="Salesperson #1"/> -->
                             </group>
                         </page>
