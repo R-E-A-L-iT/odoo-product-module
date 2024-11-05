@@ -15,7 +15,8 @@ class Commissions(models.Model):
     @api.onchange('related_order')
     def _onchange_related_order(self):
         if self.related_order:
-            self.partner_id = self.related_order.partner_id
+            partner = self.related_order.partner_id
+            self.partner_id = partner
         else:
             self.partner_id = False
 
