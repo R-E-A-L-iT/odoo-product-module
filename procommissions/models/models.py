@@ -15,6 +15,8 @@ class Commissions(models.Model):
     # domain=[('move_type', '=', 'out_invoice')]
     related_invoice = fields.Many2one('account.move', string="Related Invoice")
     
+    related_partner = fields.Many2one('res.partner', string="Customer", compute="_compute_related_partner", store=True)
+    
     # sales roles
     new_customer = fields.Many2one('res.users', string="Contact New Customer")
     logged_lead = fields.Many2one('res.users', string="Logged Lead")
@@ -52,6 +54,11 @@ class Commissions(models.Model):
     def _compute_sales_price(self):
         for record in self:
             record.sales_price = record.related_order.amount_untaxed if record.related_order else 0.0
+            
+    @api.depends('related_order')
+    def _compute_related_partner(self):
+        for record in self:
+            record.related_partner = record.related_order.partner_id if record.related_order else False
 
     @api.depends('sales_price', 'reality_cost', 'shipping_cost')
     def _compute_reality_margin(self):

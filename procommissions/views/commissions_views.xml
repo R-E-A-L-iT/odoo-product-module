@@ -7,21 +7,25 @@
         <field name="priority" eval="16" />
         <field name="arch" type="xml">
             <tree string="Commissions List">
+
+                <field name="state" string="Status" />
+                <field name="related_partner" string="Customer" />
+                
                 <field name="name" string="Commission Name"/>
-                <field name="related_lead" string="Related Lead"/>
+                <!-- <field name="related_lead" string="Related Lead"/>
                 <field name="related_order" string="Related Order"/>
-                <field name="related_invoice" string="Related Invoice"/>
+                <field name="related_invoice" string="Related Invoice"/> -->
 
                 <field name="new_customer" string="New Customer"/>
-                <field name="new_customer_commission" string="New Customer Commission"/>
+                <!-- <field name="new_customer_commission" string="New Customer Commission"/> -->
                 <field name="logged_lead" string="Logged Lead"/>
-                <field name="logged_lead_commission" string="Logged Lead Commission"/>
+                <!-- <field name="logged_lead_commission" string="Logged Lead Commission"/> -->
                 <field name="developed_lead" string="Developed Opportunity"/>
-                <field name="developed_lead_commission" string="Developed Opportunity Commission"/>
+                <!-- <field name="developed_lead_commission" string="Developed Opportunity Commission"/> -->
                 <field name="performed_demo" string="Performed Demo"/>
-                <field name="performed_demo_commission" string="Performed Demo Commission"/>
+                <!-- <field name="performed_demo_commission" string="Performed Demo Commission"/> -->
                 <field name="quote_to_order" string="Quote to Order"/>
-                <field name="quote_to_order_commission" string="Quote to Order Commission"/>
+                <!-- <field name="quote_to_order_commission" string="Quote to Order Commission"/> -->
             </tree>
         </field>
     </record>
@@ -41,7 +45,7 @@
                 </header>
                 <sheet>
                     <group string="Basic Information">
-                        <field name="name" string="Commission Name"/>
+                        <!-- <field name="name" string="Commission Name"/> -->
                         <field name="related_lead" string="Related Lead"/>
                         <field name="related_order" string="Related Order"/>
                         <field name="related_invoice" string="Related Invoice"/>
