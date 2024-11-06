@@ -19,3 +19,22 @@ class Commissions(models.Model):
     performed_demo = fields.Many2one('res.users', string="Performed Demo")
     quote_to_order = fields.Many2one('res.users', string="Quote to Order")
     
+    currency_id = fields.Many2one(
+        'res.currency', 
+        string="Currency", 
+        compute="_compute_currency_id", 
+        store=True
+    )
+
+    new_customer_commission = fields.Monetary(string="New Customer Commission", currency_field="currency_id")
+    logged_lead_commission = fields.Monetary(string="Logged Lead Commission", currency_field="currency_id")
+    developed_lead_commission = fields.Monetary(string="Developed Opportunity Commission", currency_field="currency_id")
+    performed_demo_commission = fields.Monetary(string="Performed Demo Commission", currency_field="currency_id")
+    quote_to_order_commission = fields.Monetary(string="Quote to Order Commission", currency_field="currency_id")
+
+    @api.depends('related_order')
+    def _compute_currency_id(self):
+        default_currency = self.env.ref('base.CAD')
+        for record in self:
+            record.currency_id = record.related_order.currency_id or default_currency
+    
