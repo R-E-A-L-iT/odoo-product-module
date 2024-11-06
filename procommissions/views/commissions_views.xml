@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <tree string="Commissions List">
                 <field name="name" string="Commission Name"/>
-                <!-- <field name="related_partner" string="Customer"/> -->
+                <field name="related_partner" string="Customer"/>
                 <field name="related_lead" string="Related Lead"/>
                 <field name="related_order" string="Related Order"/>
                 <field name="related_invoice" string="Related Invoice"/>
@@ -28,7 +28,7 @@
                 <sheet>
                     <group>
                         <field name="name" string="Commission Name"/>
-                        <!-- <field name="related_partner" string="Customer"/> -->
+                        <field name="related_partner" string="Customer"/>
                         <field name="related_lead" string="Related Lead"/>
                         <field name="related_order" string="Related Order"/>
                         <field name="related_invoice" string="Related Invoice"/>
