@@ -9,7 +9,7 @@ class Commissions(models.Model):
     related_order = fields.Many2one('sale.order', string="Related Order", required="True")
     # domain=[('move_type', '=', 'out_invoice')]
     related_invoice = fields.Many2one('account.move', string="Related Invoice")
-    
+    related_partner = fields.Many2one('res.partner', string="Customer", readonly=True)
     
     
     # @api.onchange('related_order')
