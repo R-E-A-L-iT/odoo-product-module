@@ -28,12 +28,16 @@
                     <br t-if="not subtitle_last"/>
                 </t>
             </td>
+            <td t-elif="record._name == 'sale.order'" style="font-size: 12px;">
+                <strong>Customer Name:</strong> <t t-out="object.partner_id.name"/>
+            </td>
         </xpath>
 
         <!-- remove powered by odoo -->
         <xpath expr="//div[@class='d-none']" position="replace" />
 
-        <xpath expr="//p[t-if='subtype_internal']" position="before">
+        <!-- none of the xpaths I try to use for this -->
+        <!-- <xpath expr="//p[t-if='subtype_internal']" position="before">
         <t t-if="object._name == 'sale.order'">
             <tr>
                 <td style="font-size: 12px;">
@@ -41,6 +45,6 @@
                 </td>
             </tr>
         </t>
-    </xpath>
+    </xpath> -->
     </template>
 </odoo>
