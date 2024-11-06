@@ -4,7 +4,7 @@
     'summary': 'Module to manage commission reports',
     'category': 'Hidden',
     'author': 'Ezekiel J. deBlois',
-    'depends': ['base', 'crm', 'res', 'sale', 'account'],
+    'depends': ['base', 'crm', 'sale', 'account'],
     'data': [
         'security/ir.model.access.csv',
         # 'data/data.xml',
