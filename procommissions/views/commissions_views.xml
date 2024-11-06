@@ -54,6 +54,12 @@
                         <field name="quote_to_order" string="Quote to Order"/>
                         <field name="quote_to_order_commission" string="Quote to Order Commission"/>
                     </group>
+                    <group>
+                        <field name="sales_price" string="Sales Price (before tax)"/>
+                        <field name="reality_cost" string="Reality Cost"/>
+                        <field name="shipping_cost" string="Shipping Cost"/>
+                        <field name="reality_margin" string="Reality Margin"/>
+                    </group>
                 </sheet>
             </form>
         </field>
