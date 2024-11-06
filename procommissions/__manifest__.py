@@ -10,7 +10,7 @@
         # 'data/data.xml',
         'views/menu_views.xml',
         'views/commissions_views.xml',
-        'views/invoice_views.xml'
+        # 'views/invoice_views.xml'
     ],
     'application': True,
     'installable': True,
