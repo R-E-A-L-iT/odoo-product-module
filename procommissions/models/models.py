@@ -1,5 +1,7 @@
 from odoo import models, fields, api
 
+_logger = logging.getLogger(__name__)
+
 class Commissions(models.Model):
     _name = 'procom.commission'
     _description = 'Commissions Records'
