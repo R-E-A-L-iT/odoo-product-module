@@ -91,4 +91,29 @@ class Commissions(models.Model):
 
     def action_set_fully_paid(self):
         self.state = 'fully_paid'
+        
+        
+
+class AccountMove(models.Model):
+    _inherit = 'account.move'
+
+    source_order = fields.Many2one('sale.order', string="Source Order", help="The sales order from which this invoice was generated, if any.")
+
+    @api.model
+    def create(self, vals):
+        invoice = super(AccountMove, self).create(vals)
+        if invoice.invoice_origin:
+            sale_order = self.env['sale.order'].search([('name', '=', invoice.invoice_origin)], limit=1)
+            if sale_order:
+                invoice.source_order = sale_order.id
+        return invoice
     
+    def _create_commission_record(self):
+        commission = self.env['procom.commission']
+        for invoice in self:
+            if invoice.source_order:
+                commission.create({
+                    'name': f"Commission for Invoice {invoice.name}",
+                    'related_invoice': invoice.id,
+                    'related_order': invoice.source_order.id,
+                })

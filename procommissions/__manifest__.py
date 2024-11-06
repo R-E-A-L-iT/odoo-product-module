@@ -1,5 +1,5 @@
 {
-    'name': 'Commissions',
+    'name': 'ProCommissions',
     'version': '1.0',
     'summary': 'Module to manage commission reports',
     'category': 'Hidden',
@@ -10,6 +10,7 @@
         # 'data/data.xml',
         'views/menu_views.xml',
         'views/commissions_views.xml',
+        'views/invoice_views.xml'
     ],
     'application': True,
     'installable': True,
