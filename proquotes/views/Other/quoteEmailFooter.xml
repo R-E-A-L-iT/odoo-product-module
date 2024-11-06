@@ -28,8 +28,8 @@
                     <br t-if="not subtitle_last"/>
                 </t>
             </td>
-            <td t-elif="record._name == 'sale.order'" style="font-size: 12px;">
-                <strong>Customer Name:</strong> <t t-out="object.partner_id.name"/>
+            <td t-elif="record._name == 'sale.order' and subtype_internal" style="font-size: 12px;">
+                <strong>Customer Name:</strong> <t t-out="record.partner_id.name"/>
             </td>
         </xpath>
 
