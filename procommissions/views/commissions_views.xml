@@ -12,11 +12,11 @@
                 <field name="related_order" string="Related Order"/>
                 <field name="related_invoice" string="Related Invoice"/>
 
-                <field name="new_customer" string="New Customer" />
+                <!-- <field name="new_customer" string="New Customer" />
                 <field name="logged_lead" string="Logged Lead" />
                 <field name="developed_lead" string="Developed Lead" />
                 <field name="performed_demo" string="Performed Demo" />
-                <field name="quote_to_order" string="Quote to Order" />
+                <field name="quote_to_order" string="Quote to Order" /> -->
             </tree>
         </field>
     </record>
@@ -37,11 +37,11 @@
                         <field name="related_order" string="Related Order"/>
                         <field name="related_invoice" string="Related Invoice"/>
 
-                        <field name="new_customer" string="New Customer" />
+                        <!-- <field name="new_customer" string="New Customer" />
                         <field name="logged_lead" string="Logged Lead" />
                         <field name="developed_lead" string="Developed Lead" />
                         <field name="performed_demo" string="Performed Demo" />
-                        <field name="quote_to_order" string="Quote to Order" />
+                        <field name="quote_to_order" string="Quote to Order" /> -->
                     </group>
                 </sheet>
             </form>
