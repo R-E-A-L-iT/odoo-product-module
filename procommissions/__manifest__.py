@@ -1,5 +1,5 @@
 {
-    'name': 'ProCommissions',
+    'name': 'Commissions',
     'version': '1.0',
     'summary': 'Module to manage commission reports',
     'category': 'Hidden',
