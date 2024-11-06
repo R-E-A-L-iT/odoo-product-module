@@ -12,12 +12,12 @@
             <hr width="100%" style="background-color:rgb(204,204,204);border:medium none;clear:both;display:block;font-size:0px;min-height:1px;line-height:0; margin: 16px 0px 4px 0px;"/>
             <t t-if="record._name == 'sale.order' and record.footer_id and not subtype_internal">
                 <div>
-                    <img t-att-src="record.footer_id.url" style="width: 100%; max-width: 900px; height: auto;" alt="Footer Image"/>
+                    <img t-att-src="record.footer_id.url" style="width: 100%; max-width: 300px; height: auto;" alt="Footer Image"/>
                 </div>
             </t>
             <t t-elif="record._name == 'helpdesk.ticket'">
                <div>
-                    <img t-att-src="record.footer_id.url" style="width: 100%; max-width: 900px; height: auto;" alt="Footer Image"/>
+                    <img t-att-src="record.footer_id.url" style="width: 100%; max-width: 300px; height: auto;" alt="Footer Image"/>
                 </div>
             </t>
         </xpath>
@@ -32,5 +32,15 @@
 
         <!-- remove powered by odoo -->
         <xpath expr="//div[@class='d-none']" position="replace" />
+
+        <xpath expr="//td[t-if='has_button_access']" position="after">
+        <t t-if="object._name == 'sale.order'">
+            <tr>
+                <td style="font-size: 12px;">
+                    <strong>Customer Name:</strong> <t t-out="object.partner_id.name"/>
+                </td>
+            </tr>
+        </t>
+    </xpath>
     </template>
 </odoo>
