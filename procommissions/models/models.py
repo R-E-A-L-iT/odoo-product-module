@@ -105,11 +105,9 @@ class AccountMove(models.Model):
     @api.model
     def create(self, vals):
         invoice = super(AccountMove, self).create(vals)
-        if invoice.invoice_origin:
-            sale_order = self.env['sale.order'].search([('name', '=', invoice.invoice_origin)], limit=1)
-            if sale_order:
-                invoice.source_order = sale_order.id
-                _logger.info(f"Setting source_order for invoice {invoice.name} to sale order {sale_order.name}")
+        
+        invoice._create_commission_record()
+
         return invoice
     
     def _create_commission_record(self):
