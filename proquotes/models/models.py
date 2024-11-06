@@ -1347,6 +1347,8 @@ class order(models.Model):
             access_opt['url'] = f"{base_url}{portal_url}"
             if message.is_internal:
                 access_opt['url'] = f"{base_url}/web#id={self.id}&model={self._name}&view_type=form"
+            elif access_opt['title'] == _("View Quotation"):
+                access_opt['url'] = f"{base_url}/web#id={self.id}&model={self._name}&view_type=form"
             else:
                 access_opt['url'] = f"{base_url}{portal_url}"
 
