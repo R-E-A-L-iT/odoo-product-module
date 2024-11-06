@@ -34,9 +34,10 @@
             <form string="Commission">
                 <header>
                     <field name="state" widget="statusbar" statusbar_visible="unpaid,partially_paid,fully_paid" statusbar_colors="{'unpaid': 'grey', 'partially_paid': 'orange', 'fully_paid': 'green'}"/>
-                    <button name="action_set_unpaid" type="object" string="Mark as Unpaid" states="partially_paid,fully_paid" class="btn-secondary"/>
-                    <button name="action_set_partially_paid" type="object" string="Mark as Partially Paid" states="unpaid,fully_paid" class="btn-secondary"/>
-                    <button name="action_set_fully_paid" type="object" string="Mark as Fully Paid" states="unpaid,partially_paid" class="btn-secondary"/>
+                    
+                    <button name="action_set_unpaid" type="object" string="Mark as Unpaid" class="btn-secondary" attrs="{'invisible': [('state', '=', 'unpaid')]}"/>
+                    <button name="action_set_partially_paid" type="object" string="Mark as Partially Paid" class="btn-secondary" attrs="{'invisible': [('state', '=', 'partially_paid')]}"/>
+                    <button name="action_set_fully_paid" type="object" string="Mark as Fully Paid" class="btn-secondary" attrs="{'invisible': [('state', '=', 'fully_paid')]}"/>
                 </header>
                 <sheet>
                     <group string="Basic Information">
