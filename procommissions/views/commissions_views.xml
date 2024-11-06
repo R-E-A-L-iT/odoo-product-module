@@ -53,20 +53,21 @@
 
                     <!-- Sales Roles and Commissions Group -->
                     <group string="Sales Roles and Commissions" colspan="2">
-                        <group col="2">
+                        <group col="1">
                             <field name="new_customer" string="New Customer"/>
-                            <field name="new_customer_commission" string="New Customer Commission"/>
                             <field name="logged_lead" string="Logged Lead"/>
-                            <field name="logged_lead_commission" string="Logged Lead Commission"/>
                             <field name="developed_lead" string="Developed Opportunity"/>
-                            <field name="developed_lead_commission" string="Developed Opportunity Commission"/>
                             <field name="performed_demo" string="Performed Demo"/>
-                            <field name="performed_demo_commission" string="Performed Demo Commission"/>
                             <field name="quote_to_order" string="Quote to Order"/>
+                        </group>
+                        <group col="1">
+                            <field name="new_customer_commission" string="New Customer Commission"/>
+                            <field name="logged_lead_commission" string="Logged Lead Commission"/>
+                            <field name="developed_lead_commission" string="Developed Opportunity Commission"/>
+                            <field name="performed_demo_commission" string="Performed Demo Commission"/>
                             <field name="quote_to_order_commission" string="Quote to Order Commission"/>
                         </group>
                     </group>
-                </group>
                 </sheet>
             </form>
         </field>
