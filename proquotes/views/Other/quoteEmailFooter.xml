@@ -33,7 +33,7 @@
         <!-- remove powered by odoo -->
         <xpath expr="//div[@class='d-none']" position="replace" />
 
-        <xpath expr="//td[t-if='subtitles']" position="before">
+        <xpath expr="//table[cellspacing='0']" position="before">
         <t t-if="object._name == 'sale.order'">
             <tr>
                 <td style="font-size: 12px;">
