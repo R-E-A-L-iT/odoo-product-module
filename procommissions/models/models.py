@@ -106,14 +106,18 @@ class AccountMove(models.Model):
             sale_order = self.env['sale.order'].search([('name', '=', invoice.invoice_origin)], limit=1)
             if sale_order:
                 invoice.source_order = sale_order.id
+                _logger.info(f"Setting source_order for invoice {invoice.name} to sale order {sale_order.name}")
         return invoice
     
     def _create_commission_record(self):
         commission = self.env['procom.commission']
         for invoice in self:
             if invoice.source_order:
+                _logger.info(f"Creating commission record for invoice {invoice.name} with source order {invoice.source_order.name}")
                 commission.create({
                     'name': f"Commission for Invoice {invoice.name}",
                     'related_invoice': invoice.id,
                     'related_order': invoice.source_order.id,
                 })
+            else:
+                _logger.info(f"No source order found for invoice {invoice.name}. Commission record not created.")
