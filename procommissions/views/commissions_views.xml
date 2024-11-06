@@ -37,6 +37,8 @@
                         <field name="related_order" string="Related Order"/>
                         <field name="related_invoice" string="Related Invoice"/>
 
+                        <field name="test_user" string="Test User" />
+
                         <!-- <field name="new_customer" string="New Customer" />
                         <field name="logged_lead" string="Logged Lead" />
                         <field name="developed_lead" string="Developed Lead" />

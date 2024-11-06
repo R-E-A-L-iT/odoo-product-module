@@ -10,6 +10,8 @@ class Commissions(models.Model):
     # domain=[('move_type', '=', 'out_invoice')]
     related_invoice = fields.Many2one('account.move', string="Related Invoice")
     
+    test_user = fields.Many2one('res.users', string="Assigned User")
+    
     # sales roles
     # new_customer = fields.Many2one('res.user', string="Contact New Customer")
     # logged_lead = fields.Many2one('res.user', string="Logged Lead")
