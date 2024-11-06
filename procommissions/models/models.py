@@ -4,6 +4,11 @@ class Commissions(models.Model):
     _name = 'procom.commission'
     _description = 'Commissions Records'
     
+    state = fields.Selection(
+        [('unpaid', 'Unpaid'), ('partially_paid', 'Partially Paid'), ('fully_paid', 'Fully Paid')],
+        string="Status", default='unpaid', required=True
+    )
+    
     name = fields.Char(string="Commission Name", required=True)
     related_lead = fields.Many2one('crm.lead', string="Related Lead")
     related_order = fields.Many2one('sale.order', string="Related Order", required="True")
@@ -71,4 +76,13 @@ class Commissions(models.Model):
             record.quote_to_order_commission = (
                 0.05 * record.reality_margin if record.quote_to_order and record.quote_to_order.name != "Derek deBlois" else 0.0
             )
+            
+    def action_set_unpaid(self):
+        self.state = 'unpaid'
+
+    def action_set_partially_paid(self):
+        self.state = 'partially_paid'
+
+    def action_set_fully_paid(self):
+        self.state = 'fully_paid'
     

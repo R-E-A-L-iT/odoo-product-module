@@ -33,7 +33,7 @@
         <field name="arch" type="xml">
             <form string="Commission">
                 <header>
-                    <!-- Buttons will go here -->
+                    <field name="state" widget="statusbar" statusbar_visible="unpaid,partially_paid,fully_paid" statusbar_colors="{'unpaid': 'grey', 'partially_paid': 'orange', 'fully_paid': 'green'}"/>
                 </header>
                 <sheet>
                     <group string="Basic Information">
