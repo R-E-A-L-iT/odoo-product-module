@@ -14,6 +14,6 @@ class Commissions(models.Model):
     new_customer = fields.Many2one('res.user', string="Contact New Customer")
     logged_lead = fields.Many2one('res.user', string="Logged Lead")
     developed_lead = fields.Many2one('res.user', string="Developed Opportunity")
-    preformed_demo = fields.Many2one('res.user', string="Performed Demo")
+    performed_demo = fields.Many2one('res.user', string="Performed Demo")
     quote_to_order = fields.Many2one('res.user', string="Quote to Order")
     
