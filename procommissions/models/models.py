@@ -25,11 +25,11 @@ class Commissions(models.Model):
     )
 
     # commission fields
-    new_customer_commission = fields.Monetary(string="New Customer Commission", currency_field="currency_id")
-    logged_lead_commission = fields.Monetary(string="Logged Lead Commission", currency_field="currency_id")
-    developed_lead_commission = fields.Monetary(string="Developed Opportunity Commission", currency_field="currency_id")
-    performed_demo_commission = fields.Monetary(string="Performed Demo Commission", currency_field="currency_id")
-    quote_to_order_commission = fields.Monetary(string="Quote to Order Commission", currency_field="currency_id")
+    new_customer_commission = fields.Monetary(string="New Customer Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
+    logged_lead_commission = fields.Monetary(string="Logged Lead Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
+    developed_lead_commission = fields.Monetary(string="Developed Opportunity Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
+    performed_demo_commission = fields.Monetary(string="Performed Demo Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
+    quote_to_order_commission = fields.Monetary(string="Quote to Order Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
     
     # computation fields
     sales_price = fields.Monetary(string="Sales Price (before tax)", currency_field="currency_id", compute="_compute_sales_price", store=True)
@@ -52,4 +52,23 @@ class Commissions(models.Model):
     def _compute_reality_margin(self):
         for record in self:
             record.reality_margin = record.sales_price - record.reality_cost - record.shipping_cost
+            
+    @api.depends('reality_margin', 'new_customer', 'logged_lead', 'developed_lead', 'performed_demo', 'quote_to_order')
+    def _compute_commissions(self):
+        for record in self:
+            record.new_customer_commission = (
+                0.05 * record.reality_margin if record.new_customer and record.new_customer.name != "Derek deBlois" else 0.0
+            )
+            record.logged_lead_commission = (
+                0.05 * record.reality_margin if record.logged_lead and record.logged_lead.name != "Derek deBlois" else 0.0
+            )
+            record.developed_lead_commission = (
+                0.15 * record.reality_margin if record.developed_lead and record.developed_lead.name != "Derek deBlois" else 0.0
+            )
+            record.performed_demo_commission = (
+                0.10 * record.reality_margin if record.performed_demo and record.performed_demo.name != "Derek deBlois" else 0.0
+            )
+            record.quote_to_order_commission = (
+                0.05 * record.reality_margin if record.quote_to_order and record.quote_to_order.name != "Derek deBlois" else 0.0
+            )
     
