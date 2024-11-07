@@ -40,9 +40,6 @@ class Commissions(models.Model):
     performed_demo_commission = fields.Monetary(string="Performed Demo Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
     quote_to_order_commission = fields.Monetary(string="Quote to Order Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
     
-    # performed demo table
-    demo_record_ids = fields.One2many('procom.demo.lines', 'commission_id', string="Demo Roles")
-    
     # computation fields
     sales_price = fields.Monetary(string="Sales Price (before tax)", currency_field="currency_id", compute="_compute_sales_price", store=True)
     reality_cost = fields.Monetary(string="R-E-A-L.iT Cost", currency_field="currency_id")
@@ -151,32 +148,9 @@ class lead(models.Model):
 
     @api.model
     def write(self, vals):
-        """Set converted_by when the stage is changed to 'Opportunity'."""
         if 'stage_id' in vals:
             opportunity_stage = self.env.ref('crm.stage_lead2')
             for record in self:
                 if vals['stage_id'] == opportunity_stage.id and not record.converted_by:
                     vals['converted_by'] = self.env.user.id
         return super(lead, self).write(vals)
-    
-    
-# class demo_lines(models.Model):
-#     _name = 'procom.demo.lines'
-#     _description = 'Model for the demo roles table on commission reports'
-
-#     commission_id = fields.Many2one('procom.commission', string="Commission", required=True, ondelete='cascade')
-#     product_id = fields.Many2one('product.product', string="Product", required=True)
-#     sold_price = fields.Float(string="Sold Price", required=True)
-#     purchased_price = fields.Float(string="Purchased Price")
-#     performed_demo = fields.Many2one('res.users', string="Performed Demo")
-#     commission = fields.Monetary(string="Commission", compute="_compute_commission", currency_field="currency_id", store=True)
-
-#     currency_id = fields.Many2one(related="commission_id.currency_id", store=True, readonly=True)
-
-#     @api.depends('sold_price', 'purchased_price', 'performed_demo')
-#     def _compute_commission(self):
-#         for record in self:
-#             if record.performed_demo:
-#                 record.commission = (record.sold_price - (record.purchased_price or 0.0)) * 0.10
-#             else:
-#                 record.commission = 0.0

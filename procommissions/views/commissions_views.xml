@@ -76,16 +76,6 @@
                         </page>
                         
                         <page string="Demo Records">
-                            <field name="demo_record_ids" nolabel="1">
-                                <tree editable="bottom">
-                                    <field name="product_id" string="Product"/>
-                                    <field name="purchased_price" string="Purchased Price"/>
-                                    <field name="sold_price" string="Sold Price"/>
-                                    <field name="performed_demo" string="Demo performed by"/>
-                                    <field name="commission" string="Commission" readonly="1"/>
-                                </tree>
-                            </field>
-                            <!-- Currently empty for future content -->
                         </page>
                     </notebook>
                 </sheet>
