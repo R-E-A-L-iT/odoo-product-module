@@ -140,7 +140,7 @@ class AccountMove(models.Model):
                             'related_partner': sale_order.partner_id.id,
                             'logged_lead': logged_lead_user.id if logged_lead_user else False,
                             'developed_lead': developed_lead_user.id if developed_lead_user else False,
-                            'quote_to_order': quote_to_order_user.id if quote_to_order_user else False,'
+                            'quote_to_order': quote_to_order_user.id if quote_to_order_user else False,
                         })
                         
                 else:
