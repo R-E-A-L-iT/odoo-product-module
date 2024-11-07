@@ -36,39 +36,45 @@
                     <button name="action_set_fully_paid" type="object" string="Mark as Fully Paid" class="btn-secondary"/>
                 </header>
                 <sheet>
-                    <group string="Basic Information">
-                        <field name="related_partner" string="Customer" />
-                        <!-- <field name="name" string="Commission Name"/> -->
-                        <field name="related_lead" string="Related Lead"/>
-                        <field name="related_order" string="Related Order"/>
-                        <field name="related_invoice" string="Related Invoice"/>
-                    </group>
-                    
-                    <!-- Financial Calculations Group -->
-                    <group string="Financial Calculations" colspan="2">
-                        <field name="sales_price" string="Sales Price (before tax)"/>
-                        <field name="reality_cost" string="Reality Cost"/>
-                        <field name="shipping_cost" string="Shipping Cost"/>
-                        <field name="reality_margin" string="Reality Margin"/>
+                    <!-- General Information and Financial Calculations at the top -->
+                    <group>
+                        <group string="General Information">
+                            <field name="name" string="Commission Name"/>
+                            <field name="related_lead" string="Related Lead"/>
+                            <field name="related_order" string="Related Order"/>
+                            <field name="related_invoice" string="Related Invoice"/>
+                            <field name="related_partner" string="Customer"/>
+                        </group>
+                        
+                        <group string="Financial Calculations">
+                            <field name="sales_price" string="Sales Price (before tax)"/>
+                            <field name="reality_cost" string="Reality Cost"/>
+                            <field name="shipping_cost" string="Shipping Cost"/>
+                            <field name="reality_margin" string="Reality Margin"/>
+                        </group>
                     </group>
 
-                    <!-- Sales Roles and Commissions Group -->
-                    <group string="Sales Roles and Commissions" colspan="2">
-                        <group col="1">
-                            <field name="new_customer" string="New Customer"/>
-                            <field name="logged_lead" string="Logged Lead"/>
-                            <field name="developed_lead" string="Developed Opportunity"/>
-                            <field name="performed_demo" string="Performed Demo"/>
-                            <field name="quote_to_order" string="Quote to Order"/>
-                        </group>
-                        <group col="1">
-                            <field name="new_customer_commission" string="New Customer Commission"/>
-                            <field name="logged_lead_commission" string="Logged Lead Commission"/>
-                            <field name="developed_lead_commission" string="Developed Opportunity Commission"/>
-                            <field name="performed_demo_commission" string="Performed Demo Commission"/>
-                            <field name="quote_to_order_commission" string="Quote to Order Commission"/>
-                        </group>
-                    </group>
+                    <!-- Tabs for Sales Roles and Demo Roles -->
+                    <notebook>
+                        <page string="Sales Roles">
+                            <group>
+                                <field name="new_customer" string="New Customer"/>
+                                <field name="new_customer_commission" string="New Customer Commission"/>
+                                <field name="logged_lead" string="Logged Lead"/>
+                                <field name="logged_lead_commission" string="Logged Lead Commission"/>
+                                <field name="developed_lead" string="Developed Opportunity"/>
+                                <field name="developed_lead_commission" string="Developed Opportunity Commission"/>
+                                <field name="performed_demo" string="Performed Demo"/>
+                                <field name="performed_demo_commission" string="Performed Demo Commission"/>
+                                <field name="quote_to_order" string="Quote to Order"/>
+                                <field name="quote_to_order_commission" string="Quote to Order Commission"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Demo Roles">
+                            <!-- Currently empty for future content -->
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

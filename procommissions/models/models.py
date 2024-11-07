@@ -127,7 +127,7 @@ class AccountMove(models.Model):
                         quote_to_order_user = sale_order.user_id if sale_order.user_id else None
                         
                         commission.create({
-                            'name': f"Commission for sale to {sale_order.name}",
+                            'name': f"Commission for {sale_order.name}",
                             'related_invoice': invoice.id,
                             'related_order': sale_order.id,
                             'related_lead': related_lead.id if related_lead else False,
