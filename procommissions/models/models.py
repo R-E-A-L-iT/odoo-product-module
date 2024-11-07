@@ -116,12 +116,18 @@ class AccountMove(models.Model):
             if invoice.invoice_origin:
                 sale_order = self.env['sale.order'].search([('name', '=', invoice.invoice_origin)], limit=1)
                 if sale_order:
-                    _logger.info(f"Creating commission record for invoice {invoice.name} with origin order {sale_order.name}")
-                    commission.create({
-                        'name': f"Commission for Invoice {invoice.name}",
-                        'related_invoice': invoice.id,
-                        'related_order': sale_order.id,
-                    })
+                    
+                    related_lead = sale_order.opportunity_id if 'opportunity_id' in sale_order._fields else None
+                    
+                    if related_lead:
+                    
+                        _logger.info(f"Creating commission record for invoice {invoice.name} with origin order {sale_order.name}")
+                        commission.create({
+                            'name': f"Commission for Invoice {invoice.id}",
+                            'related_invoice': invoice.id,
+                            'related_order': sale_order.id,
+                        })
+                        
                 else:
                     _logger.info(f"No related sales order found for invoice {invoice.name}.")
             else:
