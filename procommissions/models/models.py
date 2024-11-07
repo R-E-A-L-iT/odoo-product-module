@@ -3,14 +3,6 @@ from odoo import models, fields, api
 
 _logger = logging.getLogger(__name__)
 
-class CommissionDemo(models.Model):
-    _name = 'procom.commission.demo'
-    _description = 'Commission Demo Line for Demo Records'
-    
-    commission_id = fields.Many2one('procom.commission', string="Commission", ondelete='cascade')
-    product_id = fields.Many2one('product.product', string="Product")
-    price_unit = fields.Float(string="Price")
-
 class Commissions(models.Model):
     _name = 'procom.commission'
     _description = 'Commissions Records'
@@ -54,46 +46,19 @@ class Commissions(models.Model):
     shipping_cost = fields.Monetary(string="Shipping Cost", currency_field="currency_id")
     reality_margin = fields.Monetary(string="R-E-A-L.iT Margin", currency_field="currency_id", compute="_compute_reality_margin", store=True)
     
-    available_order_lines = fields.Many2many(
-        'sale.order.line',
-        compute='_compute_available_order_lines',
-        string="Available Order Lines"
+    order_line_ids = fields.One2many(
+        'sale.order.line', 
+        compute='_compute_order_lines',
+        string="Order Lines"
     )
 
-    display_order_lines = fields.One2many(
-        'procom.commission.line',  # Comodel
-        'commission_id',           # Inverse field
-        string="Displayed Order Lines",
-        help="Order lines to display in the Demo Records tab."
-    )
-    
-    @api.onchange('related_order')
-    def _onchange_related_order(self):
-        """Populate display_order_lines based on the related order lines."""
-        if self.related_order:
-            # Clear any existing lines
-            self.display_order_lines = [(5, 0, 0)]
-            # Add only lines with a product
-            self.display_order_lines = [
-                (0, 0, {'product_id': line.product_id.id, 'price_unit': line.price_unit})
-                for line in self.related_order.order_line.filtered(lambda l: l.product_id)
-            ]
-    
     @api.depends('related_order')
-    def _compute_available_order_lines(self):
+    def _compute_order_lines(self):
         for record in self:
             if record.related_order:
-                record.available_order_lines = record.related_order.order_line.filtered(lambda line: line.product_id)
+                record.order_line_ids = record.related_order.order_line.filtered(lambda line: line.product_id)
             else:
-                record.available_order_lines = []
-
-    # @api.depends('related_order')
-    # def _compute_order_lines(self):
-    #     for record in self:
-    #         if record.related_order:
-    #             record.order_line_ids = record.related_order.order_line.filtered(lambda line: line.product_id)
-    #         else:
-    #             record.order_line_ids = []
+                record.order_line_ids = []
 
     @api.depends('related_order')
     def _compute_currency_id(self):
