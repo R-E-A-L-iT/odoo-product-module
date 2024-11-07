@@ -41,7 +41,7 @@ class Commissions(models.Model):
     quote_to_order_commission = fields.Monetary(string="Quote to Order Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
     
     # performed demo table
-    demo_role_ids = fields.One2many('procom.demo.lines', 'commission_id', string="Demo Roles")
+    demo_record_ids = fields.One2many('procom.demo.lines', 'commission_id', string="Demo Roles")
     
     # computation fields
     sales_price = fields.Monetary(string="Sales Price (before tax)", currency_field="currency_id", compute="_compute_sales_price", store=True)
@@ -97,22 +97,6 @@ class Commissions(models.Model):
 
     def action_set_fully_paid(self):
         self.state = 'fully_paid'
-        
-    @api.model
-    def create(self, vals):
-        commission = super(Commissions, self).create(vals)
-        
-        # Automatically populate demo roles from products in the related order (quote)
-        if commission.related_order:
-            demo_roles = []
-            for line in commission.related_order.order_line:
-                demo_roles.append((0, 0, {
-                    'product_id': line.product_id.id,
-                    'sold_price': line.price_unit,
-                }))
-            commission.update({'demo_role_ids': demo_roles})
-        
-        return commission
         
 
 class AccountMove(models.Model):
