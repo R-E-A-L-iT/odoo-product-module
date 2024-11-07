@@ -40,6 +40,9 @@ class Commissions(models.Model):
     performed_demo_commission = fields.Monetary(string="Performed Demo Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
     quote_to_order_commission = fields.Monetary(string="Quote to Order Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
     
+    # performed demo table
+    demo_role_ids = fields.One2many('procom.demo.role', 'commission_id', string="Demo Roles")
+    
     # computation fields
     sales_price = fields.Monetary(string="Sales Price (before tax)", currency_field="currency_id", compute="_compute_sales_price", store=True)
     reality_cost = fields.Monetary(string="Reality Cost", currency_field="currency_id")
@@ -95,6 +98,21 @@ class Commissions(models.Model):
     def action_set_fully_paid(self):
         self.state = 'fully_paid'
         
+    @api.model
+    def create(self, vals):
+        commission = super(Commissions, self).create(vals)
+        
+        # Automatically populate demo roles from products in the related order (quote)
+        if commission.related_order:
+            demo_roles = []
+            for line in commission.related_order.order_line:
+                demo_roles.append((0, 0, {
+                    'product_id': line.product_id.id,
+                    'sold_price': line.price_unit,
+                }))
+            commission.update({'demo_role_ids': demo_roles})
+        
+        return commission
         
 
 class AccountMove(models.Model):
@@ -156,3 +174,25 @@ class lead(models.Model):
                 if vals['stage_id'] == opportunity_stage.id and not record.converted_by:
                     vals['converted_by'] = self.env.user.id
         return super(lead, self).write(vals)
+    
+    
+class demo_lines(models.Model):
+    _name = 'procom.demo.lines'
+    _description = 'Model for the demo roles table on commission reports'
+
+    commission_id = fields.Many2one('procom.commission', string="Commission", required=True, ondelete='cascade')
+    product_id = fields.Many2one('product.product', string="Product", required=True)
+    sold_price = fields.Float(string="Sold Price", required=True)
+    purchased_price = fields.Float(string="Purchased Price")
+    performed_demo = fields.Many2one('res.users', string="Performed Demo")
+    commission = fields.Monetary(string="Commission", compute="_compute_commission", currency_field="currency_id", store=True)
+
+    currency_id = fields.Many2one(related="commission_id.currency_id", store=True, readonly=True)
+
+    @api.depends('sold_price', 'purchased_price', 'performed_demo')
+    def _compute_commission(self):
+        for record in self:
+            if record.performed_demo:
+                record.commission = (record.sold_price - (record.purchased_price or 0.0)) * 0.10
+            else:
+                record.commission = 0.0
