@@ -41,7 +41,7 @@ class Commissions(models.Model):
     quote_to_order_commission = fields.Monetary(string="Quote to Order Commission", currency_field="currency_id", compute="_compute_commissions", store=True)
     
     # performed demo table
-    demo_role_ids = fields.One2many('procom.demo.role', 'commission_id', string="Demo Roles")
+    demo_role_ids = fields.One2many('procom.demo.lines', 'commission_id', string="Demo Roles")
     
     # computation fields
     sales_price = fields.Monetary(string="Sales Price (before tax)", currency_field="currency_id", compute="_compute_sales_price", store=True)
