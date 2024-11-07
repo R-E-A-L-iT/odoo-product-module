@@ -54,7 +54,7 @@
                         </group>
                     </group>
 
-                    <field name="available_product_ids" invisible="1"/>
+                    <!-- <field name="available_product_ids" invisible="1"/> -->
 
                     <!-- Tabs for Sales Roles and Demo Roles -->
                     <notebook>
