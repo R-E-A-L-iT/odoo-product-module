@@ -46,16 +46,35 @@ class Commissions(models.Model):
     shipping_cost = fields.Monetary(string="Shipping Cost", currency_field="currency_id")
     reality_margin = fields.Monetary(string="R-E-A-L.iT Margin", currency_field="currency_id", compute="_compute_reality_margin", store=True)
     
-    order_line_ids = fields.One2many(
-        'sale.order.line', 
-        compute='_compute_order_lines',
-        string="Order Lines"
+    available_order_lines = fields.Many2many(
+        'sale.order.line',
+        compute='_compute_available_order_lines',
+        string="Available Order Lines"
     )
 
+    display_order_lines = fields.Many2many(
+        'sale.order.line',
+        string="Displayed Order Lines",
+        relation='procom_commission_sale_order_line_rel',  # Define relation name for clarity
+        default=lambda self: self.available_order_lines,
+        help="Select the lines to display in the Demo Records tab."
+    )
+    
     @api.depends('related_order')
-    def _compute_order_lines(self):
+    def _compute_available_order_lines(self):
         for record in self:
-            record.order_line_ids = record.related_order.order_line if record.related_order else []
+            if record.related_order:
+                record.available_order_lines = record.related_order.order_line.filtered(lambda line: line.product_id)
+            else:
+                record.available_order_lines = []
+
+    # @api.depends('related_order')
+    # def _compute_order_lines(self):
+    #     for record in self:
+    #         if record.related_order:
+    #             record.order_line_ids = record.related_order.order_line.filtered(lambda line: line.product_id)
+    #         else:
+    #             record.order_line_ids = []
 
     @api.depends('related_order')
     def _compute_currency_id(self):
