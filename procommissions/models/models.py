@@ -128,7 +128,7 @@ class AccountMove(models.Model):
                         
                         logged_lead_user = related_lead.user_id if related_lead.user_id else None
                         
-                        if related_lead.stage_id and related_lead.stage_id.name == 'Opportunity':
+                        # if related_lead.stage_id and related_lead.stage_id.name == 'Opportunity':
                             # do some logic here, not sure yet
                     
                         _logger.info(f"Creating commission record for invoice {invoice.name} with origin order {sale_order.name}")
