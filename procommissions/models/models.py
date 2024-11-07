@@ -51,6 +51,27 @@ class Commissions(models.Model):
         compute='_compute_order_lines',
         string="Order Lines"
     )
+    
+    demo_records = fields.One2many(
+        'procom.commission.line', 
+        'commission_id', 
+        string="Demo Records"
+    )
+    
+    @api.onchange('related_order')
+    def _onchange_related_order(self):
+        """Populate demo_records with products from the related order."""
+        if self.related_order:
+            self.demo_records = [(5, 0, 0)]  # Clear existing lines
+            self.demo_records = [
+                (0, 0, {
+                    'product_id': line.product_id.id,
+                    'price_unit': line.price_unit,
+                    'leica_price': line.leica_price,
+                    'demo_by': line.demo_by.id,
+                    'commission': line.commission
+                }) for line in self.related_order.order_line.filtered(lambda l: l.product_id)
+            ]
 
     @api.depends('related_order')
     def _compute_order_lines(self):
@@ -187,3 +208,15 @@ class SaleOrderLine(models.Model):
         compute='_compute_currency', 
         store=True
     )
+    
+class CommissionLine(models.Model):
+    _name = 'procom.commission.line'
+    _description = 'Commission Line for Demo Records'
+
+    commission_id = fields.Many2one('procom.commission', string="Commission", ondelete='cascade')
+    product_id = fields.Many2one('product.product', string="Product", readonly=True)
+    price_unit = fields.Monetary(string="Price", readonly=True)
+    leica_price = fields.Monetary(string="Leica Price")
+    demo_by = fields.Many2one('res.users', string="Demo By")
+    commission = fields.Monetary(string="Commission", readonly=True)
+    currency_id = fields.Many2one('res.currency', string="Currency", related='commission_id.currency_id', readonly=True)
