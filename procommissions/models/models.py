@@ -168,3 +168,22 @@ class lead(models.Model):
                 if vals['stage_id'] == opportunity_stage.id and not record.converted_by:
                     vals['converted_by'] = self.env.user.id
         return super(lead, self).write(vals)
+    
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    leica_price = fields.Monetary(string="Leica Price", currency_field='currency_id')
+    demo_by = fields.Many2one('res.users', string="Demo By")
+    commission = fields.Monetary(string="Commission", currency_field='currency_id')
+
+    @api.depends('order_id.currency_id')
+    def _compute_currency(self):
+        for line in self:
+            line.currency_id = line.order_id.currency_id
+
+    currency_id = fields.Many2one(
+        'res.currency', 
+        string="Currency", 
+        compute='_compute_currency', 
+        store=True
+    )
