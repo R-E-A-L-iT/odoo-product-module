@@ -77,12 +77,12 @@
                         
                         <page string="Demo Records">
                             <field name="order_line_ids" widget="one2many_list">
-                                <tree string="Demo Products">
-                                    <field name="product_id" string="Product Name"/>
-                                    <field name="price_unit" string="Price"/>
+                                <tree string="Demo Products" editable="bottom">
+                                    <field name="product_id" string="Product Name" readonly="1"/>
+                                    <field name="price_unit" string="Price" readonly="1"/>
                                     <field name="leica_price" string="Leica Price"/>
                                     <field name="demo_by" string="Demo By"/>
-                                    <field name="commission" string="Commission"/>
+                                    <field name="commission" string="Commission" readonly="1"/>
                                 </tree>
                             </field>
                         </page>
