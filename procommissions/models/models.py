@@ -123,9 +123,11 @@ class AccountMove(models.Model):
                     
                         _logger.info(f"Creating commission record for invoice {invoice.name} with origin order {sale_order.name}")
                         commission.create({
-                            'name': f"Commission for Invoice {invoice.id}",
+                            'name': f"Commission for Invoice {invoice.payment_reference}",
                             'related_invoice': invoice.id,
                             'related_order': sale_order.id,
+                            'related_lead': related_lead.id if related_lead else False,
+                            'related_partner': sale_order.partner_id.id,
                         })
                         
                 else:
