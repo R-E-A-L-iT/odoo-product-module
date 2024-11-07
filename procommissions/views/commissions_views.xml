@@ -81,9 +81,9 @@
                                 <field name="total_demo_commission" string="Total Demo Commission"/>
                             </group>
                             <group>
-                                <div class="full-width-message" style="width: 100%; text-align: center; padding: 10px;">
-                                    Order lines will only appear here when they have a user set who performed a demo for the product. To set a user, look for the 'Demo by' column in the sales order document. You may have to unlock the document to alter it before saving.
-                                </div>
+                                <span colspan="99">
+                                Order lines will only appear here when they have a user set who performed a demo for the product. To set a user, look for the 'Demo by' column in the sales order document. You may have to unlock the document to alter it before saving.
+                                </span>
                             </group>
                             <field name="order_line_ids" widget="one2many_list">
                                 <tree string="Demo Products" editable="bottom">
