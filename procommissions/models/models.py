@@ -45,6 +45,17 @@ class Commissions(models.Model):
     reality_cost = fields.Monetary(string="R-E-A-L.iT Cost", currency_field="currency_id")
     shipping_cost = fields.Monetary(string="Shipping Cost", currency_field="currency_id")
     reality_margin = fields.Monetary(string="R-E-A-L.iT Margin", currency_field="currency_id", compute="_compute_reality_margin", store=True)
+    
+    order_line_ids = fields.One2many(
+        'sale.order.line', 
+        compute='_compute_order_lines',
+        string="Order Lines"
+    )
+
+    @api.depends('related_order')
+    def _compute_order_lines(self):
+        for record in self:
+            record.order_line_ids = record.related_order.order_line if record.related_order else []
 
     @api.depends('related_order')
     def _compute_currency_id(self):
