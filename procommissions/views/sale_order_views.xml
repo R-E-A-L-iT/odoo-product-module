@@ -6,6 +6,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='order_line']/tree" position="inside">
                 <field name="demo_by" string="Demo By"/>
+                <field name="leica_price" string="Purchase price from Leica"/>
             </xpath>
         </field>
     </record>
