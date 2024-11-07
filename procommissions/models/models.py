@@ -174,7 +174,7 @@ class SaleOrderLine(models.Model):
 
     leica_price = fields.Monetary(string="Leica Price", currency_field='currency_id')
     demo_by = fields.Many2one('res.users', string="Demo By")
-    commission = fields.Monetary(string="Commission", currency_field='currency_id' compute='_compute_commission', store=True)
+    commission = fields.Monetary(string="Commission", currency_field='currency_id', compute='_compute_commission', store=True)
     
     currency_id = fields.Many2one(
         'res.currency', 
