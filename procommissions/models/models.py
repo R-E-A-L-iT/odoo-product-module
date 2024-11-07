@@ -119,31 +119,41 @@ class AccountMove(models.Model):
                     
                     related_lead = sale_order.opportunity_id if 'opportunity_id' in sale_order._fields else None
                     
-                    # commission roles
-                    logged_lead_user = None
-                    developed_lead_user = None
-                    quote_to_order_user = sale_order.user_id if sale_order.user_id else None
-                    
                     if related_lead:
                         
-                        logged_lead_user = related_lead.user_id if related_lead.user_id else None
+                        # commission roles
+                        logged_lead_user = related_lead.user_id if related_lead else None
+                        developed_lead_user = related_lead.converted_by if related_lead and related_lead.converted_by else None
+                        quote_to_order_user = sale_order.user_id if sale_order.user_id else None
                         
-                        # if related_lead.stage_id and related_lead.stage_id.name == 'Opportunity':
-                            # do some logic here, not sure yet
-                    
-                        _logger.info(f"Creating commission record for invoice {invoice.name} with origin order {sale_order.name}")
                         commission.create({
                             'name': f"Commission for sale to {sale_order.partner_id.name}",
                             'related_invoice': invoice.id,
                             'related_order': sale_order.id,
                             'related_lead': related_lead.id if related_lead else False,
-                            'related_partner': sale_order.partner_id.id,
                             'logged_lead': logged_lead_user.id if logged_lead_user else False,
                             'developed_lead': developed_lead_user.id if developed_lead_user else False,
                             'quote_to_order': quote_to_order_user.id if quote_to_order_user else False,
                         })
+                    else:
+                        _logger.info(f"No related opportunity found for invoice {invoice.name}.")
                         
                 else:
                     _logger.info(f"No related sales order found for invoice {invoice.name}.")
             else:
                 _logger.info(f"No invoice origin for invoice {invoice.name}. No commission created.")
+                
+class lead(models.Model):
+    _inherit = 'crm.lead'
+
+    converted_by = fields.Many2one('res.users', string="Converted By", readonly=True,  help="The user who converted this lead into an opportunity.")
+
+    @api.model
+    def write(self, vals):
+        """Set converted_by when the stage is changed to 'Opportunity'."""
+        if 'stage_id' in vals:
+            opportunity_stage = self.env.ref('crm.stage_lead2')
+            for record in self:
+                if vals['stage_id'] == opportunity_stage.id and not record.converted_by:
+                    vals['converted_by'] = self.env.user.id
+        return super(lead, self).write(vals)
