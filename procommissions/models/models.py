@@ -175,15 +175,23 @@ class SaleOrderLine(models.Model):
     leica_price = fields.Monetary(string="Leica Price", currency_field='currency_id')
     demo_by = fields.Many2one('res.users', string="Demo By")
     commission = fields.Monetary(string="Commission", currency_field='currency_id')
-
-    @api.depends('order_id.currency_id')
-    def _compute_currency(self):
-        for line in self:
-            line.currency_id = line.order_id.currency_id
-
+    
     currency_id = fields.Many2one(
         'res.currency', 
         string="Currency", 
         compute='_compute_currency', 
         store=True
     )
+
+    @api.depends('order_id.currency_id')
+    def _compute_currency(self):
+        for line in self:
+            line.currency_id = line.order_id.currency_id
+    
+    @api.depends('price_unit', 'leica_price', 'demo_by')
+    def _compute_commission(self):
+        for line in self:
+            if line.demo_by:
+                line.commission = (line.price_unit - line.leica_price) * 0.10
+            else:
+                line.commission = 0.0
