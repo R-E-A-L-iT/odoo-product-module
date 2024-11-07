@@ -51,6 +51,9 @@ class Commissions(models.Model):
         compute='_compute_order_lines',
         string="Order Lines"
     )
+    
+    demo_count = fields.Integer(string="Number of Demos", compute='_compute_demo_info', store=True)
+    total_demo_commission = fields.Monetary(string="Total Demo Commission", currency_field='currency_id', compute='_compute_demo_info', store=True)
 
     @api.depends('related_order')
     def _compute_order_lines(self):
@@ -99,6 +102,18 @@ class Commissions(models.Model):
             record.quote_to_order_commission = (
                 0.05 * record.reality_margin if record.quote_to_order and record.quote_to_order.name != "Derek deBlois" else 0.0
             )
+    
+    @api.depends('related_order.order_line.demo_by', 'related_order.order_line.commission')
+    def _compute_demo_info(self):
+        for record in self:
+            if record.related_order:
+                # Calculate the number of demos and the total commission
+                demo_lines = record.related_order.order_line.filtered(lambda line: line.demo_by)
+                record.demo_count = len(demo_lines)
+                record.total_demo_commission = sum(demo_lines.mapped('commission'))
+            else:
+                record.demo_count = 0
+                record.total_demo_commission = 0.0
             
     def action_set_unpaid(self):
         self.state = 'unpaid'

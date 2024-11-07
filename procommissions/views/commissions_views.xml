@@ -16,7 +16,7 @@
                 <field name="new_customer" string="New Customer"/>
                 <field name="logged_lead" string="Logged Lead"/>
                 <field name="developed_lead" string="Developed Opportunity"/>
-                <field name="performed_demo" string="Performed Demo"/>
+                <!-- <field name="performed_demo" string="Performed Demo"/> -->
                 <field name="quote_to_order" string="Quote to Order"/>
             </tree>
         </field>
@@ -48,9 +48,9 @@
                         
                         <group string="Financial Calculations">
                             <field name="sales_price" string="Sales Price (before tax)"/>
-                            <field name="reality_cost" string="Reality Cost"/>
+                            <field name="reality_cost" string="R-E-A-L.iT Cost"/>
                             <field name="shipping_cost" string="Shipping Cost"/>
-                            <field name="reality_margin" string="Reality Margin"/>
+                            <field name="reality_margin" string="R-E-A-L.iT Margin"/>
                         </group>
                     </group>
 
@@ -62,21 +62,24 @@
                                     <field name="new_customer" string="New Customer"/>
                                     <field name="logged_lead" string="Logged Lead"/>
                                     <field name="developed_lead" string="Developed Opportunity"/>
-                                    <field name="performed_demo" string="Performed Demo"/>
+                                    <!-- <field name="performed_demo" string="Performed Demo"/> -->
                                     <field name="quote_to_order" string="Quote to Order"/>
                                 </group>
                                 <group string="Commissions">
                                     <field name="new_customer_commission" string="New Customer Commission"/>
                                     <field name="logged_lead_commission" string="Logged Lead Commission"/>
                                     <field name="developed_lead_commission" string="Developed Opportunity Commission"/>
-                                    <field name="performed_demo_commission" string="Performed Demo Commission"/>
+                                    <!-- <field name="performed_demo_commission" string="Performed Demo Commission"/> -->
                                     <field name="quote_to_order_commission" string="Quote to Order Commission"/>
                                 </group>
                             </group>
                         </page>
-                        
                         <page string="Demo Records">
-                            <field name="order_line_ids" widget="one2many_list">
+                            <group>
+                                <field name="demo_count" string="Number of Demos"/>
+                                <field name="total_demo_commission" string="Total Demo Commission"/>
+                            </group>
+                            <field name="demo_records" widget="one2many_list">
                                 <tree string="Demo Products" editable="bottom">
                                     <field name="product_id" string="Product Name" readonly="1"/>
                                     <field name="price_unit" string="Price" readonly="1"/>
