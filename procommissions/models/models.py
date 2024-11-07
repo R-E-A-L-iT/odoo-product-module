@@ -181,29 +181,13 @@ class demo_lines(models.Model):
     _description = 'Model for the demo roles table on commission reports'
 
     commission_id = fields.Many2one('procom.commission', string="Commission", required=True, ondelete='cascade')
-    product_id = fields.Many2one('product.product', string="Product", required=True, 
-                                 domain="[('id', 'in', available_product_ids)]")
-    sold_price = fields.Float(string="Sold Price", compute="_compute_sold_price", store=True)
+    product_id = fields.Many2one('product.product', string="Product", required=True)
+    sold_price = fields.Float(string="Sold Price", required=True)
     purchased_price = fields.Float(string="Purchased Price")
     performed_demo = fields.Many2one('res.users', string="Performed Demo")
     commission = fields.Monetary(string="Commission", compute="_compute_commission", currency_field="currency_id", store=True)
+
     currency_id = fields.Many2one(related="commission_id.currency_id", store=True, readonly=True)
-
-    available_product_ids = fields.Many2many('product.product', compute="_compute_available_products", store=False)
-
-    @api.depends('commission_id.related_order')
-    def _compute_available_products(self):
-        for record in self:
-            if record.commission_id.related_order:
-                record.available_product_ids = record.commission_id.related_order.mapped('order_line.product_id').ids
-            else:
-                record.available_product_ids = []
-
-    @api.depends('product_id', 'commission_id.related_order')
-    def _compute_sold_price(self):
-        for record in self:
-            order_line = record.commission_id.related_order.order_line.filtered(lambda line: line.product_id == record.product_id)
-            record.sold_price = order_line.price_unit if order_line else 0.0
 
     @api.depends('sold_price', 'purchased_price', 'performed_demo')
     def _compute_commission(self):

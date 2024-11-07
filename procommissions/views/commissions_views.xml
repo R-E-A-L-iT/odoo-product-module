@@ -16,7 +16,7 @@
                 <field name="new_customer" string="New Customer"/>
                 <field name="logged_lead" string="Logged Lead"/>
                 <field name="developed_lead" string="Developed Opportunity"/>
-                <!-- <field name="performed_demo" string="Performed Demo"/> -->
+                <field name="performed_demo" string="Performed Demo"/>
                 <field name="quote_to_order" string="Quote to Order"/>
             </tree>
         </field>
@@ -54,8 +54,6 @@
                         </group>
                     </group>
 
-                    <!-- <field name="available_product_ids" invisible="1"/> -->
-
                     <!-- Tabs for Sales Roles and Demo Roles -->
                     <notebook>
                         <page string="Sales Roles">
@@ -64,7 +62,7 @@
                                     <field name="new_customer" string="New Customer"/>
                                     <field name="logged_lead" string="Logged Lead"/>
                                     <field name="developed_lead" string="Developed Opportunity"/>
-                                    <!-- <field name="performed_demo" string="Performed Demo"/> -->
+                                    <field name="performed_demo" string="Performed Demo"/>
                                     <field name="quote_to_order" string="Quote to Order"/>
                                 </group>
                                 <group string="Commissions">
@@ -78,15 +76,7 @@
                         </page>
                         
                         <page string="Demo Roles">
-                            <field name="demo_role_ids" nolabel="1">
-                                <tree editable="bottom">
-                                    <field name="product_id"/>
-                                    <field name="sold_price" readonly="1"/>
-                                    <field name="purchased_price"/>
-                                    <field name="performed_demo"/>
-                                    <field name="commission" readonly="1"/>
-                                </tree>
-                            </field>
+                            <!-- Currently empty for future content -->
                         </page>
                     </notebook>
                 </sheet>
