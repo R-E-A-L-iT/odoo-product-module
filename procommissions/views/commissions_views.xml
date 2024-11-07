@@ -76,7 +76,7 @@
                         </page>
                         
                         <page string="Demo Records">
-                            <field name="display_order_lines" widget="many2many_tags">
+                            <field name="display_order_lines">
                                 <tree string="Demo Products">
                                     <field name="product_id" string="Product Name"/>
                                     <field name="price_unit" string="Price"/>

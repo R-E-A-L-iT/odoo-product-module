@@ -3,6 +3,14 @@ from odoo import models, fields, api
 
 _logger = logging.getLogger(__name__)
 
+class CommissionDemo(models.Model):
+    _name = 'procom.commission.demo'
+    _description = 'Commission Demo Line for Demo Records'
+    
+    commission_id = fields.Many2one('procom.commission', string="Commission", ondelete='cascade')
+    product_id = fields.Many2one('product.product', string="Product")
+    price_unit = fields.Float(string="Price")
+
 class Commissions(models.Model):
     _name = 'procom.commission'
     _description = 'Commissions Records'
@@ -52,13 +60,24 @@ class Commissions(models.Model):
         string="Available Order Lines"
     )
 
-    display_order_lines = fields.Many2many(
-        'sale.order.line',
+    display_order_lines = fields.One2many(
+        'procom.commission.line',
+        'commission_id',
         string="Displayed Order Lines",
-        relation='procom_commission_sale_order_line_rel',  # Define relation name for clarity
-        default=lambda self: self.available_order_lines,
-        help="Select the lines to display in the Demo Records tab."
+        help="Order lines to display in the Demo Records tab."
     )
+    
+    @api.onchange('related_order')
+    def _onchange_related_order(self):
+        """Populate display_order_lines based on the related order lines."""
+        if self.related_order:
+            # Clear any existing lines
+            self.display_order_lines = [(5, 0, 0)]
+            # Add only lines with a product
+            self.display_order_lines = [
+                (0, 0, {'product_id': line.product_id.id, 'price_unit': line.price_unit})
+                for line in self.related_order.order_line.filtered(lambda l: l.product_id)
+            ]
     
     @api.depends('related_order')
     def _compute_available_order_lines(self):
