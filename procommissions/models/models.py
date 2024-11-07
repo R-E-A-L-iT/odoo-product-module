@@ -49,7 +49,8 @@ class Commissions(models.Model):
     order_line_ids = fields.One2many(
         'sale.order.line', 
         compute='_compute_order_lines',
-        string="Order Lines"
+        string="Order Lines",
+        help="Order lines will only appear here when they have a user set who performed a demo."
     )
     
     demo_count = fields.Integer(string="Number of Demos", compute='_compute_demo_info', store=True)
@@ -59,7 +60,8 @@ class Commissions(models.Model):
     def _compute_order_lines(self):
         for record in self:
             if record.related_order:
-                record.order_line_ids = record.related_order.order_line.filtered(lambda line: line.product_id)
+                # Filter order lines to include only those with a product and a value for demo_by
+                record.order_line_ids = record.related_order.order_line.filtered(lambda line: line.product_id and line.demo_by)
             else:
                 record.order_line_ids = []
 
@@ -129,11 +131,6 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     source_order = fields.Many2one('sale.order', string="Source Order", help="The sales order from which this invoice was generated, if any.")
-    
-    commission_id = fields.Many2one('procom.commission', string="Commission Document", help="Link to the commission document related to this invoice.")
-    related_quote = fields.Many2one('sale.order', string="Related Quote", help="The quote from which this invoice originated.")
-    related_lead = fields.Many2one('crm.lead', string="Related Lead", readonly=True, help="You can edit this on the related quote document.")
-
 
     @api.model
     def create(self, vals):
@@ -141,27 +138,7 @@ class AccountMove(models.Model):
         
         invoice._create_commission_record()
 
-        # Automatically populate related_quote if the invoice has an origin
-        if invoice.invoice_origin:
-            quote = self.env['sale.order'].search([('name', '=', invoice.invoice_origin)], limit=1)
-            if quote:
-                invoice.related_quote = quote.id
-                invoice.related_lead = quote.opportunity_id.id if 'opportunity_id' in quote._fields else None
-
-                # Automatically link the commission document if it exists
-                commission = self.env['procom.commission'].search([('related_invoice', '=', invoice.id)], limit=1)
-                if commission:
-                    invoice.commission_id = commission.id
-
         return invoice
-    
-    @api.onchange('related_quote')
-    def _onchange_related_quote(self):
-        """Update related lead based on the selected related quote."""
-        if self.related_quote:
-            self.related_lead = self.related_quote.opportunity_id
-        else:
-            self.related_lead = False
     
     def _create_commission_record(self):
         commission = self.env['procom.commission']

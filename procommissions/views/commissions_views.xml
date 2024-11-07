@@ -80,6 +80,7 @@
                                 <field name="demo_count" string="Number of Demos"/>
                                 <field name="total_demo_commission" string="Total Demo Commission"/>
                             </group>
+                            <label string="Order lines will only appear here when they have a user set who performed a demo for the product. To set a user, look for the 'Demo by' column in the sales order document. You may have to unlock the document to alter it before saving." colspan="4" align="center"/>
                             <field name="order_line_ids" widget="one2many_list">
                                 <tree string="Demo Products" editable="bottom">
                                     <field name="product_id" string="Product Name" readonly="1"/>
