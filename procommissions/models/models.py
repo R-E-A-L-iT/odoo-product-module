@@ -160,23 +160,23 @@ class lead(models.Model):
         return super(lead, self).write(vals)
     
     
-class demo_lines(models.Model):
-    _name = 'procom.demo.lines'
-    _description = 'Model for the demo roles table on commission reports'
+# class demo_lines(models.Model):
+#     _name = 'procom.demo.lines'
+#     _description = 'Model for the demo roles table on commission reports'
 
-    commission_id = fields.Many2one('procom.commission', string="Commission", required=True, ondelete='cascade')
-    product_id = fields.Many2one('product.product', string="Product", required=True)
-    sold_price = fields.Float(string="Sold Price", required=True)
-    purchased_price = fields.Float(string="Purchased Price")
-    performed_demo = fields.Many2one('res.users', string="Performed Demo")
-    commission = fields.Monetary(string="Commission", compute="_compute_commission", currency_field="currency_id", store=True)
+#     commission_id = fields.Many2one('procom.commission', string="Commission", required=True, ondelete='cascade')
+#     product_id = fields.Many2one('product.product', string="Product", required=True)
+#     sold_price = fields.Float(string="Sold Price", required=True)
+#     purchased_price = fields.Float(string="Purchased Price")
+#     performed_demo = fields.Many2one('res.users', string="Performed Demo")
+#     commission = fields.Monetary(string="Commission", compute="_compute_commission", currency_field="currency_id", store=True)
 
-    currency_id = fields.Many2one(related="commission_id.currency_id", store=True, readonly=True)
+#     currency_id = fields.Many2one(related="commission_id.currency_id", store=True, readonly=True)
 
-    @api.depends('sold_price', 'purchased_price', 'performed_demo')
-    def _compute_commission(self):
-        for record in self:
-            if record.performed_demo:
-                record.commission = (record.sold_price - (record.purchased_price or 0.0)) * 0.10
-            else:
-                record.commission = 0.0
+#     @api.depends('sold_price', 'purchased_price', 'performed_demo')
+#     def _compute_commission(self):
+#         for record in self:
+#             if record.performed_demo:
+#                 record.commission = (record.sold_price - (record.purchased_price or 0.0)) * 0.10
+#             else:
+#                 record.commission = 0.0
