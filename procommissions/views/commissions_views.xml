@@ -1,24 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="view_pro_commissions_tree" model="ir.ui.view">
-        <field name="name">pro.commissions.tree</field>
-        <field name="model">pro.commissions</field>
+    <!-- Tree view for commissions -->
+    <record model="ir.ui.view" id="procom_commissions_view_tree">
+        <field name="name">ProCommissions Tree View</field>
+        <field name="model">procom.commission</field>
+        <field name="priority" eval="16" />
         <field name="arch" type="xml">
-            <tree string="Pro Commissions">
-                <field name="name"/>
-                <field name="amount"/>
+            <tree string="Commissions List" decoration-muted="state == 'unpaid'" decoration-warning="state == 'partially_paid'" decoration-success="state == 'fully_paid'">
+
+                <field name="state" string="Status" />
+                <field name="related_partner" string="Customer" />
+                
+                <field name="name" string="Commission Name"/>
+
+                <field name="new_customer" string="New Customer"/>
+                <field name="logged_lead" string="Logged Lead"/>
+                <field name="developed_lead" string="Developed Opportunity"/>
+                <field name="performed_demo" string="Performed Demo"/>
+                <field name="quote_to_order" string="Quote to Order"/>
             </tree>
         </field>
     </record>
 
-    <record id="action_pro_commissions" model="ir.actions.act_window">
-        <field name="name">Pro Commissions</field>
-        <field name="res_model">pro.commissions</field>
-        <field name="view_mode">tree</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your first Pro Commission Record
-            </p>
+    <!-- Form view for commissions -->
+    <record model="ir.ui.view" id="procom_commissions_view_form">
+        <field name="name">procom.commission.view.form</field>
+        <field name="model">procom.commission</field>
+        <field name="arch" type="xml">
+            <form string="Commission">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="unpaid,partially_paid,fully_paid" statusbar_colors="{'unpaid': 'grey', 'partially_paid': 'orange', 'fully_paid': 'green'}"/>
+
+                    <button name="action_set_unpaid" type="object" string="Mark as Unpaid" class="btn-secondary"/>
+                    <button name="action_set_partially_paid" type="object" string="Mark as Partially Paid" class="btn-secondary"/>
+                    <button name="action_set_fully_paid" type="object" string="Mark as Fully Paid" class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <group string="Basic Information">
+                        <field name="related_partner" string="Customer" />
+                        <!-- <field name="name" string="Commission Name"/> -->
+                        <field name="related_lead" string="Related Lead"/>
+                        <field name="related_order" string="Related Order"/>
+                        <field name="related_invoice" string="Related Invoice"/>
+                    </group>
+                    
+                    <!-- Financial Calculations Group -->
+                    <group string="Financial Calculations" colspan="2">
+                        <field name="sales_price" string="Sales Price (before tax)"/>
+                        <field name="reality_cost" string="Reality Cost"/>
+                        <field name="shipping_cost" string="Shipping Cost"/>
+                        <field name="reality_margin" string="Reality Margin"/>
+                    </group>
+
+                    <!-- Sales Roles and Commissions Group -->
+                    <group string="Sales Roles and Commissions" colspan="2">
+                        <group col="1">
+                            <field name="new_customer" string="New Customer"/>
+                            <field name="logged_lead" string="Logged Lead"/>
+                            <field name="developed_lead" string="Developed Opportunity"/>
+                            <field name="performed_demo" string="Performed Demo"/>
+                            <field name="quote_to_order" string="Quote to Order"/>
+                        </group>
+                        <group col="1">
+                            <field name="new_customer_commission" string="New Customer Commission"/>
+                            <field name="logged_lead_commission" string="Logged Lead Commission"/>
+                            <field name="developed_lead_commission" string="Developed Opportunity Commission"/>
+                            <field name="performed_demo_commission" string="Performed Demo Commission"/>
+                            <field name="quote_to_order_commission" string="Quote to Order Commission"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
         </field>
     </record>
+
+    <!-- Action for list view -->
+    <record model="ir.actions.act_window" id="action_commissions">
+        <field name="name">Commission</field>
+        <field name="res_model">procom.commission</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem name="ProCommissions" id="procom_root_menu" />
+    <menuitem name="Commissions" id="procom_commissions_menu" parent="procom_root_menu" action="action_commissions" sequence="1"/>
 </odoo>
