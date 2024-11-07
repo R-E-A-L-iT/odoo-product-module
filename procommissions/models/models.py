@@ -174,7 +174,7 @@ class SaleOrderLine(models.Model):
 
     leica_price = fields.Monetary(string="Leica Price", currency_field='currency_id')
     demo_by = fields.Many2one('res.users', string="Demo By")
-    commission = fields.Monetary(string="Commission", currency_field='currency_id')
+    commission = fields.Monetary(string="Commission", currency_field='currency_id' compute='_compute_commission', store=True)
     
     currency_id = fields.Many2one(
         'res.currency', 
@@ -193,5 +193,7 @@ class SaleOrderLine(models.Model):
         for line in self:
             if line.demo_by:
                 line.commission = (line.price_unit - line.leica_price) * 0.10
+                _logger.info(f"Calculated commission for {line.product_id.name}: {line.commission} (Sale Price: {line.price_unit}, Leica Price: {line.leica_price})")
             else:
                 line.commission = 0.0
+                _logger.info(f"No user in 'demo_by' for {line.product_id.name}; setting commission to 0")
