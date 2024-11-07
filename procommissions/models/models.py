@@ -61,8 +61,8 @@ class Commissions(models.Model):
     )
 
     display_order_lines = fields.One2many(
-        'procom.commission.line',
-        'commission_id',
+        'procom.commission.line',  # Comodel
+        'commission_id',           # Inverse field
         string="Displayed Order Lines",
         help="Order lines to display in the Demo Records tab."
     )
