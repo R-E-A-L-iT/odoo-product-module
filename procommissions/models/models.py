@@ -122,8 +122,8 @@ class AccountMove(models.Model):
                     if related_lead:
                         
                         # commission roles
-                        logged_lead_user = related_lead.user_id if related_lead else None
-                        developed_lead_user = related_lead.converted_by if related_lead and related_lead.converted_by else None
+                        logged_lead_user = related_lead.create_uid if related_lead else None
+                        developed_lead_user = related_lead.user_id if related_lead else None
                         quote_to_order_user = sale_order.user_id if sale_order.user_id else None
                         
                         commission.create({
@@ -136,8 +136,7 @@ class AccountMove(models.Model):
                             'quote_to_order': quote_to_order_user.id if quote_to_order_user else False,
                         })
                     else:
-                        _logger.info(f"No related opportunity found for invoice {invoice.name}.")
-                        
+                        _logger.info(f"No related opportunity found for invoice {invoice.name}.")       
                 else:
                     _logger.info(f"No related sales order found for invoice {invoice.name}.")
             else:
