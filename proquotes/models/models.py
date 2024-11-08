@@ -1348,6 +1348,10 @@ class order(models.Model):
             
             # set the portal access URL for the button
             access_opt['url'] = f"{base_url}{portal_url}"
+            if message.is_internal:
+                access_opt['url'] = f"{base_url}/web#id={self.id}&model={self._name}&view_type=form"
+            else:
+                access_opt['url'] = f"{base_url}{portal_url}"
 
         # return the modified recipient groups with the updated access options
         return groups
