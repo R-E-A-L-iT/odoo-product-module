@@ -132,6 +132,18 @@
         </field>
     </record>
 
+    <record model="ir.actions.act_window" id="action_report_individual">
+        <field name="name">Individual</field>
+        <field name="res_model">procom.individual.report</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_report_compiled">
+        <field name="name">Compiled</field>
+        <field name="res_model">procom.compiled.report</field>
+        <field name="view_mode">tree</field>
+    </record>
+
     <!-- Menu item -->
     <menuitem name="ProCommissions" id="procom_root_menu" />
     <menuitem name="Commissions" id="procom_commissions_menu" parent="procom_root_menu" action="action_commissions" sequence="1"/>
