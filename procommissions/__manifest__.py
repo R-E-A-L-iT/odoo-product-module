@@ -5,6 +5,7 @@
     'category': 'Hidden',
     'author': 'Ezekiel J. deBlois',
     'depends': ['base', 'crm', 'sale', 'account'],
+    'images': ['static/icon.png'],
     'data': [
         'security/ir.model.access.csv',
         # 'data/data.xml',
