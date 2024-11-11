@@ -119,6 +119,7 @@ class Commissions(models.Model):
     
     @api.depends('related_order.order_line.demo_by', 'related_order.order_line.commission')
     def _compute_demo_info(self):
+        # this filter is not working here atm
         restricted_categories = ['Accessories', 'Hardware CCP', 'Software CCP']
 
         for record in self:
@@ -126,6 +127,7 @@ class Commissions(models.Model):
                 demo_lines = record.related_order.order_line.filtered(lambda line: line.demo_by)
 
                 if record.permission_filter:
+                    # issue is probably here
                     demo_lines = demo_lines.filtered(lambda line: line.product_id.categ_id.name not in restricted_categories)
 
                 record.demo_count = len(demo_lines)
@@ -231,3 +233,13 @@ class SaleOrderLine(models.Model):
             else:
                 line.commission = 0.0
                 _logger.info(f"No user in 'demo_by' for {line.product_id.name}; setting commission to 0")
+
+
+          
+class IndividualReport(models.Model):
+    _name = 'procom.individual.report'
+    _description = 'Individual Report for Commissions'
+
+class CompiledReport(models.Model):
+    _name = 'procom.compiled.report'
+    _description = 'Compiled Report for Commissions'

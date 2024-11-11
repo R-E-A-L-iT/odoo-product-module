@@ -111,6 +111,27 @@
         <field name="view_mode">tree,form</field>
     </record>
 
+    <record model="ir.ui.view" id="view_individual_report_tree">
+        <field name="name">individual.report.tree</field>
+        <field name="model">procom.individual.report</field>
+        <field name="arch" type="xml">
+            <tree string="Individual Report">
+                <!-- Define columns here as needed -->
+            </tree>
+        </field>
+    </record>
+
+    <!-- Blank Tree View for Compiled Report -->
+    <record model="ir.ui.view" id="view_compiled_report_tree">
+        <field name="name">compiled.report.tree</field>
+        <field name="model">procom.compiled.report</field>
+        <field name="arch" type="xml">
+            <tree string="Compiled Report">
+                <!-- Define columns here as needed -->
+            </tree>
+        </field>
+    </record>
+
     <!-- Menu item -->
     <menuitem name="ProCommissions" id="procom_root_menu" />
     <menuitem name="Commissions" id="procom_commissions_menu" parent="procom_root_menu" action="action_commissions" sequence="1"/>
