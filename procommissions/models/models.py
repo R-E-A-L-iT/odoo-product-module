@@ -119,7 +119,7 @@ class Commissions(models.Model):
     
     @api.depends('related_order.order_line.demo_by', 'related_order.order_line.commission')
     def _compute_demo_info(self):
-        restricted_categories = ['Accessories', 'All / Hardware CCP', 'All / Software CCP']
+        restricted_categories = ['Accessories', 'Hardware CCP', 'Software CCP']
 
         for record in self:
             if record.related_order:
