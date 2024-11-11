@@ -55,13 +55,25 @@ class Commissions(models.Model):
     
     demo_count = fields.Integer(string="Number of Demos", compute='_compute_demo_info', store=True)
     total_demo_commission = fields.Monetary(string="Total Demo Commission", currency_field='currency_id', compute='_compute_demo_info', store=True)
+    
+    permission_filter = fields.Boolean(
+        string="Apply Permission Filter",
+        default=True,
+        help="If checked, excludes products in the 'Accessories', 'All / Hardware CCP', or 'All / Software CCP' categories from the Demo Records table."
+    )
 
     @api.depends('related_order')
     def _compute_order_lines(self):
+        restricted_categories = ['Accessories', 'All / Hardware CCP', 'All / Software CCP']
+
         for record in self:
             if record.related_order:
-                # Filter order lines to include only those with a product and a value for demo_by
-                record.order_line_ids = record.related_order.order_line.filtered(lambda line: line.product_id and line.demo_by)
+                order_lines = record.related_order.order_line.filtered(lambda line: line.product_id and line.demo_by)
+
+                if record.permission_filter:
+                    order_lines = order_lines.filtered(lambda line: line.product_id.categ_id.name not in restricted_categories)
+
+                record.order_line_ids = order_lines
             else:
                 record.order_line_ids = []
 

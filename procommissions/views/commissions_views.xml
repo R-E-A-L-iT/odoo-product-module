@@ -51,6 +51,8 @@
                             <field name="reality_cost" string="R-E-A-L.iT Cost"/>
                             <field name="shipping_cost" string="Shipping Cost"/>
                             <field name="reality_margin" string="R-E-A-L.iT Margin"/>
+
+                            <field name="permission_filter" string="Permission Filter"/>
                         </group>
                     </group>
 
