@@ -119,10 +119,15 @@ class Commissions(models.Model):
     
     @api.depends('related_order.order_line.demo_by', 'related_order.order_line.commission')
     def _compute_demo_info(self):
+        restricted_categories = ['Accessories', 'All / Hardware CCP', 'All / Software CCP']
+
         for record in self:
             if record.related_order:
-                # Calculate the number of demos and the total commission
                 demo_lines = record.related_order.order_line.filtered(lambda line: line.demo_by)
+
+                if record.permission_filter:
+                    demo_lines = demo_lines.filtered(lambda line: line.product_id.categ_id.name not in restricted_categories)
+
                 record.demo_count = len(demo_lines)
                 record.total_demo_commission = sum(demo_lines.mapped('commission'))
             else:
