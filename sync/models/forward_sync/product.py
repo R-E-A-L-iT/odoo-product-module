@@ -219,6 +219,7 @@ class sync_products:
         )
 
         product.description_sale = product_description_sale_english
+        product.description_eccomerce = product_description_sale_english
         _logger.warning("Tracking")
         # product.tracking = product_tracking
         product.type = product_type
