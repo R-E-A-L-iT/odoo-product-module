@@ -840,6 +840,10 @@ class order(models.Model):
     
     @api.returns('mail.message', lambda value: value.id)
     def message_post(self, **kwargs):
+        
+        if self.user_id:
+            _logger.info("PROQUOTES: self.user_id DOES EXIST: " + self.user_id.name)
+        
         if self.env.context.get('mark_so_as_sent'):
             self.filtered(lambda o: o.state == 'draft').with_context(tracking_disable=True).write({'state': 'sent'})
         so_ctx = {'mail_post_autofollow': self.env.context.get('mail_post_autofollow', True)}
