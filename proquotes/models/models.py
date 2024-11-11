@@ -1575,7 +1575,7 @@ class MailComposeMessage(models.TransientModel):
                 
             # set recipients
             order = self.env['sale.order'].search([('id', '=', self.env.context.get('default_res_id'))], limit=1)
-            if order and order.email_contacts:
+            if order and order.email_contacts and order.user_id:
                 res['partner_ids'] = [(4, order.user_id.id)]
         
         return res
