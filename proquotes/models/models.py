@@ -901,7 +901,7 @@ class order(models.Model):
         #     return False
         
         # internal note
-        if "Internal note" or "Note interne" in kwargs['body']:
+        if ("Internal note" or "Note interne" in kwargs['body']) or (not mail_post_autofollow):
             if "Quotation viewed by customer" in kwargs['body']:
                 
                 sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
@@ -925,8 +925,10 @@ class order(models.Model):
                 return super(order, self).message_post(**kwargs)
             
             else:
+                return super(order, self).message_post(**kwargs)
                 # if it is none of the messages we want to pass through to the sales people, block completely
-                return False
+                
+                # return False
 
         # send message feature
         else:
