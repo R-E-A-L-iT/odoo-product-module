@@ -841,24 +841,14 @@ class order(models.Model):
     @api.returns('mail.message', lambda value: value.id)
     def message_post(self, **kwargs):
         
-        # if self.user_id:
-        #     _logger.info("PROQUOTES: self.user_id DOES EXIST: " + self.user_id.name)
+        if self.user_id:
+            _logger.info("PROQUOTES: self.user_id DOES EXIST: " + self.user_id.name)
         
         if self.env.context.get('mark_so_as_sent'):
             self.filtered(lambda o: o.state == 'draft').with_context(tracking_disable=True).write({'state': 'sent'})
         so_ctx = {'mail_post_autofollow': self.env.context.get('mail_post_autofollow', True)}
         if self.env.context.get('mark_so_as_sent') and 'mail_notify_author' not in kwargs:
             kwargs['notify_author'] = self.env.user.partner_id.id in (kwargs.get('partner_ids') or [])
-        # if 'partner_ids' in kwargs:
-        #     valid_partner_ids = [
-        #         partner_id for partner_id in kwargs['partner_ids']
-        #         if self.env['res.partner'].browse(partner_id).exists()
-        #     ]
-        #     invalid_partner_ids = set(kwargs['partner_ids']) - set(valid_partner_ids)
-        #     if invalid_partner_ids:
-        #         _logger.warning(f"Invalid partner_ids found in message_post: {invalid_partner_ids}")
-            
-        #     kwargs['partner_ids'] = valid_partner_ids
         if 'tracking_value_ids' not in kwargs:
             return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
         else:
