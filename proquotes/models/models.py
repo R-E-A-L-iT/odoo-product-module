@@ -906,8 +906,8 @@ class order(models.Model):
                 
                 sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
                 
-                if self.user_id:
-                    kwargs['partner_ids'] = [self.user_id.id]
+                if self.user_id and sales_partner:
+                    kwargs['partner_ids'] = [self.user_id.id, sales_partner.id]
                 else:
                     kwargs['partner_ids'] = []
                     
@@ -917,8 +917,8 @@ class order(models.Model):
                 
                 sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
                 
-                if self.user_id:
-                    kwargs['partner_ids'] = [self.user_id.id]
+                if self.user_id and sales_partner:
+                    kwargs['partner_ids'] = [self.user_id.id, sales_partner.id]
                 else:
                     kwargs['partner_ids'] = []
                     
