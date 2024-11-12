@@ -925,6 +925,11 @@ class order(models.Model):
                 return super(order, self).message_post(**kwargs)
             
             else:
+                if 'partner_ids' in kwargs:
+                    if self.partner_id.id in kwargs['partner_ids']:
+                        _logger.info("PROQUOTES LOG NOTE FUNCTION: Partner found in log note partner_ids. Partner ID: " + str(self.partner_id.id) + " (" + str(self.partner_id.name) + ")")
+                    else:
+                        _logger.info("PROQUOTES LOG NOTE FUNCTION: Partner NOT found in log note partner_ids. Partner ID: " + str(self.partner_id.id) + " (" + str(self.partner_id.name) + ")")
                 return super(order, self).message_post(**kwargs)
                 # if it is none of the messages we want to pass through to the sales people, block completely
                 
