@@ -867,35 +867,66 @@ class order(models.Model):
         # DEBUGGING
         
         # kwargs['body'] += f"<br/><br/>[DEBUG] mail_post_autofollow: {mail_post_autofollow}, message_type: {kwargs.get('message_type', 'undefined')}"
+        
+        
+        # NOTE TO SELF: ELIF STATEMENTS FOR ALL INTERNAL NOTES ARE OUTSIDE IF STATEMENT BLOCKING THEM, SO NOT TRIGGERED
 
         # internal note feature
-        if not mail_post_autofollow:
-            # Call super without adding any email contacts, since it's a log note
-            return super(order, self).message_post(**kwargs)
+        # if not mail_post_autofollow:
+        #     # Call super without adding any email contacts, since it's a log note
+        #     return super(order, self).message_post(**kwargs)
         
-        elif "Quotation viewed by customer" in kwargs['body']:
-            # only send to salesperson (user_id = salesperson)
-            # sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
-            if self.user_id:
-                kwargs['partner_ids'] = [self.user_id.id]
-            else:
-                kwargs['partner_ids'] = []
+        # elif "Quotation viewed by customer" in kwargs['body']:
+        #     # only send to salesperson (user_id = salesperson)
+        #     # sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
+        #     if self.user_id:
+        #         kwargs['partner_ids'] = [self.user_id.id]
+        #     else:
+        #         kwargs['partner_ids'] = []
                 
-            return super(order, self).message_post(**kwargs)
+        #     return super(order, self).message_post(**kwargs)
         
-        elif "Product prices have been recomputed" in kwargs['body']:
-            return False
+        # elif "Product prices have been recomputed" in kwargs['body']:
+        #     return False
         
-        elif "Signed by" in kwargs['body'] or "Bon signé" in kwargs['body']:
-            if self.user_id:
-                kwargs['partner_ids'] = [self.user_id.id]
-            else:
-                kwargs['partner_ids'] = []
+        # elif "Signed by" in kwargs['body'] or "Bon signé" in kwargs['body']:
+        #     if self.user_id:
+        #         kwargs['partner_ids'] = [self.user_id.id]
+        #     else:
+        #         kwargs['partner_ids'] = []
                 
-            return super(order, self).message_post(**kwargs)
+        #     return super(order, self).message_post(**kwargs)
         
-        elif "Extra line with" in kwargs['body']:
-            return False
+        # elif "Extra line with" in kwargs['body']:
+        #     return False
+        
+        # internal note
+        if "Internal note" or "Note interne" in kwargs['body']:
+            if "Quotation viewed by customer" in kwargs['body']:
+                
+                sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
+                
+                if self.user_id:
+                    kwargs['partner_ids'] = [self.user_id.id]
+                else:
+                    kwargs['partner_ids'] = []
+                    
+                return super(order, self).message_post(**kwargs)
+            
+            elif "Signed by" or "Bon signé" in kwargs['body']:
+                
+                sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
+                
+                if self.user_id:
+                    kwargs['partner_ids'] = [self.user_id.id]
+                else:
+                    kwargs['partner_ids'] = []
+                    
+                return super(order, self).message_post(**kwargs)
+            
+            else:
+                # if it is none of the messages we want to pass through to the sales people, block completely
+                return False
 
         # send message feature
         else:
