@@ -15,46 +15,42 @@ _logger = logging.getLogger(__name__)
 class product_sync_common:
     @classmethod
     def translatePricelist(cls, database, product, name, description, lang):
-        # Create or Update Translations
-        product_name = database.env["transifex.code.translation"].search(
-            [
-                ("lang", "=", lang),
-            ]
-        )
-        if len(product_name) > 0:
-            for name_record in product_name:
-                name_record.value = name
+        try:
+            # Check if the language is active in the system
+            active_language = database.env["res.lang"].search([("code", "=", lang)])
+            if not active_language:
+                _logger.warning(f"Language {lang} is not active in the system. Skipping translation.")
+                return
 
-        else:
-            product_name_new = database.env["transifex.code.translation"].create(
-                {"lang": lang,
-                 # "res_id": product.id
-                 }
-            )[0]
-            product_name_new.value = name
-            product_name_new.type = "model"
+            # Add or update translations for the name
+            if name:
+                database.env["ir.translation"]._set_ids(
+                    module="product",
+                    type="model",
+                    name="product.template,name",
+                    res_id=product.id,
+                    lang=lang,
+                    value=name,
+                )
 
-        product_description = database.env["transifex.code.translation"].search(
-            [
-                # ("res_id", "=", product.id),
-                ("lang", "=", lang),
-            ]
-        )
+            # Add or update translations for the description
+            if description:
+                database.env["ir.translation"]._set_ids(
+                    module="product",
+                    type="model",
+                    name="product.template,description_sale",
+                    res_id=product.id,
+                    lang=lang,
+                    value=description,
+                )
 
-        if len(product_description) > 0:
-            for description_record in product_description:
-                description_record.value = description
-        else:
-            product_description_new = database.env["transifex.code.translation"].create(
-                {
-                    # "display_name": "product.template,description_sale",
-                    "lang": lang,
-                    # "res_id": product.id,
-                }
-            )[0]
-            product_description_new.value = description
-            product_description_new.type = "model"
-        return
+            _logger.info(f"Translations updated for product {product.id} in language {lang}.")
+        except Exception as e:
+            _logger.error(
+                f"Failed to translate product {product.id} in language {lang}: {str(e)}",
+                exc_info=True,
+            )
+
 
     # Methode to add a product to a pricelist
     # Input
@@ -65,14 +61,6 @@ class product_sync_common:
 
     @classmethod
     def addProductToPricelist(cls, database, product, pricelistName, price):
-        # pricelist_id = (
-        #     database.env["product.pricelist"]
-        #     .search([("name", "=", pricelistName)])[0]
-        #     .id
-        # )
-        # pricelist_item_ids = database.env["product.pricelist.item"].search(
-        #     [("product_tmpl_id", "=", product.id), ("pricelist_id", "=", pricelist_id)]
-        # )
         try:
             pricelist_id = (
                 database.env["product.pricelist"]
@@ -83,28 +71,19 @@ class product_sync_common:
             pricelist_item_ids = database.env["product.pricelist.item"].search(
                 [("product_tmpl_id", "=", product.id), ("pricelist_id", "=", pricelist_id)]
             )
-            # if len(pricelist_item_ids) > 0:
-            #     pricelist_item = pricelist_item_ids[len(pricelist_item_ids) - 1]
-            # else:
-            #     pricelist_item = database.env["product.pricelist.item"].create(
-            #         {"pricelist_id": pricelist_id, "product_tmpl_id": product.id}
-            #     )[0]
+
             if len(pricelist_item_ids) > 0:
                 pricelist_item = pricelist_item_ids[len(pricelist_item_ids) - 1]
             else:
                 pricelist_item = database.env["product.pricelist.item"].create(
                     {"pricelist_id": pricelist_id, "product_tmpl_id": product.id}
                 )[0]
-                
+
             pricelist_item.product_tmpl_id = product.id
             pricelist_item.applied_on = "1_product"
             if (str(price) != " ") and (str(price) != ""):
                 pricelist_item.fixed_price = float(price)
 
-        # pricelist_item.product_tmpl_id = product.id
-        # pricelist_item.applied_on = "1_product"
-        # if (str(price) != " ") and (str(price) != ""):
-        #     pricelist_item.fixed_price = float(price)
+            _logger.info(f"Product {product.id} added/updated in pricelist {pricelistName}.")
         except Exception as e:
-            _logger.exception(e)
-            # test
+            _logger.exception(f"Failed to update pricelist for product {product.id}: {str(e)}")
