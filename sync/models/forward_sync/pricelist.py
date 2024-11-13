@@ -84,7 +84,7 @@ class sync_pricelist:
             return True, msg
 
         # loop through all the rows
-         _logger.debug("PRICELIST.PY: Starting row processing.")
+        _logger.debug("PRICELIST.PY: Starting row processing.")
         while True:
             # check if should continue
             if (
