@@ -41,7 +41,6 @@ import werkzeug.wsgi
 from werkzeug.urls import URL, url_parse, url_encode, url_quote
 from werkzeug.exceptions import (HTTPException, BadRequest, Forbidden,
                                  NotFound, InternalServerError)
-from odoo.addons.sale.models.sale_order import SALE_ORDER_STATE
 try:
     from werkzeug.middleware.proxy_fix import ProxyFix as ProxyFix_
     ProxyFix = functools.partial(ProxyFix_, x_for=1, x_proto=1, x_host=1)
@@ -861,8 +860,8 @@ class order(models.Model):
         elif "Quotation viewed by customer" in kwargs['body']:
             # only send to salesperson (user_id = salesperson)
             # sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
-            if self.user_id:
-                kwargs['partner_ids'] = [self.user_id.id]
+            if order.user_id:
+                kwargs['partner_ids'] = [order.user_id.id]
             else:
                 kwargs['partner_ids'] = []
                 
@@ -872,8 +871,8 @@ class order(models.Model):
             return False
         
         elif "Signed by" in kwargs['body'] or "Bon signé" in kwargs['body']:
-            if self.user_id:
-                kwargs['partner_ids'] = [self.user_id.id]
+            if order.user_id:
+                kwargs['partner_ids'] = [order.user_id.id]
             else:
                 kwargs['partner_ids'] = []
                 
@@ -1576,8 +1575,8 @@ class MailComposeMessage(models.TransientModel):
                 
             # set recipients
             order = self.env['sale.order'].search([('id', '=', self.env.context.get('default_res_id'))], limit=1)
-            if order and order.email_contacts and self.user_id:
-                res['partner_ids'] = [(4, self.user_id.id)]
+            if order and order.email_contacts:
+                res['partner_ids'] = [(4, order.user_id.id)]
         
         return res
         
