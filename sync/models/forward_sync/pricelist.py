@@ -149,7 +149,7 @@ class sync_pricelist:
                 self.pricelist(product, "usdRental", "USD RENTAL", i, columns)
 
                 if new:
-                    _loggerPRICELIST.PY: Setting stringRep for new product {key}.")
+                    # _loggerPRICELIST.PY: Setting stringRep for new product {key}.")
                     product.stringRep = ""
                 else:
                     product.stringRep = str(self.sheet[i][:])
