@@ -229,6 +229,7 @@ class sync_products:
     #   product.sale_ok             can_be_sold if the product can be sold or not    
     # Output
     #   product:                    The product created
+    
     def createAndUpdateProducts(
         self,
         external_id,
