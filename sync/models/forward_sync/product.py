@@ -212,6 +212,10 @@ class sync_products:
         )[0]
         product = self.database.env["product.template"].create({"name": product_name})[0]
 
+        product.tracking = "serial"
+        product.type = "product"
+        ext.res_id = product.id
+
     # Method to create and update a product
     # Input
     #   external_id:                The SKU in GoogleSheet
@@ -225,8 +229,6 @@ class sync_products:
     #   product.sale_ok             can_be_sold if the product can be sold or not    
     # Output
     #   product:                    The product created
-        product.tracking = "serial"
-        product.type = "product"
         ext.res_id = product.id
 
     def createAndUpdateProducts(
