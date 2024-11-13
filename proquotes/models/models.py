@@ -902,6 +902,12 @@ class order(models.Model):
         
         # internal note
         if ("Internal note" or "Note interne" in kwargs['body']) or (not mail_post_autofollow):
+            
+            # if internal note:
+            #   remove partner_id email and email_contacts email from partner_ids
+            #   check for any emails that shouldn't be sent at all and block
+            #   send
+            
             if "Quotation viewed by customer" in kwargs['body']:
                 
                 sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
