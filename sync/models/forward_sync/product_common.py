@@ -22,34 +22,58 @@ class product_sync_common:
                 _logger.warning(f"Language {lang} is not active in the system. Skipping translation.")
                 return
 
-            # Add or update translations for the name
+            # Add or update translations for the product name
             if name:
-                database.env["ir.translation"]._set_ids(
-                    module="product",
-                    type="model",
-                    name="product.template,name",
-                    res_id=product.id,
-                    lang=lang,
-                    value=name,
-                )
+                product.with_context(lang=lang).write({"name": name})
+                _logger.info(f"Updated translation for product name to '{name}' in language {lang}.")
 
-            # Add or update translations for the description
+            # Add or update translations for the product description
             if description:
-                database.env["ir.translation"]._set_ids(
-                    module="product",
-                    type="model",
-                    name="product.template,description_sale",
-                    res_id=product.id,
-                    lang=lang,
-                    value=description,
-                )
+                product.with_context(lang=lang).write({"description_sale": description})
+                _logger.info(f"Updated translation for product description to '{description}' in language {lang}.")
 
-            _logger.info(f"Translations updated for product {product.id} in language {lang}.")
         except Exception as e:
             _logger.error(
                 f"Failed to translate product {product.id} in language {lang}: {str(e)}",
                 exc_info=True,
             )
+    # @classmethod
+    # def translatePricelist(cls, database, product, name, description, lang):
+    #     try:
+    #         # Check if the language is active in the system
+    #         active_language = database.env["res.lang"].search([("code", "=", lang)])
+    #         if not active_language:
+    #             _logger.warning(f"Language {lang} is not active in the system. Skipping translation.")
+    #             return
+
+    #         # Add or update translations for the name
+    #         if name:
+    #             database.env["ir.translation"]._set_ids(
+    #                 module="product",
+    #                 type="model",
+    #                 name="product.template,name",
+    #                 res_id=product.id,
+    #                 lang=lang,
+    #                 value=name,
+    #             )
+
+    #         # Add or update translations for the description
+    #         if description:
+    #             database.env["ir.translation"]._set_ids(
+    #                 module="product",
+    #                 type="model",
+    #                 name="product.template,description_sale",
+    #                 res_id=product.id,
+    #                 lang=lang,
+    #                 value=description,
+    #             )
+
+    #         _logger.info(f"Translations updated for product {product.id} in language {lang}.")
+    #     except Exception as e:
+    #         _logger.error(
+    #             f"Failed to translate product {product.id} in language {lang}: {str(e)}",
+    #             exc_info=True,
+    #         )
 
 
     # Methode to add a product to a pricelist
