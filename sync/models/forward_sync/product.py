@@ -229,8 +229,6 @@ class sync_products:
     #   product.sale_ok             can_be_sold if the product can be sold or not    
     # Output
     #   product:                    The product created
-        ext.res_id = product.id
-
     def createAndUpdateProducts(
         self,
         external_id,
@@ -263,7 +261,7 @@ class sync_products:
         _logger.info(f"Created product: {product.name}")
         return product
 
-        product_created = self.database.env["product.template"].search(
-            [("sku", "=", external_id)]
-        )
-        return product_created
+    # def createAndUpdateProducts(self, external_id, *args, **kwargs):
+    #     _logger.info(f"Creating and updating product with external ID: {external_id}")
+    #     product = self.createProducts(external_id, kwargs["product_name_english"])
+    #     self.updateProducts(product, *args, **kwargs)
