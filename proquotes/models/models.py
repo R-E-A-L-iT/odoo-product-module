@@ -1351,7 +1351,10 @@ class order(models.Model):
             elif access_opt['title'] == _("View Quotation"):
                 access_opt['url'] = f"{base_url}/web#id={self.id}&model={self._name}&view_type=form"
             else:
-                access_opt['url'] = f"{base_url}{portal_url}"
+                if self.partner_id.lang == 'fr_CA':
+                    access_opt['url'] = f"{base_url}/fr_CA{portal_url}"
+                else:
+                    access_opt['url'] = f"{base_url}{portal_url}"
 
         # return the modified recipient groups with the updated access options
         return groups
@@ -1877,3 +1880,13 @@ class SaleReport(models.Model):
     @property
     def _table_query(self):
         return self._query()
+
+class ProjectTask(models.Model):
+    _inherit = 'project.task'
+
+    priority = fields.Selection([
+        ('0', 'Low'),
+        ('1', 'Medium'),
+        ('2', 'High'),
+        ('3', 'Very High'),
+    ], default='0', index=True, string="Priority", tracking=True)
