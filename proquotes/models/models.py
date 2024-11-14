@@ -860,7 +860,7 @@ class order(models.Model):
         elif "Quotation viewed by customer" in kwargs['body']:
             # only send to salesperson (user_id = salesperson)
             # sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
-            if order.user_id:
+            if order and order.user_id:
                 kwargs['partner_ids'] = [order.user_id.id]
             else:
                 kwargs['partner_ids'] = []
@@ -871,7 +871,7 @@ class order(models.Model):
             return False
         
         elif "Signed by" in kwargs['body'] or "Bon signé" in kwargs['body']:
-            if order.user_id:
+            if order and order.user_id:
                 kwargs['partner_ids'] = [order.user_id.id]
             else:
                 kwargs['partner_ids'] = []
