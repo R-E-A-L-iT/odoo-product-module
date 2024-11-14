@@ -845,6 +845,7 @@ class order(models.Model):
         so_ctx = {'mail_post_autofollow': self.env.context.get('mail_post_autofollow', True)}
         if self.env.context.get('mark_so_as_sent') and 'mail_notify_author' not in kwargs:
             kwargs['notify_author'] = self.env.user.partner_id.id in (kwargs.get('partner_ids') or [])
+        _logger.info('>>>>>>>>>>>>> kwargs: %s', kwargs)
         if 'tracking_value_ids' not in kwargs:
             return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
         else:
