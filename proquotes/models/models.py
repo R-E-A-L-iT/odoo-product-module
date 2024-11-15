@@ -838,19 +838,19 @@ class order(models.Model):
             # quote._create_invoices()
         return True
 
-    # @api.returns('mail.message', lambda value: value.id)
-    # def message_post(self, **kwargs):
-    #     if self.env.context.get('mark_so_as_sent'):
-    #         self.filtered(lambda o: o.state == 'draft').with_context(tracking_disable=True).write({'state': 'sent'})
-    #     so_ctx = {'mail_post_autofollow': self.env.context.get('mail_post_autofollow', True)}
-    #     if self.env.context.get('mark_so_as_sent') and 'mail_notify_author' not in kwargs:
-    #         kwargs['notify_author'] = self.env.user.partner_id.id in (kwargs.get('partner_ids') or [])
-    #     #_logger.info('>>>>>>>>>>>>> kwargs: %s', kwargs)
-    #     return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
-    #     # if 'tracking_value_ids' not in kwargs:
-    #     #     return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
-    #     # else:
-    #     #     pass
+    @api.returns('mail.message', lambda value: value.id)
+    def message_post(self, **kwargs):
+        if self.env.context.get('mark_so_as_sent'):
+            self.filtered(lambda o: o.state == 'draft').with_context(tracking_disable=True).write({'state': 'sent'})
+        so_ctx = {'mail_post_autofollow': self.env.context.get('mail_post_autofollow', True)}
+        if self.env.context.get('mark_so_as_sent') and 'mail_notify_author' not in kwargs:
+            kwargs['notify_author'] = self.env.user.partner_id.id in (kwargs.get('partner_ids') or [])
+        #_logger.info('>>>>>>>>>>>>> kwargs: %s', kwargs)
+        return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
+        if 'tracking_value_ids' not in kwargs:
+            return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
+        else:
+            pass
 
      
     # def message_post(self, **kwargs):
@@ -1567,35 +1567,35 @@ class MailComposeMessage(models.TransientModel):
             else:
                 record.email_contacts = False
     
-    @api.model
-    def default_get(self, fields_list):
-        res = super(MailComposeMessage, self).default_get(fields_list)
+    # @api.model
+    # def default_get(self, fields_list):
+    #     res = super(MailComposeMessage, self).default_get(fields_list)
         
-        message = False
-        if self.env.context.get('active_model') == 'mail.message' and self.env.context.get('active_id'):
-            message = self.env['mail.message'].browse(self.env.context['active_id'])
+    #     message = False
+    #     if self.env.context.get('active_model') == 'mail.message' and self.env.context.get('active_id'):
+    #         message = self.env['mail.message'].browse(self.env.context['active_id'])
         
-        if message:
-            res['user'] = message.create_uid
+    #     if message:
+    #         res['user'] = message.create_uid
         
-        if self.env.context.get('active_model') == 'sale.order' and self.env.context.get('active_ids'):
-            sale_orders = self.env['sale.order'].browse(self.env.context['active_ids'])
-            res['email_contacts'] = [(6, 0, sale_orders.mapped('email_contacts').ids)]
+    #     if self.env.context.get('active_model') == 'sale.order' and self.env.context.get('active_ids'):
+    #         sale_orders = self.env['sale.order'].browse(self.env.context['active_ids'])
+    #         res['email_contacts'] = [(6, 0, sale_orders.mapped('email_contacts').ids)]
 
-        if self.env.context.get('default_model') == 'sale.order':
-            # set template
-            template = self.env['mail.template'].search([('name', '=', 'General Sales')], limit=1)
-            if template:
-                res['template_id'] = template.id
+    #     if self.env.context.get('default_model') == 'sale.order':
+    #         # set template
+    #         template = self.env['mail.template'].search([('name', '=', 'General Sales')], limit=1)
+    #         if template:
+    #             res['template_id'] = template.id
                 
-            # set recipients
-            order = self.env['sale.order'].search([('id', '=', self.env.context.get('default_res_id'))], limit=1)
-            if order and order.email_contacts:
-                res['partner_ids'] = [(4, order.user_id.id)]
+    #         # set recipients
+    #         order = self.env['sale.order'].search([('id', '=', self.env.context.get('default_res_id'))], limit=1)
+    #         if order and order.email_contacts:
+    #             res['partner_ids'] = [(4, order.user_id.id)]
         
-        return res
+    #     return res
         
-        return res
+    #     return res
     
     # @api.onchange('template_id')
     # def _onchange_template_id(self):
