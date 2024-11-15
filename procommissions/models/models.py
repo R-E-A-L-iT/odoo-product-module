@@ -233,13 +233,3 @@ class SaleOrderLine(models.Model):
             else:
                 line.commission = 0.0
                 _logger.info(f"No user in 'demo_by' for {line.product_id.name}; setting commission to 0")
-
-
-          
-class IndividualReport(models.Model):
-    _name = 'procom.individual.report'
-    _description = 'Individual Report for Commissions'
-
-class CompiledReport(models.Model):
-    _name = 'procom.compiled.report'
-    _description = 'Compiled Report for Commissions'

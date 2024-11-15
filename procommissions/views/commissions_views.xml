@@ -7,16 +7,12 @@
         <field name="priority" eval="16" />
         <field name="arch" type="xml">
             <tree string="Commissions List" decoration-muted="state == 'unpaid'" decoration-warning="state == 'partially_paid'" decoration-success="state == 'fully_paid'">
-
                 <field name="state" string="Status" />
                 <field name="related_partner" string="Customer" />
-                
                 <field name="name" string="Commission Name"/>
-
                 <field name="new_customer" string="New Customer"/>
                 <field name="logged_lead" string="Logged Lead"/>
                 <field name="developed_lead" string="Developed Opportunity"/>
-                <!-- <field name="performed_demo" string="Performed Demo"/> -->
                 <field name="quote_to_order" string="Quote to Order"/>
             </tree>
         </field>
@@ -30,13 +26,11 @@
             <form string="Commission">
                 <header>
                     <field name="state" widget="statusbar" statusbar_visible="unpaid,partially_paid,fully_paid" statusbar_colors="{'unpaid': 'grey', 'partially_paid': 'orange', 'fully_paid': 'green'}"/>
-
                     <button name="action_set_unpaid" type="object" string="Mark as Unpaid" class="btn-secondary"/>
                     <button name="action_set_partially_paid" type="object" string="Mark as Partially Paid" class="btn-secondary"/>
                     <button name="action_set_fully_paid" type="object" string="Mark as Fully Paid" class="btn-secondary"/>
                 </header>
                 <sheet>
-                    <!-- General Information and Financial Calculations at the top -->
                     <group>
                         <group string="General Information">
                             <field name="name" string="Commission Name"/>
@@ -45,18 +39,15 @@
                             <field name="related_invoice" string="Related Invoice"/>
                             <field name="related_partner" string="Customer"/>
                         </group>
-                        
                         <group string="Financial Calculations">
                             <field name="sales_price" string="Sales Price (before tax)"/>
                             <field name="reality_cost" string="R-E-A-L.iT Cost"/>
                             <field name="shipping_cost" string="Shipping Cost"/>
                             <field name="reality_margin" string="R-E-A-L.iT Margin"/>
-
                             <field name="permission_filter" string="Permission Filter"/>
                         </group>
                     </group>
 
-                    <!-- Tabs for Sales Roles and Demo Roles -->
                     <notebook>
                         <page string="Sales Roles">
                             <group>
@@ -64,19 +55,16 @@
                                     <field name="new_customer" string="New Customer"/>
                                     <field name="logged_lead" string="Logged Lead"/>
                                     <field name="developed_lead" string="Developed Opportunity"/>
-                                    <!-- <field name="performed_demo" string="Performed Demo"/> -->
                                     <field name="quote_to_order" string="Quote to Order"/>
                                 </group>
                                 <group string="Commissions">
                                     <field name="new_customer_commission" string="New Customer Commission"/>
                                     <field name="logged_lead_commission" string="Logged Lead Commission"/>
                                     <field name="developed_lead_commission" string="Developed Opportunity Commission"/>
-                                    <!-- <field name="performed_demo_commission" string="Performed Demo Commission"/> -->
                                     <field name="quote_to_order_commission" string="Quote to Order Commission"/>
                                 </group>
                             </group>
                         </page>
-                        
                         <page string="Demo Records">
                             <group>
                                 <field name="demo_count" string="Number of Demos"/>
@@ -97,57 +85,9 @@
                                 </tree>
                             </field>
                         </page>
-
                     </notebook>
                 </sheet>
             </form>
         </field>
     </record>
-
-    <!-- Action for list view -->
-    <record model="ir.actions.act_window" id="action_commissions">
-        <field name="name">Commission</field>
-        <field name="res_model">procom.commission</field>
-        <field name="view_mode">tree,form</field>
-    </record>
-
-    <record model="ir.ui.view" id="view_individual_report_tree">
-        <field name="name">individual.report.tree</field>
-        <field name="model">procom.individual.report</field>
-        <field name="arch" type="xml">
-            <tree string="Individual Report">
-                <!-- Define columns here as needed -->
-            </tree>
-        </field>
-    </record>
-
-    <!-- Blank Tree View for Compiled Report -->
-    <record model="ir.ui.view" id="view_compiled_report_tree">
-        <field name="name">compiled.report.tree</field>
-        <field name="model">procom.compiled.report</field>
-        <field name="arch" type="xml">
-            <tree string="Compiled Report">
-                <!-- Define columns here as needed -->
-            </tree>
-        </field>
-    </record>
-
-    <record model="ir.actions.act_window" id="action_report_individual">
-        <field name="name">Individual</field>
-        <field name="res_model">procom.individual.report</field>
-        <field name="view_mode">tree</field>
-    </record>
-
-    <record model="ir.actions.act_window" id="action_report_compiled">
-        <field name="name">Compiled</field>
-        <field name="res_model">procom.compiled.report</field>
-        <field name="view_mode">tree</field>
-    </record>
-
-    <!-- Menu item -->
-    <menuitem name="ProCommissions" id="procom_root_menu" />
-    <menuitem name="Commissions" id="procom_commissions_menu" parent="procom_root_menu" action="action_commissions" sequence="1"/>
-    <menuitem name="Reporting" id="procom_reporting_menu" parent="procom_root_menu" sequence="2"/>
-    <menuitem name="Individual" id="procom_individual_report_menu" parent="procom_reporting_menu" action="action_report_individual" sequence="1"/>
-    <menuitem name="Compiled" id="procom_compiled_report_menu" parent="procom_reporting_menu" action="action_report_compiled" sequence="2"/>
 </odoo>
