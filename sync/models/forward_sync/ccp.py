@@ -129,7 +129,7 @@ class sync_ccp:
         if len(owner_ids) == 0:
             _logger.info("No owner")
 
-        ccp_item.owner = owner_ids[-1].res_id
+        ccp_item.owner = owner_ids[-1].id # fix broken field, used to be res_id
         if self.sheet[i][columns["date"]] != "FALSE":
             ccp_item.expire = self.sheet[i][columns["date"]]
         else:
@@ -155,4 +155,3 @@ class sync_ccp:
         ext.res_id = ccp_item.id
 
         self.updateCCP(ccp_item, i, columns)
-
