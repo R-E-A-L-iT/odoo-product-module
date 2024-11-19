@@ -79,10 +79,11 @@
             <div class="row">
                 <div class="col-md-4">
                     <label for="street">
-                        <span t-if="clang == 'en_CA' or clang == 'en_US'">PO Number </span>
+                        <span t-if="clang == 'en_CA' or clang == 'en_US'">PO Number</span>
                         <span t-elif="clang == 'fr_CA'">Numéro de bon de commande</span>
                     </label>
-                    <input id="po_number"  class="form-control" type="char" t-attf-value="{{sale_order.customer_po_number}}" style="width: 79%;"/>
+                    <input id="po_number" class="form-control" type="char"
+                           t-attf-value="{{sale_order.customer_po_number}}" style="width: 79%;"/>
                 </div>
                 <!-- <div class="col-md-4" t-if="clang == 'en_CA' or clang == 'en_US'">
                     <span>Invoicing Address:</span>
@@ -124,57 +125,120 @@
             <div class="row">
                 <h3 style="font-weight: bold;">Delivery Address</h3>
             </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="street">
-                        <span t-if="clang == 'en_CA' or clang == 'en_US'">Street</span>
-                        <span t-elif="clang == 'fr_CA'">Rue</span>
-                    </label>
-                    <input id="shipping_street" class="form-control" type="text" t-attf-value="{{sale_order.partner_shipping_id.street}}" style="width: 79%;"/>
+            <t t-set="shipping_address"
+               t-value="sale_order.partner_shipping_id.child_ids.search([('type','=','delivery'),('parent_id','=',sale_order.partner_shipping_id.id)],limit=1)"/>
+            <t t-if="shipping_address">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="street">
+                            <span t-if="clang == 'en_CA' or clang == 'en_US'">Street</span>
+                            <span t-elif="clang == 'fr_CA'">Rue</span>
+                        </label>
+                        <input id="shipping_street" class="form-control" type="text"
+                               t-attf-value="{{shipping_address.street}}" style="width: 79%;"/>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="city">
+                            <span t-if="clang == 'en_CA' or clang == 'en_US'">City</span>
+                            <span t-elif="clang == 'fr_CA'">Ville</span>
+                        </label>
+                        <input id="shipping_city" class="form-control" type="text"
+                               t-attf-value="{{shipping_address.city}}" style="width: 79%;"/>
+                    </div>
+                    <div class="col-md-4"/>
                 </div>
-                <div class="col-md-4">
-                    <label for="city">
-                        <span t-if="clang == 'en_CA' or clang == 'en_US'">City</span>
-                        <span t-elif="clang == 'fr_CA'">Ville</span>
-                    </label>
-                    <input id="shipping_city" class="form-control" type="text" t-attf-value="{{sale_order.partner_shipping_id.city}}" style="width: 79%;"/>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="state">
+                            <span t-if="clang == 'en_CA' or clang == 'en_US'">State/Province</span>
+                            <span t-elif="clang == 'fr_CA'">Province/État</span>
+                        </label>
+                        <t t-set="states" t-value="request.env['res.country.state'].search([])"/>
+                        <select id="shipping_state" class="form-control form-select" name="state_id" style="width:79%;">
+                            <t t-foreach="states" t-as="state">
+                                <option t-att-value="state.id"
+                                        t-att-selected="state.id == shipping_address.state_id.id">
+                                    <t t-esc="state.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="country">
+                            <span t-if="clang == 'en_CA' or clang == 'en_US'">Country</span>
+                            <span t-elif="clang == 'fr_CA'">Pays</span>
+                        </label>
+                        <t t-set="country_ids" t-value="request.env['res.country'].search([])"/>
+                        <select id="shipping_country" class="form-control form-select" name="country_id" data-init="1"
+                                style="width:79%;">
+                            <t t-foreach="country_ids" t-as="country">
+                                <option t-att-value="country.id"
+                                        t-att-selected="country.id == shipping_address.country_id.id">
+                                    <t t-esc="country.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="col-md-4"/>
                 </div>
-                <div class="col-md-4"/>
-            </div>
-            <div class="row">
-                 <div class="col-md-4">
-                    <label for="state">
-                        <span t-if="clang == 'en_CA' or clang == 'en_US'">State/Province</span>
-                        <span t-elif="clang == 'fr_CA'">Province/État</span>
-                    </label>
-                    <t t-set="states" t-value="request.env['res.country.state'].search([])"/>
-                    <select id="shipping_state" class="form-control form-select" name="state_id"  style="width:79%;">
-                        <t t-foreach="states" t-as="state">
-                            <option t-att-value="state.id"
-                                    t-att-selected="state.id == sale_order.partner_shipping_id.state_id.id">
-                                <t t-esc="state.name"/>
-                            </option>
-                        </t>
-                    </select>
+                <br/>
+            </t>
+            <t t-else="">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="street">
+                            <span t-if="clang == 'en_CA' or clang == 'en_US'">Street</span>
+                            <span t-elif="clang == 'fr_CA'">Rue</span>
+                        </label>
+                        <input id="shipping_street" class="form-control" type="text"
+                               t-attf-value="{{sale_order.partner_shipping_id.street}}" style="width: 79%;"/>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="city">
+                            <span t-if="clang == 'en_CA' or clang == 'en_US'">City</span>
+                            <span t-elif="clang == 'fr_CA'">Ville</span>
+                        </label>
+                        <input id="shipping_city" class="form-control" type="text"
+                               t-attf-value="{{sale_order.partner_shipping_id.city}}" style="width: 79%;"/>
+                    </div>
+                    <div class="col-md-4"/>
                 </div>
-                <div class="col-md-4">
-                    <label for="country">
-                        <span t-if="clang == 'en_CA' or clang == 'en_US'">Country</span>
-                        <span t-elif="clang == 'fr_CA'">Pays</span>
-                    </label>
-                    <t t-set="country_ids" t-value="request.env['res.country'].search([])"/>
-                    <select id="shipping_country" class="form-control form-select" name="country_id" data-init="1"  style="width:79%;">
-                        <t t-foreach="country_ids" t-as="country">
-                            <option t-att-value="country.id"
-                                    t-att-selected="country.id == sale_order.partner_shipping_id.country_id.id">
-                                <t t-esc="country.name"/>
-                            </option>
-                        </t>
-                    </select>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="state">
+                            <span t-if="clang == 'en_CA' or clang == 'en_US'">State/Province</span>
+                            <span t-elif="clang == 'fr_CA'">Province/État</span>
+                        </label>
+                        <t t-set="states" t-value="request.env['res.country.state'].search([])"/>
+                        <select id="shipping_state" class="form-control form-select" name="state_id" style="width:79%;">
+                            <t t-foreach="states" t-as="state">
+                                <option t-att-value="state.id"
+                                        t-att-selected="state.id == sale_order.partner_shipping_id.state_id.id">
+                                    <t t-esc="state.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="country">
+                            <span t-if="clang == 'en_CA' or clang == 'en_US'">Country</span>
+                            <span t-elif="clang == 'fr_CA'">Pays</span>
+                        </label>
+                        <t t-set="country_ids" t-value="request.env['res.country'].search([])"/>
+                        <select id="shipping_country" class="form-control form-select" name="country_id" data-init="1"
+                                style="width:79%;">
+                            <t t-foreach="country_ids" t-as="country">
+                                <option t-att-value="country.id"
+                                        t-att-selected="country.id == sale_order.partner_shipping_id.country_id.id">
+                                    <t t-esc="country.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="col-md-4"/>
                 </div>
-                <div class="col-md-4"/>
-            </div>
-            <br/>
+                <br/>
+            </t>
             <!-- <p>Language:
                 <t t-out="clang"/>
             </p> -->
@@ -449,7 +513,8 @@
                         </strong>
                     </span>
                     <span t-if="line.special != 'optional' or line.selected == 'true'"
-                          class="subtotal-destination-span text-left" t-att-data-section_id="line_section_id" style="font-weight: 400 !important;"/>
+                          class="subtotal-destination-span text-left" t-att-data-section_id="line_section_id"
+                          style="font-weight: 400 !important;"/>
                     <span t-elif="clang == 'en_CA' or clang == 'en_US'" class="text-left"
                           style="font-weight: 400 !important;">0.00 $
                     </span>
@@ -459,10 +524,10 @@
         </xpath>
         <xpath expr="//tr[hasclass('is-subtotal')]/td" position="inside">
             <!-- <span class="is-section-subtotal d-none" t-att-data-section_id="line_section_id"> -->
-                <span t-out="current_subtotal" class="is-section-subtotal d-none" t-att-data-section_id="line_section_id"
-                    t-options='{"widget": "monetary", "display_currency": sale_order.currency_id}'
-                    />
-                <!-- <t t-esc="current_subtotal"/><t t-esc="sale_order.currency_id.symbol"/> -->
+            <span t-out="current_subtotal" class="is-section-subtotal d-none" t-att-data-section_id="line_section_id"
+                  t-options='{"widget": "monetary", "display_currency": sale_order.currency_id}'
+            />
+            <!-- <t t-esc="current_subtotal"/><t t-esc="sale_order.currency_id.symbol"/> -->
             <!-- </span> -->
         </xpath>
         <xpath expr="//t[@t-if=&quot;line.display_type == 'line_note'&quot;]/td" position="inside">
