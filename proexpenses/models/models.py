@@ -2,6 +2,8 @@ from odoo import models, fields, _
 
 class AccountBankStatementLine(models.Model):
     _inherit = 'account.bank.statement.line'
+    
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     def action_transfer_expense(self):
         """Generate and confirm a customer invoice with an order line assigned to Inter-Company Expenses."""
