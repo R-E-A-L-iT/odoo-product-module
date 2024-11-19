@@ -7,17 +7,10 @@ class AccountBankStatementLine(models.Model):
         """Generate and confirm a customer invoice with an order line assigned to Inter-Company Expenses."""
         self.ensure_one()  # Ensure the method is called on a single record
 
-        # Get or create the partner
-        partner = self.env['res.partner'].search([
-            ('name', '=', 'R-E-A-L.iT U.S. Inc'),
-            ('company_id', '=', self.company_id.id)
-        ], limit=1)
-        if not partner:
-            partner = self.env['res.partner'].create({
-                'name': 'R-E-A-L.iT U.S. Inc',
-                'company_id': self.company_id.id,
-                'is_company': True,
-            })
+        # Get the partner by ID
+        partner = self.env['res.partner'].browse(54508)
+        if not partner.exists():
+            raise ValueError(_("The partner with ID 54508 (R-E-A-L.iT U.S. Inc) does not exist."))
 
         # Get or create the "Inter-Company Expenses" account
         inter_company_account = self.env['account.account'].search([
