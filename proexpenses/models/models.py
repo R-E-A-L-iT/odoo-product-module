@@ -4,7 +4,7 @@ class AccountBankStatementLine(models.Model):
     _inherit = 'account.bank.statement.line'
 
     def action_transfer_expense(self):
-        """Generate a customer invoice with an order line assigned to Inter-Company Expenses."""
+        """Generate and confirm a customer invoice with an order line assigned to Inter-Company Expenses."""
         self.ensure_one()  # Ensure the method is called on a single record
 
         # Get or create the partner
@@ -49,9 +49,12 @@ class AccountBankStatementLine(models.Model):
             'price_unit': abs(self.amount),  # Use the absolute value of the bank statement line amount
         })
 
+        # Confirm the invoice
+        invoice.action_post()
+
         # Log a note on the invoice
         note_message = _(
-            "Invoice automatically generated as a transferred expense from %s"
+            "Invoice automatically generated and confirmed as a transferred expense from %s"
         ) % (self.display_name or _("Unknown Document"))
         invoice.message_post(body=note_message)
 
