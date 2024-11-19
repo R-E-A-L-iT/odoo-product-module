@@ -124,7 +124,7 @@ class sync_ccp:
         ccp_item.product_id = product_ids[-1].id
 
         owner_ids = self.database.env["ir.model.data"].search([
-                ("name", "=", self.sheet[i][columns["ownerId"]]),
+                ("company_nickname", "=", self.sheet[i][columns["ownerId"]]),
                 ("model", "=", "res.partner")])
         if len(owner_ids) == 0:
             _logger.info("No owner")
