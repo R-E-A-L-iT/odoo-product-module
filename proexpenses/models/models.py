@@ -18,7 +18,7 @@ class AccountBankStatementLine(models.Model):
                 'is_company': True,
             })
         
-        expense_account_type = self.env['account.account.type'].search([
+        expense_account_type = self.env['account.account'].search([
             ('name', '=', 'Expenses')
         ], limit=1)
         if not expense_account_type:
