@@ -49,10 +49,10 @@ class AccountBankStatementLine(models.Model):
             'price_unit': abs(self.amount),  # Use the absolute value of the bank statement line amount
         })
 
-        # Log a message on the invoice's Chatter
+        # Log a message on the bank statement line Chatter
         note_message = _(
-            "Invoice automatically generated as a transferred expense from %s"
-        ) % (self.display_name or _("Unknown Document"))
-        invoice.message_post(body=note_message)
+            "Invoice automatically generated and saved as a transferred expense from this document. Invoice: <a href='#id=%d&model=account.move'>%s</a>"
+        ) % (invoice.id, invoice.name or _("Unknown Invoice"))
+        self.message_post(body=note_message)
 
         return True
