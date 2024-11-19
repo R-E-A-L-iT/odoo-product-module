@@ -4,7 +4,7 @@
     'summary': 'Module to make the transfer and management of inter-company expenses more efficient',
     'category': 'Hidden',
     'author': 'Ezekiel J. deBlois',
-    'depends': ['base'],
+    'depends': ['base', 'account'],
     'data': [
         'views/bank_statement_views.xml',
     ],
