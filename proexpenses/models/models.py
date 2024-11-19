@@ -40,13 +40,13 @@ class AccountBankStatementLine(models.Model):
             'invoice_date': fields.Date.context_today(self),
         })
 
-        # Add an order line with no product and assigned to "Inter-Company Expenses"
+        # Add an order line with the amount of the bank statement line
         self.env['account.move.line'].create({
             'move_id': invoice.id,
             'account_id': inter_company_account.id,
             'name': 'Inter-Company Expense',  # Description for the line
             'quantity': 1.0,
-            'price_unit': 0.0,  # No cost by default
+            'price_unit': self.amount,  # Use the bank statement line amount
         })
 
         # Log a note on the invoice
