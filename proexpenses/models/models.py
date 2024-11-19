@@ -17,16 +17,23 @@ class AccountBankStatementLine(models.Model):
                 'company_id': self.company_id.id,
                 'is_company': True,
             })
-            
+        
+        expense_account_type = self.env['account.account.type'].search([
+            ('name', '=', 'Expenses')
+        ], limit=1)
+        if not expense_account_type:
+            raise ValueError(_("No account type 'Expenses' found. Please ensure your accounting setup is correct."))    
+        
         inter_company_account = self.env['account.account'].search([
             ('name', '=', 'Inter-Company Expenses'),
             ('company_id', '=', self.company_id.id)
         ], limit=1)
+        
         if not inter_company_account:
             inter_company_account = self.env['account.account'].create({
                 'name': 'Inter-Company Expenses',
                 'code': '99999',  # Example account code; adjust as needed
-                'user_type_id': self.env.ref('account.data_account_type_expenses').id,
+                'user_type_id': expense_account_type.id,
                 'company_id': self.company_id.id,
             })
 
