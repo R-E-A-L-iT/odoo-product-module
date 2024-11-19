@@ -1,10 +1,10 @@
-# pro_expenses/models/bank_statement_line.py
-from odoo import models, fields, api, _
+from odoo import models, fields, _
 
 class AccountBankStatementLine(models.Model):
     _inherit = 'account.bank.statement.line'
 
     def action_transfer_expense(self):
+        """Generate a customer invoice with an order line assigned to Inter-Company Expenses."""
         self.ensure_one()  # Ensure the method is called on a single record
 
         # Get or create the partner
@@ -20,12 +20,6 @@ class AccountBankStatementLine(models.Model):
             })
 
         # Get or create the "Inter-Company Expenses" account
-        expense_account_type = self.env['account.account.type'].search([
-            ('name', '=', 'Expenses')
-        ], limit=1)
-        if not expense_account_type:
-            raise ValueError(_("No account type 'Expenses' found. Please ensure your accounting setup is correct."))
-
         inter_company_account = self.env['account.account'].search([
             ('name', '=', 'Inter-Company Expenses'),
             ('company_id', '=', self.company_id.id)
@@ -34,7 +28,7 @@ class AccountBankStatementLine(models.Model):
             inter_company_account = self.env['account.account'].create({
                 'name': 'Inter-Company Expenses',
                 'code': '99999',  # Example account code; adjust as needed
-                'user_type_id': expense_account_type.id,
+                'account_type': 'expense',  # Explicitly mark as expense type
                 'company_id': self.company_id.id,
             })
 
