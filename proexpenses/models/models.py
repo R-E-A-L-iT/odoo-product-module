@@ -4,7 +4,7 @@ class AccountBankStatementLine(models.Model):
     _inherit = 'account.bank.statement.line'
 
     def action_transfer_expense(self):
-        """Generate a customer invoice with an order line assigned to Inter-Company Expenses."""
+        """Automatically create a customer invoice with an order line assigned to Inter-Company Expenses."""
         self.ensure_one()  # Ensure the method is called on a single record
 
         # Get or create the partner
@@ -49,18 +49,10 @@ class AccountBankStatementLine(models.Model):
             'price_unit': abs(self.amount),  # Use the absolute value of the bank statement line amount
         })
 
-        # Log a note on the invoice
+        # Log a message on the bank statement line Chatter
         note_message = _(
-            "Invoice automatically generated as a transferred expense from %s"
-        ) % (self.display_name or _("Unknown Document"))
-        invoice.message_post(body=note_message)
+            "Invoice automatically generated and saved as a transferred expense from this document. Invoice: <a href='#id=%d&model=account.move'>%s</a>"
+        ) % (invoice.id, invoice.name or _("Unknown Invoice"))
+        self.message_post(body=note_message)
 
-        # Return an action to open the invoice
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Customer Invoice'),
-            'res_model': 'account.move',
-            'view_mode': 'form',
-            'res_id': invoice.id,
-            'target': 'current',
-        }
+        return True
