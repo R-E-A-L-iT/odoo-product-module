@@ -57,4 +57,9 @@ class AccountBankStatementLine(models.Model):
             "Invoice automatically generated and confirmed as a transferred expense from bank statement line: %s."
         ) % (self.display_name or _("Unknown Document")))
 
+        # Log a note in the expense document's Chatter linking to the invoice
+        self.message_post(body=_(
+            "A customer invoice has been created and confirmed: <a href='#id=%d&model=account.move'>%s</a>."
+        ) % (invoice.id, invoice.name or _("Unknown Invoice")))
+
         return True
