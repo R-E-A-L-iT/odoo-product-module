@@ -48,6 +48,10 @@ class AccountBankStatementLine(models.Model):
             'quantity': 1.0,
             'price_unit': abs(self.amount),  # Use the absolute value of the bank statement line amount
         })
+        
+        self.write({
+            'narration': _('Invoice created: %s') % (invoice.name or _("Unknown Invoice")),
+        })
 
         # Log a message on the invoice's Chatter
         note_message = _(
