@@ -52,18 +52,9 @@ class AccountBankStatementLine(models.Model):
         # Confirm the invoice
         invoice.action_post()
 
-        # Log a note on the invoice
-        note_message = _(
-            "Invoice automatically generated and confirmed as a transferred expense from %s"
-        ) % (self.display_name or _("Unknown Document"))
-        invoice.message_post(body=note_message)
+        # Log a note on the bank statement line
+        self.message_post(body=_(
+            "Invoice %s automatically generated and confirmed as a transferred expense."
+        ) % (invoice.name or _("Unknown Invoice")))
 
-        # Return an action to open the invoice
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Customer Invoice'),
-            'res_model': 'account.move',
-            'view_mode': 'form',
-            'res_id': invoice.id,
-            'target': 'current',
-        }
+        return True
