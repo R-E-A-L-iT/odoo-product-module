@@ -52,9 +52,9 @@ class AccountBankStatementLine(models.Model):
         # Confirm the invoice
         invoice.action_post()
 
-        # Log a note on the bank statement line
-        self.message_post(body=_(
-            "Invoice %s automatically generated and confirmed as a transferred expense."
-        ) % (invoice.name or _("Unknown Invoice")))
+        # Log a note on the invoice's Chatter
+        invoice.message_post(body=_(
+            "Invoice automatically generated and confirmed as a transferred expense from bank statement line: %s."
+        ) % (self.display_name or _("Unknown Document")))
 
         return True
