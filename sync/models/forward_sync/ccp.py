@@ -111,25 +111,28 @@ class sync_ccp:
         return False, msg
 
     def updateCCP(self, ccp_item, i, columns):
-        # Check if data in GS is the same as in Odoo
+        # Check if data in Google Sheets matches existing Odoo data
         if ccp_item.stringRep == str(self.sheet[i][:]):
             return
-            
-        # Update fields in Record
+
+        # Update fields in the record
         ccp_item.name = self.sheet[i][columns["eidsn"]]
 
         product_ids = self.database.env["product.product"].search(
             [("sku", "=", self.sheet[i][columns["code"]])])
+        ccp_item.product_id = product_ids[-1].id if product_ids else None
 
-        ccp_item.product_id = product_ids[-1].id
+        # Search for the partner using the company_nickname field
+        partner = self.database.env["res.partner"].search([
+            ("company_nickname", "=", self.sheet[i][columns["ownerId"]].strip())
+        ], limit=1)
 
-        owner_ids = self.database.env["ir.model.data"].search([
-                ("company_nickname", "=", self.sheet[i][columns["ownerId"]]),
-                ("model", "=", "res.partner")])
-        if len(owner_ids) == 0:
-            _logger.info("No owner")
+        if not partner:
+            _logger.warning(f"No matching partner found for company_nickname '{self.sheet[i][columns['ownerId']]}' in row {i}. Setting owner to None.")
+            ccp_item.owner = None
+        else:
+            ccp_item.owner = partner.id
 
-        ccp_item.owner = owner_ids[-1].id # fix broken field, used to be res_id
         if self.sheet[i][columns["date"]] != "FALSE":
             ccp_item.expire = self.sheet[i][columns["date"]]
         else:
@@ -137,6 +140,7 @@ class sync_ccp:
 
         ccp_item.publish = self.sheet[i][columns["publish"]]
 
+        # Update string representation to reflect the latest data
         ccp_item.stringRep = str(self.sheet[i][:])
 
     # follows same pattern
