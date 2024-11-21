@@ -119,40 +119,81 @@ class sync_ccp:
             i += 1
         return False, msg
 
+    # def updateCCP(self, ccp_item, i, columns):
+    #     _logger.debug("Updating CCP item: %s at row %d", ccp_item, i)
+    #     if ccp_item.stringRep == str(self.sheet[i][:]):
+    #         _logger.info("No changes detected for row %d. Skipping update.", i)
+    #         _logger.info("Skipping becuase no changes detected. stringRep for row %d: Existing: %s | New: %s", i, ccp_item.stringRep, str(self.sheet[i][:]))
+    #         return
+
+    #     ccp_item.name = self.sheet[i][columns["eidsn"]]
+
+    #     product_ids = self.database.env["product.product"].search(
+    #         [("sku", "=", self.sheet[i][columns["code"]])])
+    #     ccp_item.product_id = product_ids[-1].id if product_ids else None
+    #     _logger.debug("Updated product_id for row %d: %s", i, product_ids[-1].id if product_ids else None)
+
+    #     partner = self.database.env["res.partner"].search([
+    #         ("company_nickname", "=", self.sheet[i][columns["ownerId"]].strip())
+    #     ], limit=1)
+
+    #     if not partner:
+    #         _logger.warning("No matching partner found for company_nickname '%s' in row %d.", self.sheet[i][columns["ownerId"]], i)
+    #         ccp_item.owner = None
+    #     else:
+    #         ccp_item.owner = partner.id
+    #         _logger.debug("Updated owner for row %d: %s", i, partner.id)
+
+    #     if self.sheet[i][columns["date"]] != "FALSE":
+    #         ccp_item.expire = self.sheet[i][columns["date"]]
+    #     else:
+    #         ccp_item.expire = None
+
+    #     ccp_item.publish = self.sheet[i][columns["publish"]]
+
+    #     ccp_item.stringRep = str(self.sheet[i][:])
+    #     _logger.info("Successfully updated CCP item at row %d", i)
+    
     def updateCCP(self, ccp_item, i, columns):
-        _logger.debug("Updating CCP item: %s at row %d", ccp_item, i)
-        if ccp_item.stringRep == str(self.sheet[i][:]):
+        # Extract relevant fields from the sheet
+        new_representation = {
+            "eidsn": self.sheet[i][columns["eidsn"]],
+            "code": self.sheet[i][columns["code"]],
+            "date": self.sheet[i][columns["date"]],
+            "publish": self.sheet[i][columns["publish"]],
+        }
+
+        # Extract the current representation from the database
+        current_representation = {
+            "eidsn": ccp_item.name,
+            "code": ccp_item.product_id.sku if ccp_item.product_id else None,
+            "date": ccp_item.expire,
+            "publish": ccp_item.publish,
+        }
+
+        # Log detailed comparisons
+        _logger.debug("Comparing stringRep for row %d: Current: %s | New: %s", i, current_representation, new_representation)
+
+        # Check for changes in relevant fields
+        if current_representation == new_representation:
             _logger.info("No changes detected for row %d. Skipping update.", i)
-            _logger.info("Skipping becuase no changes detected. stringRep for row %d: Existing: %s | New: %s", i, ccp_item.stringRep, str(self.sheet[i][:]))
             return
 
-        ccp_item.name = self.sheet[i][columns["eidsn"]]
+        # Update the CCP item
+        _logger.info("Changes detected for row %d. Updating CCP item.", i)
+        ccp_item.name = new_representation["eidsn"]
 
         product_ids = self.database.env["product.product"].search(
-            [("sku", "=", self.sheet[i][columns["code"]])])
+            [("sku", "=", new_representation["code"])])
         ccp_item.product_id = product_ids[-1].id if product_ids else None
-        _logger.debug("Updated product_id for row %d: %s", i, product_ids[-1].id if product_ids else None)
 
-        partner = self.database.env["res.partner"].search([
-            ("company_nickname", "=", self.sheet[i][columns["ownerId"]].strip())
-        ], limit=1)
+        ccp_item.expire = new_representation["date"] if new_representation["date"] != "FALSE" else None
+        ccp_item.publish = new_representation["publish"]
 
-        if not partner:
-            _logger.warning("No matching partner found for company_nickname '%s' in row %d.", self.sheet[i][columns["ownerId"]], i)
-            ccp_item.owner = None
-        else:
-            ccp_item.owner = partner.id
-            _logger.debug("Updated owner for row %d: %s", i, partner.id)
+        # Update stringRep for the next comparison
+        ccp_item.stringRep = str(new_representation)
+        _logger.info("Updated CCP item: %s", ccp_item.name)
 
-        if self.sheet[i][columns["date"]] != "FALSE":
-            ccp_item.expire = self.sheet[i][columns["date"]]
-        else:
-            ccp_item.expire = None
-
-        ccp_item.publish = self.sheet[i][columns["publish"]]
-
-        ccp_item.stringRep = str(self.sheet[i][:])
-        _logger.info("Successfully updated CCP item at row %d", i)
 
     def createCCP(self, external_id, i, columns):
         _logger.debug("Creating new CCP record for external ID: %s at row %d", external_id, i)
