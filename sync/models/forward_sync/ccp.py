@@ -68,9 +68,9 @@ class sync_ccp:
                 break
 
             try:
-                # Validate row fields
-                if str(self.sheet[i][columns["valid"]]) != "TRUE":
-                    raise ValueError(f"Row {i} is not marked as valid.")
+                # # Validate row fields
+                # if str(self.sheet[i][columns["valid"]]) != "TRUE":
+                #     raise ValueError(f"Row {i} is not marked as valid.")
 
                 if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
                     raise ValueError(f"Invalid External ID at row {i}.")
