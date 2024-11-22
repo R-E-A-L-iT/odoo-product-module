@@ -24,6 +24,7 @@ class sync_products:
 
     def syncProducts(self, sheet):
         _logger.debug("PRODUCT.PY: Starting product synchronization.")
+        skipped_items = []  # List to store skipped rows and errors
 
         # Confirm GS Tab is in the correct Format
         columns = dict()
@@ -67,34 +68,27 @@ class sync_products:
         # Debugging: Starting row processing
         _logger.debug("PRODUCT.PY: Starting row processing.")
         while True:
-            # Debugging: Check if the process should continue
+            # Check if the process should continue
             if str(sheet[i][columns["continue"]]).upper() != "TRUE":
                 _logger.debug(f"PRODUCT.PY: Stopping processing at row {i}.")
                 break
 
             # Validation checks
             key = str(sheet[i][columns["sku"]])
-            if not utilities.check_id(key):
-                msg = utilities.buildMSG(msg, self.name, key, "Key Error")
-                _logger.warning(f"PRODUCT.PY: Invalid SKU {key} at row {i}. Skipping.")
-                i += 1
-                continue
-
-            if not utilities.check_price(sheet[i][columns["priceCAD"]]):
-                msg = utilities.buildMSG(msg, self.name, key, "CAD Price Invalid")
-                _logger.warning(f"PRODUCT.PY: Invalid CAD price at row {i}. Skipping.")
-                i += 1
-                continue
-
-            if not utilities.check_price(sheet[i][columns["priceUSD"]]):
-                msg = utilities.buildMSG(msg, self.name, key, "USD Price Invalid")
-                _logger.warning(f"PRODUCT.PY: Invalid USD price at row {i}. Skipping.")
-                i += 1
-                continue
-
-            # Debugging: Data is valid, processing row
-            _logger.debug(f"PRODUCT.PY: Processing valid SKU {key} at row {i}.")
             try:
+                # Validation: Check SKU
+                if not utilities.check_id(key):
+                    raise ValueError(f"Invalid SKU {key} at row {i}.")
+
+                # Validation: Check CAD Price
+                if not utilities.check_price(sheet[i][columns["priceCAD"]]):
+                    raise ValueError(f"Invalid CAD price at row {i}.")
+
+                # Validation: Check USD Price
+                if not utilities.check_price(sheet[i][columns["priceUSD"]]):
+                    raise ValueError(f"Invalid USD price at row {i}.")
+
+                # Processing the row
                 external_id = str(sheet[i][columns["sku"]])
                 product_ids = self.database.env["ir.model.data"].search(
                     [("name", "=", external_id), ("model", "=", "product.template")]
@@ -102,21 +96,13 @@ class sync_products:
 
                 if len(product_ids) > 0:
                     product = self.database.env["product.template"].browse(
-                        product_ids[len(product_ids) - 1].res_id
+                        product_ids[-1].res_id
                     )
 
                     if len(product) != 1:
-                        msg = utilities.buildMSG(
-                            msg,
-                            self.name,
-                            key,
-                            "Product ID Recognized But Product Count is Invalid",
+                        raise ValueError(
+                            f"Product ID recognized, but product count is invalid for SKU {key}."
                         )
-                        _logger.warning(
-                            f"PRODUCT.PY: Invalid product count for SKU {key} at row {i}. Skipping."
-                        )
-                        i = i + 1
-                        continue
 
                     self.updateProducts(
                         product,
@@ -147,32 +133,51 @@ class sync_products:
                     )  # product_type
 
             except Exception as e:
-                _logger.error(
-                    f"PRODUCT.PY: Exception occurred for SKU {key} at row {i}: {str(e)}",
-                    exc_info=True,
-                )
-                msg = utilities.buildMSG(msg, self.name, key, str(e))
-                return True, msg
+                # Log the error and skip the problematic row
+                error_message = f"PRODUCT.PY: Error occurred for SKU {key} at row {i}: {str(e)}"
+                _logger.error(error_message, exc_info=True)
+                skipped_items.append({
+                    "row": i,
+                    "sku": key,
+                    "error": str(e)
+                })
 
             i += 1
 
+        # Compile skipped items report
+        if skipped_items:
+            report = "\n".join(
+                [f"Row {item['row']}: SKU {item['sku']} - Error: {item['error']}" for item in skipped_items]
+            )
+            _logger.warning(f"PRODUCT.PY: Skipped items report:\n{report}")
+            self.database.sendSyncReport(f"<h1>Skipped Items Report</h1><pre>{report}</pre>")
+
         _logger.info("PRODUCT.PY: Product synchronization completed successfully.")
-        return False, msg
+        return False, ""
+
 
     def createProducts(self, external_id, product_name):
         _logger.debug(f"PRODUCT.PY: Creating product with external ID {external_id}.")
-        product = None
+
+        # Set company_id explicitly
+        company_id = self.database.env.company.id
+
         ext = self.database.env["ir.model.data"].create(
             {"name": external_id, "model": "product.template"}
         )[0]
-        product = self.database.env["product.template"].create({"name": product_name})[0]
+
+        product = self.database.env["product.template"].create({
+            "name": product_name,
+            "company_id": company_id,  # Ensure the product belongs to the current company
+        })[0]
 
         product.tracking = "serial"
         product.type = "product"
         ext.res_id = product.id
 
-        _logger.info(f"PRODUCT.PY: Created product {product.name}.")
+        _logger.info(f"PRODUCT.PY: Created product {product.name} with company_id {company_id}.")
         return product
+
 
     def updateProducts(
         self,

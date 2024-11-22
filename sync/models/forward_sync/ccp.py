@@ -21,15 +21,17 @@ class sync_ccp:
         self.database = database
 
     def syncCCP(self):
+        _logger.debug("CCP.PY: Starting CCP synchronization.")
+        skipped_items = []  # List to store skipped rows and errors
+
         # Confirm GS Tab is in the correct Format
-        _logger.debug("Starting syncCCP for sheet: %s", self.name)
         sheetWidth = 11
         columns = dict()
         columnsMissing = False
         msg = ""
         i = 1
 
-        # Check if the header matches the appropriate format
+        # Check if the header matches the expected format
         ccpHeaderDict = dict()
         ccpHeaderDict["Owner ID"] = "ownerId"
         ccpHeaderDict["EID/SN"] = "eidsn"
@@ -42,7 +44,6 @@ class sync_ccp:
         ccpHeaderDict["Continue"] = "continue"
         columns, msg, columnsMissing = utilities.checkSheetHeader(ccpHeaderDict, self.sheet, self.name)
 
-        _logger.debug("Sheet columns: %s", columns)
         if len(self.sheet[i]) != sheetWidth or columnsMissing:
             msg = (
                 "<h1>CCP page Invalid</h1>\n<p>"
@@ -55,69 +56,66 @@ class sync_ccp:
                 + msg
             )
             self.database.sendSyncReport(msg)
-            _logger.warning("Sheet width mismatch or missing columns. Width: %d, Missing: %s", len(self.sheet[i]), columnsMissing)
+            _logger.warning(f"CCP.PY: Sheet header validation failed. {msg}")
             return True, msg
 
-        # Loop through Rows in Google Sheets        
+        # Loop through rows in Google Sheets
+        _logger.debug("CCP.PY: Starting row processing.")
         while True:
-            if i >= len(self.sheet):
-                _logger.debug("End of sheet reached at row %d.", i)
+            # Check if the process should continue
+            if i == len(self.sheet) or str(self.sheet[i][columns["continue"]]) != "TRUE":
+                _logger.debug(f"CCP.PY: Stopping processing at row {i}.")
                 break
 
-            # Check if final row was completed
-            if str(self.sheet[i][columns["continue"]]) != "TRUE":
-                _logger.debug("Stopping sync at row %d due to 'Continue' field.", i)
-                break
+            try:
+                # Validate row fields
+                if str(self.sheet[i][columns["valid"]]) != "TRUE":
+                    raise ValueError(f"Row {i} is not marked as valid.")
 
-            # Validate the row
-            _logger.debug("Validating row %d: %s", i, self.sheet[i])
-            if str(self.sheet[i][columns["valid"]]) != "TRUE":
-                _logger.info("Skipping row %d: 'Valid' field is not TRUE.", i)
-                i += 1
-                continue
+                if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
+                    raise ValueError(f"Invalid External ID at row {i}.")
 
-            if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
-                _logger.warning("Invalid SKU at row %d: %s", i, self.sheet[i][columns["externalId"]])
-                msg = utilities.buildMSG(msg, self.name, "Header", "Invalid SKU")
-                i += 1
-                continue
+                if not utilities.check_date(str(self.sheet[i][columns["date"]])):
+                    raise ValueError(f"Invalid Expiration Date at row {i}.")
 
-            if not utilities.check_date(str(self.sheet[i][columns["date"]])):
-                _logger.warning("Invalid Expiration Date at row %d: %s", i, self.sheet[i][columns["date"]])
-                msg = utilities.buildMSG(
-                    msg,
-                    self.name,
-                    str(self.sheet[i][columns["externalId"]]),
-                    "Invalid Expiration Date: " + str(self.sheet[i][columns["date"]])
-                )
-                i += 1
-                continue
-
-            try:                
-                # Create or Update record as needed
+                # Process the row
                 external_id = str(self.sheet[i][columns["externalId"]])
-                _logger.debug("Processing external ID: %s at row %d", external_id, i)
                 ccp_ids = self.database.env["ir.model.data"].search(
-                    [("name", "=", external_id), 
-                     ("model", "=", "stock.lot")])
-                
-                if ccp_ids:
-                    _logger.debug("Found existing CCP record for external ID: %s", external_id)
+                    [("name", "=", external_id), ("model", "=", "stock.lot")]
+                )
+
+                if len(ccp_ids) > 0:
                     self.updateCCP(
                         self.database.env["stock.lot"].browse(ccp_ids[-1].res_id),
                         i,
-                        columns)
+                        columns
+                    )
                 else:
-                    _logger.debug("No existing CCP record found for external ID: %s. Creating new record.", external_id)
                     self.createCCP(external_id, i, columns)
 
             except Exception as e:
-                _logger.error("Error processing row %d: %s", i, e, exc_info=True)
-                msg = utilities.buildMSG(msg, self.name, str(external_id), str(e))
-                return True, msg
+                # Log and skip the problematic row
+                error_message = f"CCP.PY: Error occurred at row {i}: {str(e)}"
+                _logger.error(error_message, exc_info=True)
+                skipped_items.append({
+                    "row": i,
+                    "externalId": str(self.sheet[i][columns["externalId"]]),
+                    "error": str(e)
+                })
 
             i += 1
-        return False, msg
+
+        # Compile skipped items report
+        if skipped_items:
+            report = "\n".join(
+                [f"Row {item['row']}: External ID {item['externalId']} - Error: {item['error']}" for item in skipped_items]
+            )
+            _logger.warning(f"CCP.PY: Skipped items report:\n{report}")
+            self.database.sendSyncReport(f"<h1>Skipped Items Report</h1><pre>{report}</pre>")
+
+        _logger.info("CCP.PY: CCP synchronization completed successfully.")
+        return False, ""
+
 
     # def updateCCP(self, ccp_item, i, columns):
     #     _logger.debug("Updating CCP item: %s at row %d", ccp_item, i)
