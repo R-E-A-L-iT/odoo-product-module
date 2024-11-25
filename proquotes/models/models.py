@@ -814,6 +814,12 @@ class order(models.Model):
             except:
                 _logger.info("Failed to add contacts to the partner_ids from the email_contacts table")
 
+    def _action_confirm(self):
+        selected_lines = self.order_line.sudo().filtered(lambda line: line.selected == 'true')
+        selected_lines._action_launch_stock_rule()
+        # self.order_line._action_launch_stock_rule()
+        # return super(order, self)._action_confirm()
+
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
         if self.partner_id and not self.is_rental:
