@@ -21,6 +21,9 @@ class sync_ccp:
         self.database = database
 
     def syncCCP(self):
+        _logger.debug("CCP.PY: Starting CCP synchronization.")
+        skipped_items = []  # List to store skipped rows and errors
+
         # Confirm GS Tab is in the correct Format
         sheetWidth = 11
         columns = dict()
@@ -28,20 +31,19 @@ class sync_ccp:
         msg = ""
         i = 1
 
-        # Check if the header match the appropriate format
+        # Check if the header matches the expected format
         ccpHeaderDict = dict()
-        ccpHeaderDict["Owner ID"]           = "ownerId"
-        ccpHeaderDict["EID/SN"]             = "eidsn"
-        ccpHeaderDict["External ID"]        = "externalId"
-        ccpHeaderDict["Product Code"]       = "code"
-        ccpHeaderDict["Product Name"]       = "name"
-        ccpHeaderDict["Publish"]            = "publish"
-        ccpHeaderDict["Expiration Date"]    = "date"
-        ccpHeaderDict["Valid"]              = "valid"
-        ccpHeaderDict["Continue"]           = "continue"
+        ccpHeaderDict["Owner ID"] = "ownerId"
+        ccpHeaderDict["EID/SN"] = "eidsn"
+        ccpHeaderDict["External ID"] = "externalId"
+        ccpHeaderDict["Product Code"] = "code"
+        ccpHeaderDict["Product Name"] = "name"
+        ccpHeaderDict["Publish"] = "publish"
+        ccpHeaderDict["Expiration Date"] = "date"
+        ccpHeaderDict["Valid"] = "valid"
+        ccpHeaderDict["Continue"] = "continue"
         columns, msg, columnsMissing = utilities.checkSheetHeader(ccpHeaderDict, self.sheet, self.name)
 
-        
         if len(self.sheet[i]) != sheetWidth or columnsMissing:
             msg = (
                 "<h1>CCP page Invalid</h1>\n<p>"
@@ -54,97 +56,148 @@ class sync_ccp:
                 + msg
             )
             self.database.sendSyncReport(msg)
-            _logger.info("self.sheet Width: " + str(len(self.sheet[i])))
+            _logger.warning(f"CCP.PY: Sheet header validation failed. {msg}")
             return True, msg
 
-        # Loop through Rows in Google Sheets        
+        # Loop through rows in Google Sheets
+        _logger.debug("CCP.PY: Starting row processing.")
         while True:
-            # Check if final row was completed
-            if (i == len(self.sheet) or 
-                str(self.sheet[i][columns["continue"]]) != "TRUE"):
+            # Check if the process should continue
+            if i == len(self.sheet) or str(self.sheet[i][columns["continue"]]) != "TRUE":
+                _logger.debug(f"CCP.PY: Stopping processing at row {i}.")
                 break
 
-            # Verify The validity of certain fields
-            if str(self.sheet[i][columns["valid"]]) != "TRUE":
-                i = i + 1
-                continue
+            try:
+                # # Validate row fields
+                # if str(self.sheet[i][columns["valid"]]) != "TRUE":
+                #     raise ValueError(f"Row {i} is not marked as valid.")
 
-            if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
-                msg = utilities.buildMSG(msg, self.name, "Header", "Invalid SKU")
-                i = i + 1
-                continue
+                if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
+                    raise ValueError(f"Invalid External ID at row {i}.")
 
-            if not utilities.check_date(str(self.sheet[i][columns["date"]])):
-                msg = utilities.buildMSG(
-                    msg,
-                    self.name,
-                    str(self.sheet[i][columns["externalId"]]),
-                    "Invalid Expiration Date: " + str(self.sheet[i][columns["date"]]))
-                i = i + 1
-                continue
+                if not utilities.check_date(str(self.sheet[i][columns["date"]])):
+                    raise ValueError(f"Invalid Expiration Date at row {i}.")
 
-            try:                
-                # Create or Update record as needed
+                # Process the row
                 external_id = str(self.sheet[i][columns["externalId"]])
                 ccp_ids = self.database.env["ir.model.data"].search(
-                    [("name", "=", external_id), 
-                     ("model", "=", "stock.lot")])
-                
+                    [("name", "=", external_id), ("model", "=", "stock.lot")]
+                )
+
                 if len(ccp_ids) > 0:
                     self.updateCCP(
                         self.database.env["stock.lot"].browse(ccp_ids[-1].res_id),
                         i,
-                        columns)
+                        columns
+                    )
                 else:
                     self.createCCP(external_id, i, columns)
 
             except Exception as e:
-                _logger.info("CCP")
-                _logger.error(e)
-                _logger.exception(e)
-                _logger.info(str(self.sheet[i]))
-                msg = utilities.buildMSG(msg, self.name, str(external_id), str(e))
-                msg = msg + str(e)
-                return True, msg
+                # Log and skip the problematic row
+                error_message = f"CCP.PY: Error occurred at row {i}: {str(e)}"
+                _logger.error(error_message, exc_info=True)
+                skipped_items.append({
+                    "row": i,
+                    "externalId": str(self.sheet[i][columns["externalId"]]),
+                    "error": str(e)
+                })
 
-            i = i + 1
-        return False, msg
+            i += 1
 
+        # Compile skipped items report
+        if skipped_items:
+            report = "\n".join(
+                [f"Row {item['row']}: External ID {item['externalId']} - Error: {item['error']}" for item in skipped_items]
+            )
+            _logger.warning(f"CCP.PY: Skipped items report:\n{report}")
+            self.database.sendSyncReport(f"<h1>Skipped Items Report</h1><pre>{report}</pre>")
+
+        _logger.info("CCP.PY: CCP synchronization completed successfully.")
+        return False, ""
+
+
+    # def updateCCP(self, ccp_item, i, columns):
+    #     _logger.debug("Updating CCP item: %s at row %d", ccp_item, i)
+    #     if ccp_item.stringRep == str(self.sheet[i][:]):
+    #         _logger.info("No changes detected for row %d. Skipping update.", i)
+    #         _logger.info("Skipping becuase no changes detected. stringRep for row %d: Existing: %s | New: %s", i, ccp_item.stringRep, str(self.sheet[i][:]))
+    #         return
+
+    #     ccp_item.name = self.sheet[i][columns["eidsn"]]
+
+    #     product_ids = self.database.env["product.product"].search(
+    #         [("sku", "=", self.sheet[i][columns["code"]])])
+    #     ccp_item.product_id = product_ids[-1].id if product_ids else None
+    #     _logger.debug("Updated product_id for row %d: %s", i, product_ids[-1].id if product_ids else None)
+
+    #     partner = self.database.env["res.partner"].search([
+    #         ("company_nickname", "=", self.sheet[i][columns["ownerId"]].strip())
+    #     ], limit=1)
+
+    #     if not partner:
+    #         _logger.warning("No matching partner found for company_nickname '%s' in row %d.", self.sheet[i][columns["ownerId"]], i)
+    #         ccp_item.owner = None
+    #     else:
+    #         ccp_item.owner = partner.id
+    #         _logger.debug("Updated owner for row %d: %s", i, partner.id)
+
+    #     if self.sheet[i][columns["date"]] != "FALSE":
+    #         ccp_item.expire = self.sheet[i][columns["date"]]
+    #     else:
+    #         ccp_item.expire = None
+
+    #     ccp_item.publish = self.sheet[i][columns["publish"]]
+
+    #     ccp_item.stringRep = str(self.sheet[i][:])
+    #     _logger.info("Successfully updated CCP item at row %d", i)
+    
     def updateCCP(self, ccp_item, i, columns):
-        # Check if data in GS is the same as in Odoo
-        if ccp_item.stringRep == str(self.sheet[i][:]):
+        # Extract relevant fields from the sheet
+        new_representation = {
+            "eidsn": self.sheet[i][columns["eidsn"]],
+            "code": self.sheet[i][columns["code"]],
+            "date": self.sheet[i][columns["date"]],
+            "publish": self.sheet[i][columns["publish"]],
+        }
+
+        # Extract the current representation from the database
+        current_representation = {
+            "eidsn": ccp_item.name,
+            "code": ccp_item.product_id.sku if ccp_item.product_id else None,
+            "date": ccp_item.expire,
+            "publish": ccp_item.publish,
+        }
+
+        # Log detailed comparisons
+        _logger.debug("Comparing stringRep for row %d: Current: %s | New: %s", i, current_representation, new_representation)
+
+        # Check for changes in relevant fields
+        if current_representation == new_representation:
+            _logger.info("No changes detected for row %d. Skipping update.", i)
             return
-            
-        # Update fields in Record
-        ccp_item.name = self.sheet[i][columns["eidsn"]]
+
+        # Update the CCP item
+        _logger.info("Changes detected for row %d. Updating CCP item.", i)
+        ccp_item.name = new_representation["eidsn"]
 
         product_ids = self.database.env["product.product"].search(
-            [("sku", "=", self.sheet[i][columns["code"]])])
+            [("sku", "=", new_representation["code"])])
+        ccp_item.product_id = product_ids[-1].id if product_ids else None
 
-        ccp_item.product_id = product_ids[-1].id
+        ccp_item.expire = new_representation["date"] if new_representation["date"] != "FALSE" else None
+        ccp_item.publish = new_representation["publish"]
 
-        owner_ids = self.database.env["ir.model.data"].search([
-                ("name", "=", self.sheet[i][columns["ownerId"]]),
-                ("model", "=", "res.partner")])
-        if len(owner_ids) == 0:
-            _logger.info("No owner")
+        # Update stringRep for the next comparison
+        ccp_item.stringRep = str(new_representation)
+        _logger.info("Updated CCP item: %s", ccp_item.name)
 
-        ccp_item.owner = owner_ids[-1].id # fix broken field, used to be res_id
-        if self.sheet[i][columns["date"]] != "FALSE":
-            ccp_item.expire = self.sheet[i][columns["date"]]
-        else:
-            ccp_item.expire = None
 
-        ccp_item.publish = self.sheet[i][columns["publish"]]
-
-        ccp_item.stringRep = str(self.sheet[i][:])
-
-    # follows same pattern
     def createCCP(self, external_id, i, columns):
-        # Create new record
+        _logger.debug("Creating new CCP record for external ID: %s at row %d", external_id, i)
         ext = self.database.env["ir.model.data"].create({"name": external_id, "model": "stock.lot"})[0]
         product_ids = self.database.env["product.product"].search([("sku", "=", self.sheet[i][columns["code"]])])
-        product_id = product_ids[len(product_ids) - 1].id        
+        product_id = product_ids[-1].id if product_ids else None
         company_id = self.database.env["res.company"].search([("id", "=", 1)]).id
 
         ccp_item = self.database.env["stock.lot"].create({
@@ -154,4 +207,5 @@ class sync_ccp:
             })[0]
         ext.res_id = ccp_item.id
 
+        _logger.info("New CCP record created for external ID: %s at row %d", external_id, i)
         self.updateCCP(ccp_item, i, columns)
