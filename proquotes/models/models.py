@@ -881,8 +881,8 @@ class order(models.Model):
         
         if 'partner_ids' not in kwargs:
             kwargs['partner_ids'] = []
-        if forward_partner.id not in kwargs['partner_ids']:
-            kwargs['partner_ids'].append(forward_partner.id)
+        if sales_email.id not in kwargs['partner_ids']:
+            kwargs['partner_ids'].append(sales_email.id)
         #_logger.info('>>>>>>>>>>>>> kwargs: %s', kwargs)
         if 'tracking_value_ids' not in kwargs:
             return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
