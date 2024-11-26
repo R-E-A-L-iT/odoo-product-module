@@ -1588,7 +1588,6 @@ class orderLineProquotes(models.Model):
 class proquotesMail(models.TransientModel):
     _inherit = "mail.compose.message"
     
-    from odoo import models, api
 
 class MailComposeMessage(models.TransientModel):
     _inherit = 'mail.compose.message'
