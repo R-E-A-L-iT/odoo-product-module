@@ -293,6 +293,7 @@
         <!--Add Check Box to control fold Section-->
         <xpath expr="//t[@t-if=&quot;line.display_type == 'line_section'&quot;]/td/span" position="replace">
             <div style="width: 75%; float: left;">
+                <t t-set="line_section_id" t-value="line.id"/>
                 <label t-attf-for="fold{{line}}{{line_index}}"
                        style="display: inline-block; width: 100%; height: 100%;">
 
@@ -335,7 +336,7 @@
             </div>
 
             <div style="width: 25%; float: right">
-                <label class="subtotal-label" t-attf-for="fold{{line}}{{line_index}}"
+                <label class="subtotal-label" t-att-data-sec-line="line.id" t-attf-for="fold{{line}}{{line_index}}"
                        style="display: inline-block; width: 100%; height: 100%; text-align: right;">
                     <span>
                         <strong t-if="clang == 'en_CA' or clang == 'en_US'" class="text-left subtotal-label"
@@ -347,7 +348,8 @@
                         </strong>
                     </span>
                     <span t-if="line.special != 'optional' or line.selected == 'true'"
-                          class="subtotal-destination text-left" style="font-weight: 400 !important;"/>
+                          class="subtotal-destination-span text-left" t-att-data-section_id="line_section_id"
+                          style="font-weight: 400 !important;"/>
                     <span t-elif="clang == 'en_CA' or clang == 'en_US'" class="text-left"
                           style="font-weight: 400 !important;">0.00 $
                     </span>
@@ -355,7 +357,14 @@
                 </label>
             </div>
         </xpath>
-
+        <xpath expr="//tr[hasclass('is-subtotal')]/td" position="inside">
+            <!-- <span class="is-section-subtotal d-none" t-att-data-section_id="line_section_id"> -->
+            <span t-out="current_subtotal" class="is-section-subtotal d-none" t-att-data-section_id="line_section_id"
+                  t-options='{"widget": "monetary", "display_currency": sale_order.currency_id}'
+            />
+            <!-- <t t-esc="current_subtotal"/><t t-esc="sale_order.currency_id.symbol"/> -->
+            <!-- </span> -->
+        </xpath>
         <xpath expr="//t[@t-if=&quot;line.display_type == 'line_note'&quot;]/td" position="inside">
             <span class="line_id" t-attf-id="{{line}}"/>
         </xpath>

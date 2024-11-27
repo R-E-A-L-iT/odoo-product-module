@@ -20,7 +20,6 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 		},
 
 		async start() {
-			console.log("Start");
 			this.orderDetail = this.$el.find("table#sales_order_table").data();
 			this._onLoad();
 			await this._super(...arguments);
@@ -32,7 +31,6 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 		},
 
 		_updateQuantityEvent: function (t) {
-            console.log('tttt------_updateQuantityEvent----', t)
             setTimeout(() => {
 			//Update Quantity for Product
     			let self = this;
@@ -75,15 +73,11 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 		},
 
 		_updatePriceTotalsEvent: function (ev) {
-            console.log('------_updatePriceTotalsEvent----')
-            console.log('------_updatePriceTotalsEvent--ev--',ev)
             setTimeout(() => {
     			//Find All Products that Might Change the Price
                 // var $link = $(ev.currentTarget);
     			let self = this;
     			var vpList = document.querySelectorAll(".priceChange");
-                // console.log('------$link----',$link)
-                console.log('------vpList----',vpList)
     			var result = null;
     			var line_ids = [];
     			var targetsChecked = [];
@@ -104,7 +98,6 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 
 
 		_rentalValueTotal: function () {
-            console.log('------_rentalValueTotal-------')
 			var totalLandingEnglish = document.getElementById("total-rental-value-english");
 			var totalLandingFrench = document.getElementById("total-rental-value-french");
 			if (totalLandingEnglish == undefined && totalLandingFrench == undefined) {
@@ -112,9 +105,7 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 			}
 			var total = 0;
 			var items = document.getElementsByClassName("quoteLineRow");
-            console.log('------items-------',items)
 			for (var i = 0; i < items.length; i++) {
-                console.log('------items-------',items)
 				var input = items[i].getElementsByTagName("input");
 				var include = true;
 				if (input.length > 0) {
@@ -136,7 +127,6 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 							items[i].getElementsByClassName("itemValue")[0]
 								.innerHTML.replace(",", "").replace("$", "").replace(" ", "")
 						);
-                        console.log('------total-------',total)
 					}
 				}
 			}
@@ -191,9 +181,6 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 				rentalLength -= 1;
 			}
 
-			console.log("Months: " + months);
-			console.log("Weeks: " + weeks);
-			console.log("Days: " + days);
 			var rentalEstimateTotal = 0
 			var productPrices = document.getElementsByClassName("rental_rate_calc")
 			for (var i = 0; i < productPrices.length; i++) {
@@ -209,20 +196,14 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 						}
 					}
 				}
-				console.log(productPrices[i])
 				var price = productPrices[i].innerHTML.replace(",", "").replace("$", "").replace(" ", "");
-				console.log("Rental Estimate Total" + rentalEstimateTotal)
 				var rentalEstimateSubTotal = 0;
 				rentalEstimateSubTotal += 1 * days * price;
 				if(rentalEstimateSubTotal > 4 * price) {
-					console.log(rentalEstimateSubTotal)
-					console.log(price * 4)
 					rentalEstimateSubTotal = 4 * price
 				}
 				rentalEstimateSubTotal += 4 * weeks * price;
 				if(rentalEstimateSubTotal > 12 * price) {
-					console.log(rentalEstimateSubTotal)
-					console.log(price * 12)
 					rentalEstimateSubTotal = 12 * price
 				}
 				rentalEstimateSubTotal += 12 * months * price;
@@ -236,7 +217,6 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 		},
 
 		_updateSectionSelectionEvent: function (ev) {
-            console.log('------_updateSectionSelectionEvent----')
 			var target = ev.currentTarget;
 			var checked = target.checked;
 			var p = target;
@@ -282,7 +262,6 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 		},
 
 		_updatePriceTotals: function (targetsChecked, line_ids) {
-            console.log('------_updatePriceTotals----')
 			let self = this;
             //            return this._rpc({
             //				route: "/my/orders/" + this.orderDetail.orderId + "/select",
@@ -292,8 +271,6 @@ import publicWidget from "@web/legacy/js/public/public_widget";
             //					selected: targetsChecked,
             //				},
             //			})
-            console.log('---282---targetsChecked----',targetsChecked)
-            console.log('---283---line_ids----',line_ids)
             return jsonrpc("/my/orders/" + this.orderDetail.orderId + "/select", {
 					'access_token': this.orderDetail.token,
 					'line_ids': line_ids,
@@ -312,7 +289,6 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 		_multipleChoiceView: function () {
 			var cbl = document.querySelectorAll(".multipleChoice");
 			for (var i = 0; i < cbl.length; i++) {
-				console.log(cbl[i]);
 				var cb = cbl[i];
 				var x = cb;
 				while (x.tagName != "TR") {
@@ -440,7 +416,7 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 			var subTotalList = document.getElementsByClassName(
 				"subtotal-destination"
 			);
-
+            console.log("PRICE.JS subTotalList", subTotalList)
 			for (var i = 0; i < subTotalList.length; i++) {
 				var subTotal = subTotalList[i];
 				var inner_html = ""
@@ -457,6 +433,20 @@ import publicWidget from "@web/legacy/js/public/public_widget";
 			if (div != null) {
 				document.querySelector("#portalTotal b").innerHTML = total;
 			}
+             // Get all spans with the class 'is-section-subtotal'
+            document.querySelectorAll('span.is-section-subtotal').forEach(function(subtotalSpan) {
+                // Get the section_id and amount from the current span
+                var sectionId = subtotalSpan.getAttribute('data-section_id');
+                var amount = $(subtotalSpan).text();  // Get the inner HTML (amount) of the current span
+
+                // Find the span with class 'subtotal-destination-span' that matches the current section_id
+                var destinationSpan =
+                    document.querySelector('span.subtotal-destination-span[data-section_id="' + sectionId + '"]');
+                // If the destination span exists, update its inner HTML with the amount
+                if (destinationSpan) {
+                    destinationSpan.innerHTML = amount;
+                }
+            });
 		},
 
 		_updateView: function (total) {
