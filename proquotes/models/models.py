@@ -1936,3 +1936,18 @@ class ProjectTask(models.Model):
         ('2', 'High'),
         ('3', 'Very High'),
     ], default='0', index=True, string="Priority", tracking=True)
+
+
+class SOMailComposeMessage(models.TransientModel):
+    _inherit = 'mail.compose.message'
+
+    @api.onchange('partner_ids')
+    def _onchange_contacts_email_send(self):
+        res_ids_list = ast.literal_eval(self.res_ids)  
+        sale_ids = self.env['sale.order'].sudo().search([('id', 'in', res_ids_list)])
+        if sale_ids:
+            for sale in sale_ids:
+                if sale.email_contacts.ids != self.partner_ids.ids:
+                    sale.email_contacts = [(6, 0, self.partner_ids.ids)]
+                else:
+                    pass
