@@ -1849,3 +1849,13 @@ class pdf_quote(models.Model):
 #             if not move.selected:
 #                 move.state = 'cancel'
 #         return super(StockPicking, self).button_validate()
+
+class ProjectTask(models.Model):
+    _inherit = 'project.task'
+
+    priority = fields.Selection([
+        ('0', 'Low'),
+        ('1', 'Medium'),
+        ('2', 'High'),
+        ('3', 'Very High'),
+    ], default='0', index=True, string="Priority", tracking=True)
