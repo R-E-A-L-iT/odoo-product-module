@@ -867,6 +867,19 @@ class order(models.Model):
             'context': ctx,
         }
     
+    def _recompute_prices(self):
+        lines_to_recompute = self._get_update_prices_lines()
+        lines_to_recompute.invalidate_recordset(['pricelist_item_id'])
+        lines_to_recompute._compute_price_unit()
+        # Special case: we want to overwrite the existing discount on _recompute_prices call
+        # i.e. to make sure the discount is correctly reset
+        # if pricelist discount_policy is different than when the price was first computed.
+        for lines in lines_to_recompute:
+            if not lines.discount:
+                lines.discount = 0.0
+        lines_to_recompute._compute_discount()
+        self.show_update_pricelist = False
+    
     @api.returns('mail.message', lambda value: value.id)
     def message_post(self, **kwargs):
         if self.env.context.get('mark_so_as_sent'):
