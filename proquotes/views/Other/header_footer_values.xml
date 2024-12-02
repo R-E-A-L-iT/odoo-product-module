@@ -13,7 +13,7 @@
         <field name="record_type">Footer</field>
         <field name="url">http://cdn.r-e-a-l.it/images/footer/R-E-A-L.iTFooter_USA.png</field>
         <field name="default">True</field>
-        <field name="company_ids" eval="[(4, ref('3'))]"/>
+        <field name="company_ids" eval="[(4, 3)]"/>
     </record>
 
     <record id="footer_horia" model="header.footer">
