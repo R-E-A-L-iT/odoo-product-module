@@ -1746,21 +1746,42 @@ class ticket(models.Model):
     _inherit = 'helpdesk.ticket'
 
     def _default_footer(self):
+        """
+        Determine the default footer based on the active company and the sending user's first name.
+        """
         current_user = self.env.user
+        company_name = self.env.company.name
         footer = False
-        if "Horia" in current_user.name:
+
+        # Personal footers based on first name
+        if current_user.name.startswith('Horia'):
             footer = self.env.ref('proquotes.footer_horia', raise_if_not_found=False)
-        elif "Bill" in current_user.name:
+        elif current_user.name.startswith('Bill'):
             footer = self.env.ref('proquotes.footer_bill', raise_if_not_found=False)
-        elif "Chidiak" in current_user.name:
+        elif current_user.name.startswith('Mäel'):
             footer = self.env.ref('proquotes.footer_mael', raise_if_not_found=False)
+
+        # Default footers based on company name
+        if not footer:
+            if company_name == 'R-E-A-L.iT Solutions':
+                footer = self.env['header.footer'].search(
+                    [('name', '=', 'EMAIL - Canadian Default Footer')],
+                    limit=1
+                )
+            elif company_name == 'R-E-A-L.iT U.S. Inc.':
+                footer = self.env['header.footer'].search(
+                    [('name', '=', 'EMAIL - American Default Footer')],
+                    limit=1
+                )
+
         return footer.id if footer else False
 
     footer_id = fields.Many2one(
         "header.footer",
         default=_default_footer,
         required=False,
-        domain=[('name', 'ilike', 'EMAIL')],
+        domain=[('record_type', '=', 'Footer')],
+        string="Footer"
     )
     
     @api.model
