@@ -33,7 +33,7 @@
     'depends': ['sale_management', 'purchase'],
     'data': [
         'report/sale_order_templates.xml',
-        'report/purchase_order_templates.xml',
+        # 'report/purchase_order_templates.xml',
     ],
     'assets': {
         'web.assets_backend': [
