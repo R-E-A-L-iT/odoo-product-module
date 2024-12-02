@@ -1758,7 +1758,7 @@ class ticket(models.Model):
             footer = self.env.ref('proquotes.footer_horia', raise_if_not_found=False)
         elif current_user.name.startswith('Bill'):
             footer = self.env.ref('proquotes.footer_bill', raise_if_not_found=False)
-        elif current_user.name.startswith('Mäel'):
+        elif current_user.name.startswith('Maël'):
             footer = self.env.ref('proquotes.footer_mael', raise_if_not_found=False)
 
         # Default footers based on company name
