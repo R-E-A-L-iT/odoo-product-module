@@ -13,9 +13,8 @@
         <field name="record_type">Footer</field>
         <field name="url">http://cdn.r-e-a-l.it/images/footer/R-E-A-L.iTFooter_USA.png</field>
         <field name="default">True</field>
-        <field name="company_ids" eval="[(4, ref('your_us_company_id'))]"/>
+        <field name="company_ids" eval="[(4, ref('3'))]"/>
     </record>
-
 
     <record id="footer_horia" model="header.footer">
         <field name="name">EMAIL - Horia R-E-A-L.iT Footer</field>
