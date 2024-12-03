@@ -79,7 +79,7 @@ class sync_ccp:
                     # Attempt to parse and reformat the date to YYYY-MM-DD
                     normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
                     if not utilities.check_date(normalized_date):
-                        _logger.info("Invalid expiration date at row " + str(i))
+                        _logger.warning("Invalid expiration date at row " + str(i))
                         # raise ValueError(f"Invalid Expiration Date '{expiration_date}' at row {i}.")
                     expiration_date = normalized_date
                 except ValueError as e:
@@ -91,8 +91,10 @@ class sync_ccp:
                 if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
                     raise ValueError(f"Invalid External ID at row {i}.")
 
-                if not utilities.check_date(str(self.sheet[i][columns["date"]])):
-                    raise ValueError(f"Invalid Expiration Date at row {i}.")
+                normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
+                if not utilities.check_date(normalized_date):
+                    _logger.warning("Row " + str(i) + ": Skipped a line because the expiration date is invalid ")
+                    # raise ValueError(f"Invalid Expiration Date at row {i}.")
 
                 # Process the row
                 external_id = str(self.sheet[i][columns["externalId"]])
