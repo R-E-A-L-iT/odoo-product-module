@@ -32,17 +32,16 @@ class sync_ccp:
         i = 1
 
         # Check if the header matches the expected format
-        ccpHeaderDict = {
-            "Owner ID": "ownerId",
-            "EID/SN": "eidsn",
-            "External ID": "externalId",
-            "Product Code": "code",
-            "Product Name": "name",
-            "Publish": "publish",
-            "Expiration Date": "date",
-            "Valid": "valid",
-            "Continue": "continue",
-        }
+        ccpHeaderDict = dict()
+        ccpHeaderDict["Owner ID"] = "ownerId"
+        ccpHeaderDict["EID/SN"] = "eidsn"
+        ccpHeaderDict["External ID"] = "externalId"
+        ccpHeaderDict["Product Code"] = "code"
+        ccpHeaderDict["Product Name"] = "name"
+        ccpHeaderDict["Publish"] = "publish"
+        ccpHeaderDict["Expiration Date"] = "date"
+        ccpHeaderDict["Valid"] = "valid"
+        ccpHeaderDict["Continue"] = "continue"
         columns, msg, columnsMissing = utilities.checkSheetHeader(ccpHeaderDict, self.sheet, self.name)
 
         if len(self.sheet[i]) != sheetWidth or columnsMissing:
@@ -68,45 +67,52 @@ class sync_ccp:
                 _logger.debug(f"CCP.PY: Stopping processing at row {i}.")
                 break
 
-            try:
-                # Extract the expiration date and validate
-                expiration_date = self.sheet[i][columns["date"]]
-                if expiration_date is None or not isinstance(expiration_date, str) or not utilities.check_date(expiration_date):
-                    _logger.warning(
-                        f"Row {i}: Invalid expiration date '{expiration_date}'. Skipping expiration update."
-                    )
-                    expiration_date = None  # Skip updating expiration date
+            _logger.debug("CCP.PY: Starting row processing.")
+    while True:
+        # Check if the process should continue
+        if i == len(self.sheet) or str(self.sheet[i][columns["continue"]]) != "TRUE":
+            _logger.debug(f"CCP.PY: Stopping processing at row {i}.")
+            break
 
-                # Validate External ID
-                external_id = str(self.sheet[i][columns["externalId"]])
-                if not utilities.check_id(external_id):
-                    raise ValueError(f"Invalid External ID at row {i}.")
-
-                # Process the row
-                ccp_ids = self.database.env["ir.model.data"].search(
-                    [("name", "=", external_id), ("model", "=", "stock.lot")]
+        try:
+            # Extract the expiration date and validate
+            expiration_date = self.sheet[i][columns["date"]]
+            if expiration_date is None or not isinstance(expiration_date, str) or not utilities.check_date(expiration_date):
+                _logger.warning(
+                    f"Row {i}: Invalid expiration date '{expiration_date}'. Skipping expiration update."
                 )
+                expiration_date = None  # Skip updating expiration date
 
-                if ccp_ids:
-                    self.updateCCP(
-                        self.database.env["stock.lot"].browse(ccp_ids[-1].res_id),
-                        i,
-                        columns
-                    )
-                else:
-                    self.createCCP(external_id, i, columns)
+            # Validate External ID
+            external_id = str(self.sheet[i][columns["externalId"]])
+            if not utilities.check_id(external_id):
+                raise ValueError(f"Invalid External ID at row {i}.")
 
-            except Exception as e:
-                # Log and skip the problematic row
-                error_message = f"CCP.PY: Error occurred at row {i}: {str(e)}"
-                _logger.error(error_message, exc_info=True)
-                skipped_items.append({
-                    "row": i,
-                    "externalId": str(self.sheet[i][columns["externalId"]]),
-                    "error": str(e)
-                })
+            # Process the row
+            ccp_ids = self.database.env["ir.model.data"].search(
+                [("name", "=", external_id), ("model", "=", "stock.lot")]
+            )
 
-            i += 1
+            if ccp_ids:
+                self.updateCCP(
+                    self.database.env["stock.lot"].browse(ccp_ids[-1].res_id),
+                    i,
+                    columns
+                )
+            else:
+                self.createCCP(external_id, i, columns)
+
+        except Exception as e:
+            # Log and skip the problematic row
+            error_message = f"CCP.PY: Error occurred at row {i}: {str(e)}"
+            _logger.error(error_message, exc_info=True)
+            skipped_items.append({
+                "row": i,
+                "externalId": str(self.sheet[i][columns["externalId"]]),
+                "error": str(e)
+            })
+
+        i += 1
 
         # Compile skipped items report
         if skipped_items:
@@ -118,7 +124,6 @@ class sync_ccp:
 
         _logger.info("CCP.PY: CCP synchronization completed successfully.")
         return False, ""
-
 
 
     # def updateCCP(self, ccp_item, i, columns):
