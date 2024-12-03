@@ -187,10 +187,19 @@ class sync_ccp:
         # Log detailed comparisons
         _logger.debug("Comparing stringRep for row %d: Current: %s | New: %s", i, current_representation, new_representation)
 
-        # Check for changes in relevant fields
-        if current_representation == new_representation:
-            _logger.info("No changes detected for row %d. Skipping update.", i)
-            return
+        # Check for changes in relevant fields except date
+        if (
+            current_representation["eidsn"] == new_representation["eidsn"]
+            and current_representation["code"] == new_representation["code"]
+            and current_representation["publish"] == new_representation["publish"]
+        ):
+            # Validate the date separately to avoid skipping other updates
+            if (
+                utilities.check_date(new_representation["date"])
+                and current_representation["date"] == new_representation["date"]
+            ):
+                _logger.info("No changes detected for row %d. Skipping update.", i)
+                return
 
         # Update the CCP item
         _logger.info("Changes detected for row %d. Updating CCP item.", i)
@@ -200,12 +209,19 @@ class sync_ccp:
             [("sku", "=", new_representation["code"])])
         ccp_item.product_id = product_ids[-1].id if product_ids else None
 
-        ccp_item.expire = new_representation["date"] if new_representation["date"] != "FALSE" else None
+        # Only update the expiration date if it is valid
+        if utilities.check_date(new_representation["date"]):
+            ccp_item.expire = new_representation["date"]
+            _logger.info("Expiration date updated for row %d to '%s'.", i, new_representation["date"])
+        else:
+            _logger.warning("Invalid expiration date '%s' for row %d. Skipping expiration date update.", new_representation["date"], i)
+
         ccp_item.publish = new_representation["publish"]
 
         # Update stringRep for the next comparison
         ccp_item.stringRep = str(new_representation)
         _logger.info("Updated CCP item: %s", ccp_item.name)
+
 
 
     def createCCP(self, external_id, i, columns):
