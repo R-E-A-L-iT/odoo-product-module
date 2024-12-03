@@ -68,41 +68,29 @@ class sync_ccp:
                 break
 
             try:
-                # # Validate row fields
-                # if str(self.sheet[i][columns["valid"]]) != "TRUE":
-                #     raise ValueError(f"Row {i} is not marked as valid.")
-                
-                # Normalize the date format
-                expiration_date = str(self.sheet[i][columns["date"]])
+                # Extract the expiration date and validate
+                expiration_date = self.sheet[i][columns["date"]]
 
-                try:
-                    # Attempt to parse and reformat the date to YYYY-MM-DD
-                    normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
-                    if not utilities.check_date(normalized_date):
-                        _logger.warning("Invalid expiration date at row " + str(i))
-                        # raise ValueError(f"Invalid Expiration Date '{expiration_date}' at row {i}.")
-                    expiration_date = normalized_date
-                except ValueError as e:
-                    _logger.warning(f"CCP.PY: Invalid Expiration Date '{expiration_date}' at row {i}. Skipping expiration update.")
-                    expiration_date = None  # Skip updating expiration date
-                    
-                    
+                if not expiration_date or expiration_date == "FALSE":
+                    _logger.warning(f"Row {i}: Expiration date is either empty or marked as 'FALSE'. Skipping expiration update.")
+                    expiration_date = None
+                elif not utilities.check_date(expiration_date):
+                    _logger.warning(f"Row {i}: Invalid expiration date '{expiration_date}'. Skipping expiration update.")
+                    expiration_date = None
+                else:
+                    _logger.debug(f"Row {i}: Valid expiration date '{expiration_date}'.")
 
-                if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
+                # Validate External ID
+                external_id = str(self.sheet[i][columns["externalId"]])
+                if not utilities.check_id(external_id):
                     raise ValueError(f"Invalid External ID at row {i}.")
 
-                normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
-                if not utilities.check_date(normalized_date):
-                    _logger.warning("Row " + str(i) + ": Skipped a line because the expiration date is invalid ")
-                    # raise ValueError(f"Invalid Expiration Date at row {i}.")
-
                 # Process the row
-                external_id = str(self.sheet[i][columns["externalId"]])
                 ccp_ids = self.database.env["ir.model.data"].search(
                     [("name", "=", external_id), ("model", "=", "stock.lot")]
                 )
 
-                if len(ccp_ids) > 0:
+                if ccp_ids:
                     self.updateCCP(
                         self.database.env["stock.lot"].browse(ccp_ids[-1].res_id),
                         i,
@@ -120,6 +108,7 @@ class sync_ccp:
                     "externalId": str(self.sheet[i][columns["externalId"]]),
                     "error": str(e)
                 })
+
 
             i += 1
 
