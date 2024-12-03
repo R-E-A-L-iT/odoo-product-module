@@ -297,7 +297,7 @@ class sync_pricelist:
             {"name": external_id, "model": "product.template"}
         )[0]
         
-        company_id = self.env.company.id
+        company_id = 1
         
         product = self.database.env["product.template"].create({"name": product_name, "company_id": company_id,})[0]
         ext.res_id = product.id
