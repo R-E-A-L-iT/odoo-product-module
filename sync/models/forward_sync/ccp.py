@@ -219,16 +219,30 @@ class sync_ccp:
 
     def createCCP(self, external_id, i, columns):
         _logger.debug("Creating new CCP record for external ID: %s at row %d", external_id, i)
-        ext = self.database.env["ir.model.data"].create({"name": external_id, "model": "stock.lot"})[0]
+        
+        # Check for existing `ir.model.data` record
+        ext = self.database.env["ir.model.data"].search(
+            [("name", "=", external_id), ("model", "=", "stock.lot")], limit=1
+        )
+
+        if not ext:
+            # Create a new `ir.model.data` record if it doesn't exist
+            ext = self.database.env["ir.model.data"].create({"name": external_id, "model": "stock.lot"})[0]
+        else:
+            _logger.warning("Duplicate ir.model.data entry found for external ID: %s. Reusing existing record.", external_id)
+
+        # Create the CCP record
         product_ids = self.database.env["product.product"].search([("sku", "=", self.sheet[i][columns["code"]])])
         product_id = product_ids[-1].id if product_ids else None
         company_id = self.database.env["res.company"].search([("id", "=", 1)]).id
 
         ccp_item = self.database.env["stock.lot"].create({
-                "name": self.sheet[i][columns["eidsn"]],
-                "product_id": product_id,
-                "company_id": company_id,
-            })[0]
+            "name": self.sheet[i][columns["eidsn"]],
+            "product_id": product_id,
+            "company_id": company_id,
+        })[0]
+
+        # Link the `ir.model.data` record to the new CCP item
         ext.res_id = ccp_item.id
 
         _logger.info("New CCP record created for external ID: %s at row %d", external_id, i)
