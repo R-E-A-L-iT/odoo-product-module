@@ -68,9 +68,30 @@ class sync_ccp:
                 break
 
             try:
-                # Validate external ID
+                # # Validate row fields
+                # if str(self.sheet[i][columns["valid"]]) != "TRUE":
+                #     raise ValueError(f"Row {i} is not marked as valid.")
+                
+                # Normalize the date format
+                expiration_date = str(self.sheet[i][columns["date"]])
+
+                try:
+                    # Attempt to parse and reformat the date to YYYY-MM-DD
+                    normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
+                    if not utilities.check_date(normalized_date):
+                        raise ValueError(f"Invalid Expiration Date '{expiration_date}' at row {i}.")
+                    expiration_date = normalized_date
+                except ValueError as e:
+                    _logger.warning(f"CCP.PY: Invalid Expiration Date '{expiration_date}' at row {i}. Skipping expiration update.")
+                    expiration_date = None  # Skip updating expiration date
+                    
+                    
+
                 if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
                     raise ValueError(f"Invalid External ID at row {i}.")
+
+                if not utilities.check_date(str(self.sheet[i][columns["date"]])):
+                    raise ValueError(f"Invalid Expiration Date at row {i}.")
 
                 # Process the row
                 external_id = str(self.sheet[i][columns["externalId"]])
@@ -79,36 +100,12 @@ class sync_ccp:
                 )
 
                 if len(ccp_ids) > 0:
-                    ccp_item = self.database.env["stock.lot"].browse(ccp_ids[-1].res_id)
-
-                    # Update CCP fields
-                    _logger.info(f"Updating CCP item for row {i}: {external_id}")
-
-                    # Update EID/SN
-                    ccp_item.name = self.sheet[i][columns["eidsn"]]
-
-                    # Update Product ID
-                    product_ids = self.database.env["product.product"].search(
-                        [("sku", "=", self.sheet[i][columns["code"]])]
+                    self.updateCCP(
+                        self.database.env["stock.lot"].browse(ccp_ids[-1].res_id),
+                        i,
+                        columns
                     )
-                    ccp_item.product_id = product_ids[-1].id if product_ids else None
-
-                    # Update Expiration Date (skip if invalid)
-                    expiration_date = self.sheet[i][columns["date"]]
-                    if utilities.check_date(expiration_date):
-                        ccp_item.expire = expiration_date
-                        _logger.info(f"Expiration date updated for row {i} to '{expiration_date}'.")
-                    else:
-                        _logger.warning(f"Invalid expiration date '{expiration_date}' for row {i}. Skipping expiration date update.")
-
-                    # Update Publish
-                    ccp_item.publish = self.sheet[i][columns["publish"]]
-
-                    # Update stringRep for the next comparison
-                    ccp_item.stringRep = str(self.sheet[i][:])
-
                 else:
-                    # Create a new CCP record if it doesn't exist
                     self.createCCP(external_id, i, columns)
 
             except Exception as e:
@@ -133,7 +130,6 @@ class sync_ccp:
 
         _logger.info("CCP.PY: CCP synchronization completed successfully.")
         return False, ""
-
 
 
     # def updateCCP(self, ccp_item, i, columns):
