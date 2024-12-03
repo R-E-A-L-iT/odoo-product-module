@@ -296,7 +296,10 @@ class sync_pricelist:
         ext = self.database.env["ir.model.data"].create(
             {"name": external_id, "model": "product.template"}
         )[0]
-        product = self.database.env["product.template"].create({"name": product_name})[0]
+        
+        company_id = self.env.company.id
+        
+        product = self.database.env["product.template"].create({"name": product_name, "company_id": company_id,})[0]
         ext.res_id = product.id
 
         product.tracking = "serial"
