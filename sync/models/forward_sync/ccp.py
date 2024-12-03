@@ -125,7 +125,7 @@ class sync_ccp:
     #     _logger.debug("Updating CCP item: %s at row %d", ccp_item, i)
     #     if ccp_item.stringRep == str(self.sheet[i][:]):
     #         _logger.info("No changes detected for row %d. Skipping update.", i)
-    #         _logger.info("Skipping becuase no changes detected. stringRep for row %d: Existing: %s | New: %s", i, ccp_item.stringRep, str(self.sheet[i][:]))
+    #         _logger.info("Skipping because no changes detected. stringRep for row %d: Existing: %s | New: %s", i, ccp_item.stringRep, str(self.sheet[i][:]))
     #         return
 
     #     ccp_item.name = self.sheet[i][columns["eidsn"]]
