@@ -79,7 +79,8 @@ class sync_ccp:
                     # Attempt to parse and reformat the date to YYYY-MM-DD
                     normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
                     if not utilities.check_date(normalized_date):
-                        raise ValueError(f"Invalid Expiration Date '{expiration_date}' at row {i}.")
+                        _logger.info("Invalid expiration date at row " + str(i))
+                        # raise ValueError(f"Invalid Expiration Date '{expiration_date}' at row {i}.")
                     expiration_date = normalized_date
                 except ValueError as e:
                     _logger.warning(f"CCP.PY: Invalid Expiration Date '{expiration_date}' at row {i}. Skipping expiration update.")
