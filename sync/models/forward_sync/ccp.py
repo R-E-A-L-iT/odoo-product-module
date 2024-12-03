@@ -21,7 +21,7 @@ class sync_ccp:
         self.database = database
 
     def syncCCP(self):
-        _logger.debug("syncCCP: Starting CCP synchronization.")
+        _logger.debug("SyncCCP: Starting CCP synchronization.")
         skipped_items = []  # List to store skipped rows and errors
 
         # Confirm GS Tab is in the correct format
@@ -56,26 +56,29 @@ class sync_ccp:
                 + "</p>\n"
                 + msg
             )
-            _logger.warning(f"syncCCP: Sheet header validation failed. {msg}")
-            self._send_report(f"<h1>CCP Sync Failure</h1><pre>{msg}</pre>")
+            self.database.sendSyncReport(msg)
+            _logger.warning(f"SyncCCP: Sheet header validation failed. {msg}")
             return True, msg
 
         # Loop through rows in Google Sheets
-        _logger.debug("CCP.PY: Starting row processing.")
+        _logger.debug("SyncCCP: Starting row processing.")
         while True:
             # Check if the process should continue
             if i == len(self.sheet) or str(self.sheet[i][columns["continue"]]) != "TRUE":
-                _logger.debug(f"syncCCP: Stopping processing at row {i}.")
+                _logger.debug(f"SyncCCP: Stopping processing at row {i}.")
                 break
 
             try:
-                # Extract and validate fields
+                # Extract fields from the row
                 expiration_date = str(self.sheet[i][columns["date"]])
+                external_id = str(self.sheet[i][columns["externalId"]])
+
+                # Validate the expiration date
                 if not utilities.check_date(expiration_date):
-                    _logger.warning(f"syncCCP: Skipping invalid expiration date at row {i}: '{expiration_date}'")
+                    _logger.warning(f"SyncCCP: Skipping expiration date update for row {i}. Invalid date: '{expiration_date}'")
                     expiration_date = None  # Skip updating expiration date
 
-                external_id = str(self.sheet[i][columns["externalId"]])
+                # Validate the external ID
                 if not utilities.check_id(external_id):
                     raise ValueError(f"Invalid External ID at row {i}.")
 
@@ -95,7 +98,7 @@ class sync_ccp:
 
             except Exception as e:
                 # Log and skip the problematic row
-                error_message = f"syncCCP: Error occurred at row {i}: {str(e)}"
+                error_message = f"SyncCCP: Error occurred at row {i}: {str(e)}"
                 _logger.error(error_message, exc_info=True)
                 skipped_items.append({
                     "row": i,
@@ -105,26 +108,16 @@ class sync_ccp:
 
             i += 1
 
-        # Compile skipped items report in a separate transaction
+        # Compile skipped items report
         if skipped_items:
-            self._send_report(self._generate_skipped_report(skipped_items))
+            report = "\n".join(
+                [f"Row {item['row']}: External ID {item['externalId']} - Error: {item['error']}" for item in skipped_items]
+            )
+            _logger.warning(f"SyncCCP: Skipped items report:\n{report}")
+            self.database.sendSyncReport(f"<h1>Skipped Items Report</h1><pre>{report}</pre>")
 
-        _logger.info("syncCCP: CCP synchronization completed successfully.")
+        _logger.info("SyncCCP: CCP synchronization completed successfully.")
         return False, ""
-
-    def _generate_skipped_report(self, skipped_items):
-        report = "\n".join(
-            [f"Row {item['row']}: External ID {item['externalId']} - Error: {item['error']}" for item in skipped_items]
-        )
-        return f"<h1>Skipped Items Report</h1><pre>{report}</pre>"
-
-    def _send_report(self, report_html):
-        try:
-            self.env.cr.commit()  # Commit the current transaction
-            self.database.sendSyncReport(report_html)  # Send the report in a separate transaction
-        except Exception as e:
-            _logger.error(f"CCP.PY: Failed to send report: {str(e)}")
-
 
 
 
