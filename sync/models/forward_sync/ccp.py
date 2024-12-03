@@ -71,6 +71,21 @@ class sync_ccp:
                 # # Validate row fields
                 # if str(self.sheet[i][columns["valid"]]) != "TRUE":
                 #     raise ValueError(f"Row {i} is not marked as valid.")
+                
+                # Normalize the date format
+                expiration_date = str(self.sheet[i][columns["date"]])
+
+                try:
+                    # Attempt to parse and reformat the date to YYYY-MM-DD
+                    normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
+                    if not utilities.check_date(normalized_date):
+                        raise ValueError(f"Invalid Expiration Date '{expiration_date}' at row {i}.")
+                    expiration_date = normalized_date
+                except ValueError as e:
+                    _logger.warning(f"CCP.PY: Invalid Expiration Date '{expiration_date}' at row {i}. Skipping expiration update.")
+                    expiration_date = None  # Skip updating expiration date
+                    
+                    
 
                 if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
                     raise ValueError(f"Invalid External ID at row {i}.")
