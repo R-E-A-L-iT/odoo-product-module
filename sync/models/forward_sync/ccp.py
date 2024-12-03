@@ -32,16 +32,17 @@ class sync_ccp:
         i = 1
 
         # Check if the header matches the expected format
-        ccpHeaderDict = dict()
-        ccpHeaderDict["Owner ID"] = "ownerId"
-        ccpHeaderDict["EID/SN"] = "eidsn"
-        ccpHeaderDict["External ID"] = "externalId"
-        ccpHeaderDict["Product Code"] = "code"
-        ccpHeaderDict["Product Name"] = "name"
-        ccpHeaderDict["Publish"] = "publish"
-        ccpHeaderDict["Expiration Date"] = "date"
-        ccpHeaderDict["Valid"] = "valid"
-        ccpHeaderDict["Continue"] = "continue"
+        ccpHeaderDict = {
+            "Owner ID": "ownerId",
+            "EID/SN": "eidsn",
+            "External ID": "externalId",
+            "Product Code": "code",
+            "Product Name": "name",
+            "Publish": "publish",
+            "Expiration Date": "date",
+            "Valid": "valid",
+            "Continue": "continue",
+        }
         columns, msg, columnsMissing = utilities.checkSheetHeader(ccpHeaderDict, self.sheet, self.name)
 
         if len(self.sheet[i]) != sheetWidth or columnsMissing:
@@ -68,41 +69,25 @@ class sync_ccp:
                 break
 
             try:
-                # # Validate row fields
-                # if str(self.sheet[i][columns["valid"]]) != "TRUE":
-                #     raise ValueError(f"Row {i} is not marked as valid.")
-                
-                # Normalize the date format
-                expiration_date = str(self.sheet[i][columns["date"]])
-
-                try:
-                    # Attempt to parse and reformat the date to YYYY-MM-DD
-                    normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
-                    if not utilities.check_date(normalized_date):
-                        _logger.warning("Invalid expiration date at row " + str(i))
-                        # raise ValueError(f"Invalid Expiration Date '{expiration_date}' at row {i}.")
-                    expiration_date = normalized_date
-                except ValueError as e:
-                    _logger.warning(f"CCP.PY: Invalid Expiration Date '{expiration_date}' at row {i}. Skipping expiration update.")
+                # Extract the expiration date and validate
+                expiration_date = self.sheet[i][columns["date"]]
+                if expiration_date is None or not isinstance(expiration_date, str) or not utilities.check_date(expiration_date):
+                    _logger.warning(
+                        f"Row {i}: Invalid expiration date '{expiration_date}'. Skipping expiration update."
+                    )
                     expiration_date = None  # Skip updating expiration date
-                    
-                    
 
-                if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
+                # Validate External ID
+                external_id = str(self.sheet[i][columns["externalId"]])
+                if not utilities.check_id(external_id):
                     raise ValueError(f"Invalid External ID at row {i}.")
 
-                normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
-                if not utilities.check_date(normalized_date):
-                    _logger.warning("Row " + str(i) + ": Skipped a line because the expiration date is invalid ")
-                    # raise ValueError(f"Invalid Expiration Date at row {i}.")
-
                 # Process the row
-                external_id = str(self.sheet[i][columns["externalId"]])
                 ccp_ids = self.database.env["ir.model.data"].search(
                     [("name", "=", external_id), ("model", "=", "stock.lot")]
                 )
 
-                if len(ccp_ids) > 0:
+                if ccp_ids:
                     self.updateCCP(
                         self.database.env["stock.lot"].browse(ccp_ids[-1].res_id),
                         i,
@@ -133,6 +118,7 @@ class sync_ccp:
 
         _logger.info("CCP.PY: CCP synchronization completed successfully.")
         return False, ""
+
 
 
     # def updateCCP(self, ccp_item, i, columns):
