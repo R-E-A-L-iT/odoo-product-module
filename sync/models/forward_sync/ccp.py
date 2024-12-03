@@ -218,18 +218,25 @@ class sync_ccp:
 
 
     def createCCP(self, external_id, i, columns):
-        _logger.debug("Creating new CCP record for external ID: %s at row %d", external_id, i)
+        _logger.debug("createCCP: Creating new CCP record for external ID: %s at row %d", external_id, i)
         
+        module_name = "sync"  # Default module name to avoid empty values
+
         # Check for existing `ir.model.data` record
         ext = self.database.env["ir.model.data"].search(
-            [("name", "=", external_id), ("model", "=", "stock.lot")], limit=1
+            [("name", "=", external_id), ("model", "=", "stock.lot"), ("module", "=", module_name)], limit=1
         )
 
         if not ext:
             # Create a new `ir.model.data` record if it doesn't exist
-            ext = self.database.env["ir.model.data"].create({"name": external_id, "model": "stock.lot"})[0]
+            ext = self.database.env["ir.model.data"].create({
+                "name": external_id,
+                "model": "stock.lot",
+                "module": module_name,  # Ensure the module is populated
+            })
+            _logger.info("createCCP: Created new ir.model.data entry for external ID: %s", external_id)
         else:
-            _logger.warning("Duplicate ir.model.data entry found for external ID: %s. Reusing existing record.", external_id)
+            _logger.warning("createCCP: Duplicate ir.model.data entry found for external ID: %s. Reusing existing record.", external_id)
 
         # Create the CCP record
         product_ids = self.database.env["product.product"].search([("sku", "=", self.sheet[i][columns["code"]])])
@@ -240,10 +247,11 @@ class sync_ccp:
             "name": self.sheet[i][columns["eidsn"]],
             "product_id": product_id,
             "company_id": company_id,
-        })[0]
+        })
 
         # Link the `ir.model.data` record to the new CCP item
         ext.res_id = ccp_item.id
 
-        _logger.info("New CCP record created for external ID: %s at row %d", external_id, i)
+        _logger.info("createCCP: New CCP record created for external ID: %s at row %d", external_id, i)
         self.updateCCP(ccp_item, i, columns)
+
