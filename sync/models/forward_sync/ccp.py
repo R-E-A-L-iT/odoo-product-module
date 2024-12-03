@@ -21,10 +21,10 @@ class sync_ccp:
         self.database = database
 
     def syncCCP(self):
-        _logger.debug("CCP.PY: Starting CCP synchronization.")
+        _logger.debug("SyncCCP: Starting CCP synchronization.")
         skipped_items = []  # List to store skipped rows and errors
 
-        # Confirm GS Tab is in the correct Format
+        # Confirm GS Tab is in the correct format
         sheetWidth = 11
         columns = dict()
         columnsMissing = False
@@ -32,16 +32,17 @@ class sync_ccp:
         i = 1
 
         # Check if the header matches the expected format
-        ccpHeaderDict = dict()
-        ccpHeaderDict["Owner ID"] = "ownerId"
-        ccpHeaderDict["EID/SN"] = "eidsn"
-        ccpHeaderDict["External ID"] = "externalId"
-        ccpHeaderDict["Product Code"] = "code"
-        ccpHeaderDict["Product Name"] = "name"
-        ccpHeaderDict["Publish"] = "publish"
-        ccpHeaderDict["Expiration Date"] = "date"
-        ccpHeaderDict["Valid"] = "valid"
-        ccpHeaderDict["Continue"] = "continue"
+        ccpHeaderDict = {
+            "Owner ID": "ownerId",
+            "EID/SN": "eidsn",
+            "External ID": "externalId",
+            "Product Code": "code",
+            "Product Name": "name",
+            "Publish": "publish",
+            "Expiration Date": "date",
+            "Valid": "valid",
+            "Continue": "continue",
+        }
         columns, msg, columnsMissing = utilities.checkSheetHeader(ccpHeaderDict, self.sheet, self.name)
 
         if len(self.sheet[i]) != sheetWidth or columnsMissing:
@@ -56,53 +57,37 @@ class sync_ccp:
                 + msg
             )
             self.database.sendSyncReport(msg)
-            _logger.warning(f"CCP.PY: Sheet header validation failed. {msg}")
+            _logger.warning(f"SyncCCP: Sheet header validation failed. {msg}")
             return True, msg
 
         # Loop through rows in Google Sheets
-        _logger.debug("CCP.PY: Starting row processing.")
+        _logger.debug("SyncCCP: Starting row processing.")
         while True:
             # Check if the process should continue
             if i == len(self.sheet) or str(self.sheet[i][columns["continue"]]) != "TRUE":
-                _logger.debug(f"CCP.PY: Stopping processing at row {i}.")
+                _logger.debug(f"SyncCCP: Stopping processing at row {i}.")
                 break
 
             try:
-                # # Validate row fields
-                # if str(self.sheet[i][columns["valid"]]) != "TRUE":
-                #     raise ValueError(f"Row {i} is not marked as valid.")
-                
-                # Normalize the date format
+                # Extract fields from the row
                 expiration_date = str(self.sheet[i][columns["date"]])
+                external_id = str(self.sheet[i][columns["externalId"]])
 
-                try:
-                    # Attempt to parse and reformat the date to YYYY-MM-DD
-                    normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
-                    if not utilities.check_date(normalized_date):
-                        _logger.warning("Invalid expiration date at row " + str(i))
-                        # raise ValueError(f"Invalid Expiration Date '{expiration_date}' at row {i}.")
-                    expiration_date = normalized_date
-                except ValueError as e:
-                    _logger.warning(f"CCP.PY: Invalid Expiration Date '{expiration_date}' at row {i}. Skipping expiration update.")
+                # Validate the expiration date
+                if not utilities.check_date(expiration_date):
+                    _logger.warning(f"SyncCCP: Skipping expiration date update for row {i}. Invalid date: '{expiration_date}'")
                     expiration_date = None  # Skip updating expiration date
-                    
-                    
 
-                if not utilities.check_id(str(self.sheet[i][columns["externalId"]])):
+                # Validate the external ID
+                if not utilities.check_id(external_id):
                     raise ValueError(f"Invalid External ID at row {i}.")
 
-                normalized_date = datetime.strptime(expiration_date, "%Y-%m-%d").strftime("%Y-%m-%d")
-                if not utilities.check_date(normalized_date):
-                    _logger.warning("Row " + str(i) + ": Skipped a line because the expiration date is invalid ")
-                    # raise ValueError(f"Invalid Expiration Date at row {i}.")
-
                 # Process the row
-                external_id = str(self.sheet[i][columns["externalId"]])
                 ccp_ids = self.database.env["ir.model.data"].search(
                     [("name", "=", external_id), ("model", "=", "stock.lot")]
                 )
 
-                if len(ccp_ids) > 0:
+                if ccp_ids:
                     self.updateCCP(
                         self.database.env["stock.lot"].browse(ccp_ids[-1].res_id),
                         i,
@@ -113,11 +98,11 @@ class sync_ccp:
 
             except Exception as e:
                 # Log and skip the problematic row
-                error_message = f"CCP.PY: Error occurred at row {i}: {str(e)}"
+                error_message = f"SyncCCP: Error occurred at row {i}: {str(e)}"
                 _logger.error(error_message, exc_info=True)
                 skipped_items.append({
                     "row": i,
-                    "externalId": str(self.sheet[i][columns["externalId"]]),
+                    "externalId": external_id,
                     "error": str(e)
                 })
 
@@ -128,11 +113,12 @@ class sync_ccp:
             report = "\n".join(
                 [f"Row {item['row']}: External ID {item['externalId']} - Error: {item['error']}" for item in skipped_items]
             )
-            _logger.warning(f"CCP.PY: Skipped items report:\n{report}")
+            _logger.warning(f"SyncCCP: Skipped items report:\n{report}")
             self.database.sendSyncReport(f"<h1>Skipped Items Report</h1><pre>{report}</pre>")
 
-        _logger.info("CCP.PY: CCP synchronization completed successfully.")
+        _logger.info("SyncCCP: CCP synchronization completed successfully.")
         return False, ""
+
 
 
     # def updateCCP(self, ccp_item, i, columns):
@@ -188,7 +174,7 @@ class sync_ccp:
         }
 
         # Log detailed comparisons
-        _logger.debug("Comparing stringRep for row %d: Current: %s | New: %s", i, current_representation, new_representation)
+        _logger.debug("UpdateCCP: Comparing stringRep for row %d: Current: %s | New: %s", i, current_representation, new_representation)
 
         # Check for changes in relevant fields except date
         if (
@@ -201,11 +187,11 @@ class sync_ccp:
                 utilities.check_date(new_representation["date"])
                 and current_representation["date"] == new_representation["date"]
             ):
-                _logger.info("No changes detected for row %d. Skipping update.", i)
+                _logger.info("UpdateCCP: No changes detected for row %d. Skipping update.", i)
                 return
 
         # Update the CCP item
-        _logger.info("Changes detected for row %d. Updating CCP item.", i)
+        _logger.info("UpdateCCP: Changes detected for row %d. Updating CCP item.", i)
         ccp_item.name = new_representation["eidsn"]
 
         product_ids = self.database.env["product.product"].search(
@@ -215,15 +201,15 @@ class sync_ccp:
         # Only update the expiration date if it is valid
         if utilities.check_date(new_representation["date"]):
             ccp_item.expire = new_representation["date"]
-            _logger.info("Expiration date updated for row %d to '%s'.", i, new_representation["date"])
+            _logger.info("UpdateCCP: Expiration date updated for row %d to '%s'.", i, new_representation["date"])
         else:
-            _logger.warning("Invalid expiration date '%s' for row %d. Skipping expiration date update.", new_representation["date"], i)
+            _logger.warning("UpdateCCP: Invalid expiration date '%s' for row %d. Skipping expiration date update.", new_representation["date"], i)
 
         ccp_item.publish = new_representation["publish"]
 
         # Update stringRep for the next comparison
         ccp_item.stringRep = str(new_representation)
-        _logger.info("Updated CCP item: %s", ccp_item.name)
+        _logger.info("UpdateCCP: Updated CCP item: %s", ccp_item.name)
 
 
 
