@@ -123,7 +123,7 @@ class sync_ccp:
             self.env.cr.commit()  # Commit the current transaction
             self.database.sendSyncReport(report_html)  # Send the report in a separate transaction
         except Exception as e:
-            _logger.error(f"sendReport: Failed to send report: {str(e)}")
+            _logger.error(f"CCP.PY: Failed to send report: {str(e)}")
 
 
 
