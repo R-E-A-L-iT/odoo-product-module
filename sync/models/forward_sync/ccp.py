@@ -21,7 +21,7 @@ class sync_ccp:
         self.database = database
 
     def syncCCP(self):
-        _logger.debug("CCP.PY: Starting CCP synchronization.")
+        _logger.info("CCP.PY: Starting CCP synchronization.")
         skipped_items = []  # List to store skipped rows and errors
 
         # Confirm GS Tab is in the correct Format
@@ -60,10 +60,10 @@ class sync_ccp:
             return True, msg
 
         # Loop through rows in Google Sheets
-        _logger.debug("CCP.PY: Starting row processing.")
+        _logger.info("CCP.PY: Starting row processing.")
         while True:
             if i == len(self.sheet) or str(self.sheet[i][columns["continue"]]) != "TRUE":
-                _logger.debug(f"CCP.PY: Stopping processing at row {i}.")
+                _logger.info(f"CCP.PY: Stopping processing at row {i}.")
                 break
 
             try:
@@ -178,7 +178,7 @@ class sync_ccp:
         }
 
         # Log detailed comparisons
-        _logger.debug("Comparing stringRep for row %d: Current: %s | New: %s", i, current_representation, new_representation)
+        _logger.info("Comparing stringRep for row %d: Current: %s | New: %s", i, current_representation, new_representation)
 
         # Check for changes in relevant fields except date
         if (
@@ -204,7 +204,7 @@ class sync_ccp:
 
         if product_ids:
             ccp_item.write({"product_id": product_ids[-1].id if product_ids else None})
-            _logger.debug(
+            _logger.info(
                 "product_id updated using write() for SKU '%s' at row %d.",
                 new_representation["code"],
                 i
@@ -241,7 +241,7 @@ class sync_ccp:
 
 
     def createCCP(self, external_id, i, columns):
-        _logger.debug("createCCP: Creating new CCP record for external ID: %s at row %d", external_id, i)
+        _logger.info("createCCP: Creating new CCP record for external ID: %s at row %d", external_id, i)
         
         module_name = "sync"  # Default module name to avoid empty values
 
