@@ -18,6 +18,7 @@ _logger = logging.getLogger(__name__)
 # that gets populated with the items to make the report coherent
 # 
 # TODO: move some of the utility methods to a different utility file to clean things up
+# also move sending report function to different file
 # 
 # ------
 
@@ -27,8 +28,35 @@ class sync_ccp:
         self.name = name
         self.sheet = sheet
         self.database = database
-        
-        
+        self.sync_report = []
+    
+    
+    
+    # add error to sync report function
+    # sync report sent on sync end
+    def add_to_report(self, level, message):
+        entry = f"{level.upper()}: {message}"
+        self.sync_report.append(entry)
+        # _logger.log(logging.ERROR if level == "error" else logging.WARNING, entry)
+    
+    
+    
+    # send sync report
+    # executed at end of sync
+    def send_report(self, report_content):
+        try:
+            mail_values = {
+                "subject": "Sync Report for CCP type",
+                "body_html": f"<pre>{report_content}</pre>",
+                "email_to": "sync@store.r-e-a-l.it",
+            }
+            mail = self.database.env["mail.mail"].create(mail_values)
+            mail.send()
+            _logger.info("send_report: Sync report successfully sent to sync@store.r-e-a-l.it.")
+        except Exception as e:
+            _logger.error("send_report: Failed to send sync report email: %s", str(e), exc_info=True)
+            
+            
         
     # utility function
     # in odoo, booleans are "True" or "False"
@@ -71,23 +99,6 @@ class sync_ccp:
         except ValueError:
             _logger.warning("normalize_date: Invalid date value '%s'. Returning as-is.", value)
             return str(value)
-        
-    
-    
-    # utility function
-    # sends compiled sync report of all errors and warnings
-    def send_report(self, report_content):
-        try:
-            mail_values = {
-                "subject": "CCP Sync Report",
-                "body_html": f"<pre>{report_content}</pre>",
-                "email_to": "sync@store.r-e-a-l.it",
-            }
-            mail = self.database.env["mail.mail"].create(mail_values)
-            mail.send()
-            _logger.info("send_report: Sync report successfully sent to sync@store.r-e-a-l.it.")
-        except Exception as e:
-            _logger.error("send_report: Failed to send sync report email: %s", str(e), exc_info=True)
 
     
         
@@ -127,17 +138,17 @@ class sync_ccp:
         if sheet_width != expected_width:
             error_msg = f"Sheet width mismatch. Expected: {expected_width}, Actual: {sheet_width}."
             _logger.error(f"syncCCP: {error_msg}")
-            sync_report.append(f"ERROR: {error_msg}")
+            self.add_to_report("ERROR", f"{error_msg}")
             return True, error_msg
         elif missing_columns:
             error_msg = f"Missing columns: {missing_columns}."
             _logger.error(f"syncCCP: {error_msg}")
-            sync_report.append(f"ERROR: {error_msg}")
+            self.add_to_report("ERROR", f"{error_msg}")
             return True, error_msg
         elif extra_columns:
             error_msg = f"Extra columns: {extra_columns}."
             _logger.error(f"syncCCP: {error_msg}")
-            sync_report.append(f"ERROR: {error_msg}")
+            self.add_to_report("ERROR", f"{error_msg}")
             return True, error_msg
         
         _logger.info("syncCCP: Sheet validated. Proceeding with CCP synchronization.")
@@ -174,7 +185,7 @@ class sync_ccp:
                 if not eidsn:
                     warning_msg = f"Row {row_index}: Missing EID/SN. Skipping."
                     _logger.warning(f"syncCCP: {warning_msg}")
-                    sync_report.append(f"WARNING: {warning_msg}")
+                    self.add_to_report("WARNING", f"{warning_msg}")
                     continue
                 
                 existing_ccp = self.database.env["stock.lot"].search([("name", "=", eidsn)], limit=1)
@@ -189,11 +200,11 @@ class sync_ccp:
             except Exception as e:
                 error_msg = f"Row {row_index}: Error occurred while processing: {str(e)}"
                 _logger.error(f"syncCCP: {error_msg}", exc_info=True)
-                sync_report.append(f"ERROR: {error_msg}")
+                self.add_to_report("ERROR", f"{error_msg}")
                 
-        if sync_report:
-            report_content = "\n".join(sync_report)
-            self.send_report(report_content)
+        if self.sync_report:
+            # report_content = "\n".join(sync_report)
+            self.send_report(self.sync_report)
         
         return False, "syncCCP: CCP synchronization completed successfully."
     
@@ -328,11 +339,12 @@ class sync_ccp:
                         "updateCCP: Error while updating field '%s' for CCP ID %s: %s",
                         odoo_field, ccp_id, str(e), exc_info=True
                     )
+                    self.add_to_report("ERROR", f"updateCCP: Error while updating field {odoo_field} for CCP ID {ccp_id}: {str(e)}")
             pass
         except Exception as e:
             error_msg = f"Row {row_index}: Error updating CCP ID {ccp_id}: {str(e)}"
             _logger.error(f"updateCCP: {error_msg}", exc_info=True)
-            sync_report.append(f"ERROR: {error_msg}")
+            self.add_to_report("ERROR", f"{error_msg}")
 
 
 
@@ -428,6 +440,7 @@ class sync_ccp:
                         "createCCP: Error while processing field '%s' for new CCP: %s",
                         column_name, str(e), exc_info=True
                     )
+                    self.add_to_report("ERROR", f"createCCP: Error while processing field {column_name} for new CCP: {str(e)}")
             
             # log data for debugging
             _logger.info("createCCP: Data gathered for new CCP: %s", new_ccp_values)
@@ -451,6 +464,7 @@ class sync_ccp:
                     
                     self.database.env.cr.execute("ROLLBACK TO SAVEPOINT create_ccp_savepoint")
                     _logger.error("createCCP: Error while creating new CCP item: %s", str(e), exc_info=True)
+                    self.add_to_report("ERROR", f"createCCP: Error while creating new CCP item: {str(e)}")
                     
             else:
                 return
@@ -459,4 +473,4 @@ class sync_ccp:
         except Exception as e:
             error_msg = f"Row {row_index}: Error creating CCP with EID/SN {eidsn}: {str(e)}"
             _logger.error(f"createCCP: {error_msg}", exc_info=True)
-            sync_report.append(f"ERROR: {error_msg}")
+            self.add_to_report("ERROR", f"{error_msg}")
