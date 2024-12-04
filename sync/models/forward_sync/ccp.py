@@ -22,7 +22,7 @@ class sync_ccp:
     # in odoo, booleans are "True" or "False"
     # in sheets, booleans are "TRUE" or "FALSE"
     # this function acts to normalize those values
-    def normalize_bools(field, value):
+    def normalize_bools(self, field, value):
         if field in ["publish", "expire"]:
             if value.strip().upper() in ["TRUE", "1"]:
                 return True
