@@ -40,18 +40,18 @@ class sync_ccp:
     # this function normalizes those values
     # also handles dates being blank or "FALSE"
     def normalize_date(self, value):
-    try:
+        try:
+            
+            if not value.strip() or value.strip().upper() == "FALSE":
+                return ""
+            
+            normalized_date = datetime.strptime(value.strip(), "%Y-%m-%d").strftime("%Y-%m-%d")
+            return normalized_date
         
-        if not value.strip() or value.strip().upper() == "FALSE":
-            return ""
-        
-        normalized_date = datetime.strptime(value.strip(), "%Y-%m-%d").strftime("%Y-%m-%d")
-        return normalized_date
-    
-    except ValueError:
-        
-        _logger.warning("normalize_date: Invalid date value '%s'. Returning as-is.", value)
-        return value.strip()
+        except ValueError:
+            
+            _logger.warning("normalize_date: Invalid date value '%s'. Returning as-is.", value)
+            return value.strip()
     
     
         
