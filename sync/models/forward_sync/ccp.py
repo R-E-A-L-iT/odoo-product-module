@@ -235,11 +235,16 @@ class sync_ccp:
                             
                     # normalize and update expiration date
                     elif odoo_field == "expire":
+                        
+                        # normalize both values (different data types)
                         normalized_sheet_value = self.normalize_date(sheet_value)
-                        if ccp.expire != normalized_sheet_value:
+                        normalized_odoo_value = self.normalize_date(ccp.expire or "")
+
+                        # comprare normalized values
+                        if normalized_odoo_value != normalized_sheet_value:
                             _logger.info(
                                 "updateCCP: Field 'expire' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
-                                ccp_id, ccp.expire, normalized_sheet_value
+                                ccp_id, normalized_odoo_value, normalized_sheet_value
                             )
                             ccp.expire = normalized_sheet_value
 
