@@ -226,7 +226,7 @@ class sync_ccp:
     # it will attempt to create the ccp cell by cell, and skip creating any info that generates errors
     # fields that are not updated will be added to a report at the end
     # note that if the expiration date is "false" or blank, it will not be added to the report, as this is a very common bug and intended to be overlooked
-    # def createCCP(self, eidsn, row, sheet_columns):
+    def createCCP(self, eidsn, row, sheet_columns):
         _logger.info("createCCP: Creating new CCP item with EID/SN '%s'.", eidsn)
         
                 
