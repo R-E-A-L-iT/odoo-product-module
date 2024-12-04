@@ -28,7 +28,7 @@
         "security/ir.model.access.csv",
         "data/schedule.xml",
         "data/reverse_contact.xml",
-        'data/sync_report_template.xml',
+        'views/sync_report_template.xml',
         "views/company_backend.xml",
     ],
 }
