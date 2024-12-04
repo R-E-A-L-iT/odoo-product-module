@@ -72,6 +72,14 @@ class sync_ccp:
                     _logger.info("syncCCP: Row %d: Marked as invalid. Skipping.", row_index)
                     continue
                 
+                # only proceed if the value for continue is marked as true
+                continue_column = sheet_columns.index("Continue")
+                should_continue = str(row[continue_column]).strip().lower() == "true"
+                
+                if not should_continue:
+                    _logger.info("syncCCP: Row %d: Continue is set to false. Stopping the sync here.", row_index)
+                    break
+                
                 
                 # get eid/sn and check if it exists in odoo
                 eidsn_column = sheet_columns.index("EID/SN")
@@ -113,19 +121,6 @@ class sync_ccp:
     def createCCP(self, eidsn, row, sheet_columns):
         _logger.info("createCCP: Creating new CCP item with EID/SN '%s'.", eidsn)
         
-        # for row in rows:
-        #     owner_id =
-        #     eidsn =
-        #     external_id =
-        #     product_code =
-        #     product_name =
-        #     publish =
-        #     expiration_date =
-        #     valid =
-        #     date_valid =
-        #     continue_sync = 
-            
-        #     if valid:
                 
         
         
