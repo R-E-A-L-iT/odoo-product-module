@@ -14,14 +14,17 @@ class utilities:
     @staticmethod
     def send_report(report_content, sync_type):
         try:
-            formatted_content = "\n".join(report_content)
-            mail_values = {
+            
+            template = database.env.ref("sync.sync_report_template")
+            
+            body_content = "\n".join(report_content)
+            template_values = {
                 "subject": f"Sync Report for type: {sync_type}",
-                "body_html": f"<pre>{formatted_content}</pre>",
+                "body_content": body_content,
                 "email_to": "sync@store.r-e-a-l.it",
             }
-            mail = self.database.env["mail.mail"].create(mail_values)
-            mail.send()
+            
+            template.with_context(database.env.context).send_mail(0, email_values=template_values, force_send=True)
             _logger.info("send_report: Sync report successfully sent to sync@store.r-e-a-l.it.")
         except Exception as e:
             _logger.error("send_report: Failed to send sync report email: %s", str(e), exc_info=True)
