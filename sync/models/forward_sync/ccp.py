@@ -18,6 +18,8 @@ class sync_ccp:
         self.sheet = sheet
         self.database = database
         
+    
+        
     # this function will be called to start the synchronization process for ccp.
     # it delegates the function of actually updating or creating the ccp item to the other two functions
     def syncCCP(self):
@@ -64,14 +66,6 @@ class sync_ccp:
         for row_index, row in enumerate(self.sheet[1:], start=2):
             try:
                 
-                # only proceed if the row is marked as valid
-                valid_column = sheet_columns.index("Valid")
-                valid = str(row[valid_column]).strip().lower() == "true"
-                
-                if not valid:
-                    _logger.info("syncCCP: Row %d: Marked as invalid. Skipping.", row_index)
-                    continue
-                
                 # only proceed if the value for continue is marked as true
                 continue_column = sheet_columns.index("Continue")
                 should_continue = str(row[continue_column]).strip().lower() == "true"
@@ -79,6 +73,15 @@ class sync_ccp:
                 if not should_continue:
                     _logger.info("syncCCP: Row %d: Continue is set to false. Stopping the sync here.", row_index)
                     break
+                
+                
+                # only proceed if the row is marked as valid
+                valid_column = sheet_columns.index("Valid")
+                valid = str(row[valid_column]).strip().lower() == "true"
+                
+                if not valid:
+                    _logger.info("syncCCP: Row %d: Marked as invalid. Skipping.", row_index)
+                    continue
                 
                 
                 # get eid/sn and check if it exists in odoo
@@ -107,12 +110,16 @@ class sync_ccp:
         
         return False, "syncCCP: CCP synchronization completed successfully."
     
+    
+    
     # this function is called to update a ccp that already exists
     # it will attempt to update the ccp cell by cell, and skip updating any info that generates errors
     # fields that are not updated will be added to a report at the end
     # note that if the expiration date is "false" or blank, it will not be added to the report, as this is a very common bug and intended to be overlooked
     def updateCCP(self, ccp_id, row, sheet_columns):
         _logger.info("updateCCP: Searching for any changes for CCP item: %s.", ccp_id)
+
+
 
     # this function is called to create a new ccp if the eid is not recognized
     # it will attempt to create the ccp cell by cell, and skip creating any info that generates errors
