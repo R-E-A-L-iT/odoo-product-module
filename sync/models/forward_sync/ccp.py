@@ -307,6 +307,9 @@ class sync_ccp:
         # empty dict for all data to write
         # company_id is a required field, 1 is id of R-E-A-L.iT parent company
         new_ccp_values = {"company_id": 1}
+        
+        # mandatory check, product_id is required field
+        product_exists = False
 
         # loop through cells and collect relevant values
         for column_name, odoo_field in field_mapping.items():
@@ -334,13 +337,14 @@ class sync_ccp:
                         )
                         
                         if not product:
-                            _logger.warning(
-                                "createCCP: Row %d: Product with SKU '%s' not found. Skipping product_id field.",
+                            _logger.error(
+                                "createCCP: Row %d: Product with SKU '%s' not found. Creation canceled.",
                                 row_index, product_code
                             )
                             continue
                         
                         normalized_value = product.id
+                        product_id_found = True
                         
                     # get company id
                     elif odoo_field == "owner":
