@@ -148,7 +148,7 @@ class sync_ccp:
                     # get new sheets value
                     column_index = sheet_columns.index(column_name)
                     sheet_value = str(row[column_index]).strip()
-                    sheet_value_normalized = normalize_value(odoo_field, sheet_value)
+                    sheet_value_normalized = normalize_bools(odoo_field, sheet_value)
 
                     # handle special cases for specific fields
                     if odoo_field == "product_id":
@@ -216,7 +216,7 @@ class sync_ccp:
                         # normalize
                         if isinstance(odoo_value, models.Model):
                             odoo_value = odoo_value.id
-                        odoo_value_normalized = normalize_value(odoo_field, str(odoo_value).strip() if odoo_value else "")
+                        odoo_value_normalized = normalize_bools(odoo_field, str(odoo_value).strip() if odoo_value else "")
 
                         # compare, log, and update
                         if odoo_value_normalized != sheet_value_normalized:
