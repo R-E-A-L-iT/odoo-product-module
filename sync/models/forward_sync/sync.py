@@ -185,48 +185,54 @@ class sync(models.Model):
 
     ###################################################################
     def getSyncValues(self, sheetName, psw, template_id, sheetIndex, syncType):
-
         sheet = self.getMasterDatabaseSheet(template_id, psw, sheetIndex)
 
-        _logger.info("Sync Type is: " + syncType)
-        # identify the type of sheet
-        if (syncType == "Companies"):
-            syncer = sync_companies(sheetName, sheet, self)
-            quit, msg = syncer.syncCompanies()
+        _logger.info(f"Sync Type is: {syncType}")
+        quit = False
+        msg = ""
 
-        elif (syncType == "Contacts"):
-            syncer = sync_contacts(sheetName, sheet, self)
-            quit, msg = syncer.syncContacts()
+        try:
+            if syncType == "Companies":
+                syncer = sync_companies(sheetName, sheet, self)
+                quit, msg = syncer.syncCompanies()
 
-        elif (syncType == "Products"):
-            syncer = sync_products(sheetName, sheet, self)
-            quit, msg = syncer.syncProducts(sheet)
+            elif syncType == "Contacts":
+                syncer = sync_contacts(sheetName, sheet, self)
+                quit, msg = syncer.syncContacts()
 
-        elif (syncType == "CCP"):
-            syncer = sync_ccp(sheetName, sheet, self)
-            quit, msg = syncer.syncCCP()
+            elif syncType == "Products":
+                syncer = sync_products(sheetName, sheet, self)
+                quit, msg = syncer.syncProducts(sheet)
 
-        elif (syncType == "Pricelist"):
-            # syncer = sync_pricelist.connect(sheetName, sheet, self)
-            syncer = sync_pricelist(sheetName, sheet, self)
-            quit, msg = syncer.syncPricelist()
-            quit = False
-            msg = ""
-            # quit, msg = self.syncPricelist(sheet)
+            elif syncType == "CCP":
+                syncer = sync_ccp(sheetName, sheet, self)
+                quit, msg = syncer.syncCCP()
 
-        elif (syncType == "WebHTML"):
-            syncer = syncWeb(sheetName, sheet, self)
-            quit, msg = syncer.syncWebCode(sheet)
-            if msg != "":
-                _logger.error(msg)
+            elif syncType == "Pricelist":
+                syncer = sync_pricelist(sheetName, sheet, self)
+                quit, msg = syncer.syncPricelist()
 
-        _logger.info("Done with " + syncType)
+            elif syncType == "WebHTML":
+                syncer = syncWeb(sheetName, sheet, self)
+                quit, msg = syncer.syncWebCode(sheet)
 
-        if (quit):
-            _logger.info("quit: " + str(quit) + "\n")
-            _logger.info("msg:  " + str(msg))
+        except Exception as e:
+            quit = True
+            msg = f"An error occurred during {syncType} sync: {str(e)}"
+            _logger.error(msg, exc_info=True)
+
+        _logger.info(f"Done with {syncType}")
+
+        # Handle success or failure
+        if quit:
+            if msg:
+                _logger.error(f"{syncType} sync failed with message: {msg}")
+            self.syncFail(msg, self._sync_fail_reason)
+        else:
+            _logger.info(f"{syncType} sync completed successfully.")
 
         return quit, msg
+
 
     ###################################################################
     # Build the message when a sync fail occurs.  Once builded, it will display the message

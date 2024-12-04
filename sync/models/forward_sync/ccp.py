@@ -11,6 +11,16 @@ from odoo import models
 
 _logger = logging.getLogger(__name__)
 
+
+# -------
+# 
+# TODO: fixup the sync report functionality to have a variable belonging to the class
+# that gets populated with the items to make the report coherent
+# 
+# TODO: move some of the utility methods to a different utility file to clean things up
+# 
+# ------
+
 class sync_ccp:
     
     def __init__(self, name, sheet, database):
