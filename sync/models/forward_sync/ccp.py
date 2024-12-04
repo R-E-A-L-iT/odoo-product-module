@@ -31,7 +31,7 @@ class sync_ccp:
             "EID/SN": "eidsn",
             "External ID": "externalId",
             "Product Code": "code",
-            "Sheet Source": "source"
+            "Sheet Source": "source",
             "Product Name": "name",
             "Publish": "publish",
             "Expiration Date": "date",
