@@ -125,7 +125,7 @@ class sync_ccp:
             sync_report.append(f"ERROR: {error_msg}")
             return True, error_msg
         elif extra_columns:
-                error_msg = f"Extra columns: {extra_columns}."
+            error_msg = f"Extra columns: {extra_columns}."
             _logger.error(f"syncCCP: {error_msg}")
             sync_report.append(f"ERROR: {error_msg}")
             return True, error_msg
