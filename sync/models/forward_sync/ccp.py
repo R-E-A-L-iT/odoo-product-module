@@ -12,12 +12,11 @@ from odoo import models
 _logger = logging.getLogger(__name__)
 
 class sync_ccp:
+    
     def __init__(self, name, sheet, database):
         self.name = name
         self.sheet = sheet
         self.database = database
-        
-    
         
     # this function will be called to start the synchronization process for ccp.
     # it delegates the function of actually updating or creating the ccp item to the other two functions
@@ -38,8 +37,8 @@ class sync_ccp:
             "Continue": "continue",
         }
         
-        sheet_width = len(self.sheet[1])
-        sheet_columns = self.sheet[0]
+        sheet_width = len(self.sheet[1]) if len(self.sheet) > 1 else 0
+        sheet_columns = self.sheet[0] if len(self.sheet) > 0 else []
         
         # variables that will contain a list of any missing or extra columns in the sheet
         missing_columns = [header for header in expected_columns.keys() if header not in sheet_columns]
@@ -48,14 +47,19 @@ class sync_ccp:
         # verify that sheet format is as expected
         if sheet_width != expected_width:
             _logger.error("syncCCP: Sheet invalid. The sheet width does not match the expected number. Expected: %s, Actual: %s", expected_width, sheet_width)
+            return True
         elif missing_columns:
             _logger.error("syncCCP: Sheet invalid. The following columns are missing: %s", missing_columns)
+            return True
         elif extra_columns:
             _logger.error("syncCCP: Sheet invalid. The following columns are extras: %s", extra_columns)
-        else:
-            _logger.info("syncCCP: Sheet validated. Proceeding with CCP synchronization.")
-            
-            
+            return True
+         
+        _logger.info("syncCCP: Sheet validated. Proceeding with CCP synchronization.")
+        
+        # process rows
+        
+        
         
 
 # SKIP_NO_CHANGE = True
