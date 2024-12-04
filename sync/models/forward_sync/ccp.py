@@ -38,26 +38,6 @@ class sync_ccp:
         entry = f"{level.upper()}: {message}"
         self.sync_report.append(entry)
         # _logger.log(logging.ERROR if level == "error" else logging.WARNING, entry)
-    
-    
-    
-    # send sync report
-    # executed at end of sync
-    # todo: move this to another file and make it include more details/better format
-    def send_report(self, report_content):
-        try:
-            # Format the report content for better readability
-            formatted_content = "\n\n".join(report_content)
-            mail_values = {
-                "subject": "Sync Report for type: CCP",
-                "body_html": f"<pre>{formatted_content}</pre>",
-                "email_to": "sync@store.r-e-a-l.it",
-            }
-            mail = self.database.env["mail.mail"].create(mail_values)
-            mail.send()
-            _logger.info("send_report: Sync report successfully sent to sync@store.r-e-a-l.it.")
-        except Exception as e:
-            _logger.error("send_report: Failed to send sync report email: %s", str(e), exc_info=True)
             
             
         
@@ -206,8 +186,7 @@ class sync_ccp:
                 self.add_to_report("ERROR", f"{error_msg}")
                 
         if self.sync_report:
-            # report_content = "\n".join(sync_report)
-            self.send_report(self.sync_report)
+            utilities.send_report(self.sync_report, sync_type="CCP")
         
         return False, "syncCCP: CCP synchronization completed successfully."
     

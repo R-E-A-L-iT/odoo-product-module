@@ -5,6 +5,27 @@ _logger = logging.getLogger(__name__)
 
 
 class utilities:
+    
+    # this is a new and improved sync report function that i will move other files to using, which uses a nice xml template and formats the errors nicely.
+    
+    # report_content: dict of all errors to send
+    # sync_type: the sync type to be printed in the header, like CCP or pricelist
+    
+    @staticmethod
+    def send_report(report_content, sync_type):
+        try:
+            formatted_content = "\n".join(report_content)
+            mail_values = {
+                "subject": f"Sync Report for type: {sync_type}",
+                "body_html": f"<pre>{formatted_content}</pre>",
+                "email_to": "sync@store.r-e-a-l.it",
+            }
+            mail = self.database.env["mail.mail"].create(mail_values)
+            mail.send()
+            _logger.info("send_report: Sync report successfully sent to sync@store.r-e-a-l.it.")
+        except Exception as e:
+            _logger.error("send_report: Failed to send sync report email: %s", str(e), exc_info=True)
+    
     @staticmethod
     def check_id(id):
         if (" " in id):
