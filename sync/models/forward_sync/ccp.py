@@ -24,16 +24,19 @@ class sync_ccp:
         _logger.info("syncCCP: Starting synchronization process for ccp")
         
         # variables to verify format
+        # if you need to add more columns for new sync data, add them here
         expected_width = 11
         expected_columns = {
             "Owner ID": "ownerId",
             "EID/SN": "eidsn",
             "External ID": "externalId",
             "Product Code": "code",
+            "Sheet Source": "source"
             "Product Name": "name",
             "Publish": "publish",
             "Expiration Date": "date",
             "Valid": "valid",
+            "Date Valid": "date_valid",
             "Continue": "continue",
         }
         
