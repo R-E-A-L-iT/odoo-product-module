@@ -42,16 +42,26 @@ class sync_ccp:
     def normalize_date(self, value):
         try:
             
-            if not value.strip() or value.strip().upper() == "FALSE":
+            # handle none or false values
+            if not value or (isinstance(value, str) and value.strip().upper() == "FALSE"):
                 return ""
-            
-            normalized_date = datetime.strptime(value.strip(), "%Y-%m-%d").strftime("%Y-%m-%d")
-            return normalized_date
-        
+
+            # convert datetime object to string
+            if isinstance(value, datetime.date):
+                return value.strftime("%Y-%m-%d")
+
+            # normalize string date values
+            if isinstance(value, str):
+                return datetime.strptime(value.strip(), "%Y-%m-%d").strftime("%Y-%m-%d")
+
+            # fallback
+            _logger.warning("normalize_date: Unexpected type for value '%s'. Returning as-is.", value)
+            return str(value)
+
         except ValueError:
-            
             _logger.warning("normalize_date: Invalid date value '%s'. Returning as-is.", value)
-            return value.strip()
+            return str(value)
+
     
     
         
