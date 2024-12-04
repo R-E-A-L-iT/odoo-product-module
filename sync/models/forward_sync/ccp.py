@@ -66,7 +66,7 @@ class sync_ccp:
                 
                 # only proceed if the row is marked as valid
                 valid_column = sheet_columns.index("Valid")
-                valid = str(row[valid_column_index]).strip().lower() == "true"
+                valid = str(row[valid_column]).strip().lower() == "true"
                 
                 if not valid:
                     _logger.info("syncCCP: Row %d: Marked as invalid. Skipping.", row_index)
@@ -75,7 +75,7 @@ class sync_ccp:
                 
                 # get eid/sn and check if it exists in odoo
                 eidsn_column = sheet_columns.index("EID/SN")
-                eidsn = str(row[eidsn_column_index]).strip()
+                eidsn = str(row[eidsn_column]).strip()
                 
                 if not eidsn:
                     _logger.warning("syncCCP: Row %d: Missing EID/SN. Skipping.", row_index)
