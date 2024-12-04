@@ -213,16 +213,19 @@ class sync_ccp:
 
                     elif odoo_field == "owner":
                         
+                        owner_column_index = sheet_columns.index("Owner ID")
+                        owner_nickname = str(row[owner_column_index]).strip()
+                        
                         # find company owner in odoo
                         owner = self.database.env["res.partner"].search(
-                            [("company_nickname", "=", sheet_value.strip())], limit=1
+                            [("company_nickname", "=", owner_nickname)], limit=1
                         )
                         
                         # stop if not found
                         if not owner:
                             _logger.warning(
                                 "updateCCP: Row %d: Owner with nickname '%s' not found. Skipping owner update.",
-                                row.index(row) + 1, sheet_value
+                                row_index, owner_nickname
                             )
                             continue
                         
