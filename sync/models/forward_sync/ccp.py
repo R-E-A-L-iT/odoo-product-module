@@ -18,10 +18,12 @@ class sync_ccp:
         self.sheet = sheet
         self.database = database
         
+        
+        
     # utility function
     # in odoo, booleans are "True" or "False"
     # in sheets, booleans are "TRUE" or "FALSE"
-    # this function acts to normalize those values
+    # this function normalizes those values
     def normalize_bools(self, field, value):
         if field in ["publish", "expire"]:
             if value.strip().upper() in ["TRUE", "1"]:
@@ -29,6 +31,29 @@ class sync_ccp:
             elif value.strip().upper() in ["FALSE", "0", ""]:
                 return False
         return value.strip()
+    
+    
+    
+    # utility function
+    # in odoo, dates are in this format: 2024-01-01
+    # in sheets, dates are in this format: 2024-1-1
+    # this function normalizes those values
+    # also handles dates being blank or "FALSE"
+    def normalize_date(self, value):
+    try:
+        
+        if not value.strip() or value.strip().upper() == "FALSE":
+            return ""
+        
+        normalized_date = datetime.strptime(value.strip(), "%Y-%m-%d").strftime("%Y-%m-%d")
+        return normalized_date
+    
+    except ValueError:
+        
+        _logger.warning("normalize_date: Invalid date value '%s'. Returning as-is.", value)
+        return value.strip()
+    
+    
         
     # this function will be called to start the synchronization process for ccp.
     # it delegates the function of actually updating or creating the ccp item to the other two functions
@@ -207,6 +232,17 @@ class sync_ccp:
                                 ccp_id, ccp.sku, sheet_value
                             )
                             ccp.sku = sheet_value
+                            
+                    # normalize and update expiration date
+                    elif odoo_field == "expire":
+                        normalized_sheet_value = self.normalize_date(sheet_value)
+                        if ccp.expire != normalized_sheet_value:
+                            _logger.info(
+                                "updateCCP: Field 'expire' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
+                                ccp_id, ccp.expire, normalized_sheet_value
+                            )
+                            ccp.expire = normalized_sheet_value
+
 
                     # handle any other fields by updating directly 
                     # if you add fields to update that are not char fields in odoo, add a new elif statement to handle it properly before this
