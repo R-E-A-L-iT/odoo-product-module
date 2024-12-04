@@ -158,12 +158,12 @@ class sync_ccp:
                             continue
                         
                         # update if found
-                        if ccp_item.product_id.id != product.id:
+                        if ccp.product_id.id != product.id:
                             _logger.info(
                                 "updateCCP: Field 'product_id' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
-                                ccp_id, ccp_item.product_id.name if ccp_item.product_id else None, product.name
+                                ccp_id, ccp.product_id.name if ccp.product_id else None, product.name
                             )
-                            ccp_item.product_id = product.id
+                            ccp.product_id = product.id
 
                     elif odoo_field == "owner":
                         
@@ -181,26 +181,26 @@ class sync_ccp:
                             continue
                         
                         # update if found
-                        if ccp_item.owner.id != owner.id:
+                        if ccp.owner.id != owner.id:
                             _logger.info(
                                 "updateCCP: Field 'owner' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
-                                ccp_id, ccp_item.owner.name if ccp_item.owner else None, owner.name
+                                ccp_id, ccp.owner.name if ccp.owner else None, owner.name
                             )
-                            ccp_item.owner = owner.id
+                            ccp.owner = owner.id
 
                     # directly update sku (char field in odoo)
                     elif odoo_field == "sku":
-                        if ccp_item.sku != sheet_value:
+                        if ccp.sku != sheet_value:
                             _logger.info(
                                 "updateCCP: Field 'sku' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
-                                ccp_id, ccp_item.sku, sheet_value
+                                ccp_id, ccp.sku, sheet_value
                             )
-                            ccp_item.sku = sheet_value
+                            ccp.sku = sheet_value
 
                     # handle any other fields by updating directly 
                     # if you add fields to update that are not char fields in odoo, add a new elif statement to handle it properly before this
                     else:
-                        odoo_value = ccp_item[odoo_field]
+                        odoo_value = ccp[odoo_field]
                         
                         # normalize (handles many2one fields)
                         if isinstance(odoo_value, models.Model):
@@ -213,7 +213,7 @@ class sync_ccp:
                                 "updateCCP: Field '%s' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
                                 odoo_field, ccp_id, odoo_value, sheet_value
                             )
-                            ccp_item[odoo_field] = sheet_value if sheet_value else False
+                            ccp[odoo_field] = sheet_value if sheet_value else False
 
             except Exception as e:
                 _logger.error(
