@@ -199,8 +199,25 @@ class sync_ccp:
         ccp_item.name = new_representation["eidsn"]
 
         product_ids = self.database.env["product.product"].search(
-            [("sku", "=", new_representation["code"])])
-        ccp_item.product_id = product_ids[-1].id if product_ids else None
+            [("sku", "=", new_representation["code"])]
+        )
+
+        if product_ids:
+            ccp_item.product_id = product_ids[-1].id
+            _logger.info(
+                "Product found for SKU '%s' at row %d. Setting product_id to %d.",
+                new_representation["code"],
+                i,
+                product_ids[-1].id
+            )
+        else:
+            ccp_item.product_id = None
+            _logger.warning(
+                "No product found for SKU '%s' at row %d. product_id is set to None.",
+                new_representation["code"],
+                i
+            )
+
 
         # Only update the expiration date if it is valid
         if utilities.check_date(new_representation["date"]):
