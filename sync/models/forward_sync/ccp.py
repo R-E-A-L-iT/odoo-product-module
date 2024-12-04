@@ -185,7 +185,7 @@ class sync_ccp:
             report_content = "\n".join(sync_report)
             self.send_report(report_content)
         
-        # return True, "syncCCP: CCP synchronization completed successfully."
+        return False, "syncCCP: CCP synchronization completed successfully."
     
     
     
