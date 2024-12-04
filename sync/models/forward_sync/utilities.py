@@ -20,7 +20,7 @@ class utilities:
                 "body_html": f"<pre>{formatted_content}</pre>",
                 "email_to": "sync@store.r-e-a-l.it",
             }
-            mail = self.database.env["mail.mail"].create(mail_values)
+            mail = database.env["mail.mail"].create(mail_values)
             mail.send()
             _logger.info("send_report: Sync report successfully sent to sync@store.r-e-a-l.it.")
         except Exception as e:
