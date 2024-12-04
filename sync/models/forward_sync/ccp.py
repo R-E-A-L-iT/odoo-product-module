@@ -46,19 +46,33 @@ class sync_ccp:
         
         # verify that sheet format is as expected
         if sheet_width != expected_width:
-            _logger.error("syncCCP: Sheet invalid. The sheet width does not match the expected number. Expected: %s, Actual: %s", str(expected_width), str(sheet_width))
-            return True
+            _logger.error("syncCCP: Sheet invalid. The sheet width does not match the expected number. Expected: %s, Actual: %s", expected_width, sheet_width)
+            return True, f"Sheet width mismatch. Expected: {expected_width}, Actual: {sheet_width}."
         elif missing_columns:
-            _logger.error("syncCCP: Sheet invalid. The following columns are missing: %s", str(missing_columns))
-            return True
+            _logger.error("syncCCP: Sheet invalid. The following columns are missing: %s", missing_columns)
+            return True, f"Missing columns: {missing_columns}."
         elif extra_columns:
-            _logger.error("syncCCP: Sheet invalid. The following columns are extras: %s", str(extra_columns))
-            return True
+            _logger.error("syncCCP: Sheet invalid. The following columns are extras: %s", extra_columns)
+            return True, f"Extra columns: {extra_columns}."
         
         # begin processing rows
         _logger.info("syncCCP: Sheet validated. Proceeding with CCP synchronization.")
         
-        # process row
+        # for row in rows:
+        #     owner_id =
+        #     eidsn =
+        #     external_id =
+        #     product_code =
+        #     product_name =
+        #     publish =
+        #     expiration_date =
+        #     valid =
+        #     date_valid =
+        #     continue_sync = 
+            
+        #     if valid:
+                
+        
         
         
         
