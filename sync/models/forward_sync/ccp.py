@@ -119,6 +119,49 @@ class sync_ccp:
     def updateCCP(self, ccp_id, row, sheet_columns):
         _logger.info("updateCCP: Searching for any changes for CCP item: %s.", ccp_id)
 
+        ccp = self.database.env["stock.lot"].browse(ccp_id)
+        
+        # map the google sheets cells to odoo fields
+        field_mapping = {
+            "EID/SN": "name",
+            "Product Code": "sku",
+            "Product Name": "product_id",
+            "Publish": "publish",
+            "Expiration Date": "expire",
+            "Owner ID": "owner",
+        }
+        
+        for column_name, odoo_field in field_mapping.items():
+            try:
+                if column_name in sheet_columns:
+                    
+                    # get new sheets value
+                    column_index = sheet_columns.index(column_name)
+                    sheet_value = str(row[column_index]).strip()
+                    
+                    # get old odoo value
+                    odoo_value = ccp_item[odoo_field]
+                    
+                    # normalize
+                    if isinstance(odoo_value, models.Model):
+                        odoo_value = odoo_value.id
+                    odoo_value = str(odoo_value).strip() if odoo_value else ""
+                    
+                    # compare
+                    if odoo_value != sheet_value:
+                        _logger.info(
+                            "updateCCP: Detected changes to field '%s' for CCP ID %s. Old Value (Odoo): '%s', New Value (Sheet): '%s'.",
+                            odoo_field, ccp_id, odoo_value, sheet_value
+                        )
+                        
+                        # update the field
+                        ccp_item[odoo_field] = sheet_value if sheet_value else False
+
+            except Exception as e:
+                _logger.error(
+                    "updateCCP: Error while updating field '%s' for CCP ID %s: %s",
+                    odoo_field, ccp_id, str(e), exc_info=True
+                )
 
 
     # this function is called to create a new ccp if the eid is not recognized
