@@ -305,7 +305,8 @@ class sync_ccp:
         }
         
         # empty dict for all data to write
-        new_ccp_values = {}
+        # company_id is a required field, 1 is id of R-E-A-L.iT parent company
+        new_ccp_values = {"company_id": 1}
 
         # loop through cells and collect relevant values
         for column_name, odoo_field in field_mapping.items():
