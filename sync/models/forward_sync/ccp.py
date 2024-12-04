@@ -203,13 +203,19 @@ class sync_ccp:
         )
 
         if product_ids:
-            ccp_item.product_id = product_ids[-1].id
-            _logger.info(
-                "Product found for SKU '%s' at row %d. Setting product_id to %d.",
+            ccp_item.write({"product_id": product_ids[-1].id if product_ids else None})
+            _logger.debug(
+                "product_id updated using write() for SKU '%s' at row %d.",
                 new_representation["code"],
-                i,
-                product_ids[-1].id
+                i
             )
+
+            # _logger.info(
+            #     "Product found for SKU '%s' at row %d. Setting product_id to %d.",
+            #     new_representation["code"],
+            #     i,
+            #     product_ids[-1].id
+            # )
         else:
             ccp_item.product_id = None
             _logger.warning(
