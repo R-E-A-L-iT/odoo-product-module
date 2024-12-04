@@ -138,24 +138,82 @@ class sync_ccp:
                     # get new sheets value
                     column_index = sheet_columns.index(column_name)
                     sheet_value = str(row[column_index]).strip()
-                    
-                    # get old odoo value
-                    odoo_value = ccp[odoo_field]
-                    
-                    # normalize
-                    if isinstance(odoo_value, models.Model):
-                        odoo_value = odoo_value.id
-                    odoo_value = str(odoo_value).strip() if odoo_value else ""
-                    
-                    # compare
-                    if odoo_value != sheet_value:
-                        _logger.info(
-                            "updateCCP: Detected changes to field '%s' for CCP ID %s. Old Value (Odoo): '%s', New Value (Sheet): '%s'.",
-                            odoo_field, ccp_id, odoo_value, sheet_value
+
+                    # handle special cases for specific fields
+                    if odoo_field == "product_id":
+                        
+                        # find product by sku in odoo
+                        product_code_column = sheet_columns.index("Product Code")
+                        product_code = str(row[product_code_column]).strip()
+                        product = self.database.env["product.product"].search(
+                            [("sku", "=", product_code)], limit=1
                         )
                         
-                        # update the field
-                        ccp[odoo_field] = sheet_value if sheet_value else False
+                        # stop if not found
+                        if not product:
+                            _logger.warning(
+                                "updateCCP: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
+                                row.index(row) + 1, product_code
+                            )
+                            continue
+                        
+                        # update if found
+                        if ccp_item.product_id.id != product.id:
+                            _logger.info(
+                                "updateCCP: Field 'product_id' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
+                                ccp_id, ccp_item.product_id.name if ccp_item.product_id else None, product.name
+                            )
+                            ccp_item.product_id = product.id
+
+                    elif odoo_field == "owner":
+                        
+                        # find company owner in odoo
+                        owner = self.database.env["res.partner"].search(
+                            [("company_nickname", "=", sheet_value.strip())], limit=1
+                        )
+                        
+                        # stop if not found
+                        if not owner:
+                            _logger.warning(
+                                "updateCCP: Row %d: Owner with nickname '%s' not found. Skipping owner update.",
+                                row.index(row) + 1, sheet_value
+                            )
+                            continue
+                        
+                        # update if found
+                        if ccp_item.owner.id != owner.id:
+                            _logger.info(
+                                "updateCCP: Field 'owner' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
+                                ccp_id, ccp_item.owner.name if ccp_item.owner else None, owner.name
+                            )
+                            ccp_item.owner = owner.id
+
+                    # directly update sku (char field in odoo)
+                    elif odoo_field == "sku":
+                        if ccp_item.sku != sheet_value:
+                            _logger.info(
+                                "updateCCP: Field 'sku' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
+                                ccp_id, ccp_item.sku, sheet_value
+                            )
+                            ccp_item.sku = sheet_value
+
+                    # handle any other fields by updating directly 
+                    # if you add fields to update that are not char fields in odoo, add a new elif statement to handle it properly before this
+                    else:
+                        odoo_value = ccp_item[odoo_field]
+                        
+                        # normalize (handles many2one fields)
+                        if isinstance(odoo_value, models.Model):
+                            odoo_value = odoo_value.id
+                        odoo_value = str(odoo_value).strip() if odoo_value else ""
+
+                        # compare, log, and update
+                        if odoo_value != sheet_value:
+                            _logger.info(
+                                "updateCCP: Field '%s' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
+                                odoo_field, ccp_id, odoo_value, sheet_value
+                            )
+                            ccp_item[odoo_field] = sheet_value if sheet_value else False
 
             except Exception as e:
                 _logger.error(
@@ -168,7 +226,7 @@ class sync_ccp:
     # it will attempt to create the ccp cell by cell, and skip creating any info that generates errors
     # fields that are not updated will be added to a report at the end
     # note that if the expiration date is "false" or blank, it will not be added to the report, as this is a very common bug and intended to be overlooked
-    def createCCP(self, eidsn, row, sheet_columns):
+    # def createCCP(self, eidsn, row, sheet_columns):
         _logger.info("createCCP: Creating new CCP item with EID/SN '%s'.", eidsn)
         
                 
