@@ -152,7 +152,8 @@ class sync_ccp:
                 if not valid:
                     warning_msg = f"Row {row_index}: Marked as invalid. Skipping."
                     _logger.info(f"syncCCP: {warning_msg}")
-                    sync_report.append(f"WARNING: {warning_msg}")
+                    # not sending this to report because intended feature
+                    # sync_report.append(f"WARNING: {warning_msg}")
                     continue
                 
                 
@@ -184,7 +185,7 @@ class sync_ccp:
             report_content = "\n".join(sync_report)
             self.send_report(report_content)
         
-        return False, "syncCCP: CCP synchronization completed successfully."
+        return True, "syncCCP: CCP synchronization completed successfully."
     
     
     
