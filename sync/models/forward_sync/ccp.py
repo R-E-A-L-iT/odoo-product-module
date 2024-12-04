@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .utilities import utilities
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 from functools import partial
 from itertools import groupby
 import logging
