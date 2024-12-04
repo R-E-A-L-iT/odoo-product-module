@@ -61,8 +61,24 @@ class sync_ccp:
         except ValueError:
             _logger.warning("normalize_date: Invalid date value '%s'. Returning as-is.", value)
             return str(value)
-
+        
     
+    
+    # utility function
+    # sends compiled sync report of all errors and warnings
+    def send_report(self, report_content):
+        try:
+            mail_values = {
+                "subject": "CCP Sync Report",
+                "body_html": f"<pre>{report_content}</pre>",
+                "email_to": "sync@store.r-e-a-l.it",
+            }
+            mail = self.database.env["mail.mail"].create(mail_values)
+            mail.send()
+            _logger.info("send_report: Sync report successfully sent to sync@store.r-e-a-l.it.")
+        except Exception as e:
+            _logger.error("send_report: Failed to send sync report email: %s", str(e), exc_info=True)
+
     
         
     # this function will be called to start the synchronization process for ccp.
@@ -94,16 +110,25 @@ class sync_ccp:
         missing_columns = [header for header in expected_columns.keys() if header not in sheet_columns]
         extra_columns = [header for header in sheet_columns if header not in expected_columns]
         
+        # initialize list of warnings/errors for report
+        sync_report = []
+        
         # verify that sheet format is as expected
         if sheet_width != expected_width:
-            _logger.error("syncCCP: Sheet invalid. The sheet width does not match the expected number. Expected: %s, Actual: %s", expected_width, sheet_width)
-            return True, f"Sheet width mismatch. Expected: {expected_width}, Actual: {sheet_width}."
+            error_msg = f"Sheet width mismatch. Expected: {expected_width}, Actual: {sheet_width}."
+            _logger.error(f"syncCCP: {error_msg}")
+            sync_report.append(f"ERROR: {error_msg}")
+            return True, error_msg
         elif missing_columns:
-            _logger.error("syncCCP: Sheet invalid. The following columns are missing: %s", missing_columns)
-            return True, f"Missing columns: {missing_columns}."
+            error_msg = f"Missing columns: {missing_columns}."
+            _logger.error(f"syncCCP: {error_msg}")
+            sync_report.append(f"ERROR: {error_msg}")
+            return True, error_msg
         elif extra_columns:
-            _logger.error("syncCCP: Sheet invalid. The following columns are extras: %s", extra_columns)
-            return True, f"Extra columns: {extra_columns}."
+                error_msg = f"Extra columns: {extra_columns}."
+            _logger.error(f"syncCCP: {error_msg}")
+            sync_report.append(f"ERROR: {error_msg}")
+            return True, error_msg
         
         _logger.info("syncCCP: Sheet validated. Proceeding with CCP synchronization.")
         
@@ -125,7 +150,9 @@ class sync_ccp:
                 valid = str(row[valid_column]).strip().lower() == "true"
                 
                 if not valid:
-                    _logger.info("syncCCP: Row %d: Marked as invalid. Skipping.", row_index)
+                    warning_msg = f"Row {row_index}: Marked as invalid. Skipping."
+                    _logger.info(f"syncCCP: {warning_msg}")
+                    sync_report.append(f"WARNING: {warning_msg}")
                     continue
                 
                 
@@ -134,7 +161,9 @@ class sync_ccp:
                 eidsn = str(row[eidsn_column]).strip()
                 
                 if not eidsn:
-                    _logger.warning("syncCCP: Row %d: Missing EID/SN. Skipping.", row_index)
+                    warning_msg = f"Row {row_index}: Missing EID/SN. Skipping."
+                    _logger.warning(f"syncCCP: {warning_msg}")
+                    sync_report.append(f"WARNING: {warning_msg}")
                     continue
                 
                 existing_ccp = self.database.env["stock.lot"].search([("name", "=", eidsn)], limit=1)
@@ -147,7 +176,13 @@ class sync_ccp:
                     self.createCCP(eidsn, row, sheet_columns, row_index)
             
             except Exception as e:
-                _logger.error("syncCCP: Error occurred while processing row %d: %s", row_index, str(e), exc_info=True)
+                error_msg = f"Row {row_index}: Error occurred while processing: {str(e)}"
+                _logger.error(f"syncCCP: {error_msg}", exc_info=True)
+                sync_report.append(f"ERROR: {error_msg}")
+                
+        if sync_report:
+            report_content = "\n".join(sync_report)
+            self.send_report(report_content)
         
         return False, "syncCCP: CCP synchronization completed successfully."
     
@@ -160,127 +195,134 @@ class sync_ccp:
     def updateCCP(self, ccp_id, row, sheet_columns, row_index):
         _logger.info("updateCCP: Searching for any changes for CCP item: %s.", ccp_id)
 
-        ccp = self.database.env["stock.lot"].browse(ccp_id)
-        
-        # map the google sheets cells to odoo fields
-        field_mapping = {
-            "EID/SN": "name",
-            "Product Code": "sku",
-            "Product Name": "product_id",
-            "Publish": "publish",
-            "Expiration Date": "expire",
-            "Owner ID": "owner",
-        }
-        
-        for column_name, odoo_field in field_mapping.items():
-            try:
-                if column_name in sheet_columns:
-                    
-                    # get new sheets value
-                    column_index = sheet_columns.index(column_name)
-                    sheet_value = str(row[column_index]).strip()
-                    sheet_value_normalized = self.normalize_bools(odoo_field, sheet_value)
+        try:
+            ccp = self.database.env["stock.lot"].browse(ccp_id)
+            
+            # map the google sheets cells to odoo fields
+            field_mapping = {
+                "EID/SN": "name",
+                "Product Code": "sku",
+                "Product Name": "product_id",
+                "Publish": "publish",
+                "Expiration Date": "expire",
+                "Owner ID": "owner",
+            }
+            
+            for column_name, odoo_field in field_mapping.items():
+                try:
+                    if column_name in sheet_columns:
+                        
+                        # get new sheets value
+                        column_index = sheet_columns.index(column_name)
+                        sheet_value = str(row[column_index]).strip()
+                        sheet_value_normalized = self.normalize_bools(odoo_field, sheet_value)
 
-                    # handle special cases for specific fields
-                    if odoo_field == "product_id":
-                        
-                        # find product by sku in odoo
-                        product_code_column = sheet_columns.index("Product Code")
-                        product_code = str(row[product_code_column]).strip()
-                        product = self.database.env["product.product"].search(
-                            [("sku", "=", product_code)], limit=1
-                        )
-                        
-                        # stop if not found
-                        if not product:
-                            _logger.warning(
-                                "updateCCP: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
-                                row.index(row) + 1, product_code
-                            )
-                            continue
-                        
-                        # update if found
-                        if ccp.product_id.id != product.id:
-                            _logger.info(
-                                "updateCCP: Field 'product_id' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
-                                ccp_id, ccp.product_id.name if ccp.product_id else None, product.name
-                            )
-                            ccp.product_id = product.id
-
-                    elif odoo_field == "owner":
-                        
-                        owner_column_index = sheet_columns.index("Owner ID")
-                        owner_nickname = str(row[owner_column_index]).strip()
-                        
-                        # find company owner in odoo
-                        owner = self.database.env["res.partner"].search(
-                            [("company_nickname", "=", owner_nickname)], limit=1
-                        )
-                        
-                        # stop if not found
-                        if not owner:
-                            _logger.warning(
-                                "updateCCP: Row %d: Owner with nickname '%s' not found. Skipping owner update.",
-                                row_index, owner_nickname
-                            )
-                            continue
-                        
-                        # update if found
-                        if ccp.owner.id != owner.id:
-                            _logger.info(
-                                "updateCCP: Field 'owner' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
-                                ccp_id, ccp.owner.name if ccp.owner else None, owner.name
-                            )
-                            ccp.owner = owner.id
-
-                    # directly update sku (char field in odoo)
-                    elif odoo_field == "sku":
-                        if ccp.sku != sheet_value:
-                            _logger.info(
-                                "updateCCP: Field 'sku' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
-                                ccp_id, ccp.sku, sheet_value
-                            )
-                            ccp.sku = sheet_value
+                        # handle special cases for specific fields
+                        if odoo_field == "product_id":
                             
-                    # normalize and update expiration date
-                    elif odoo_field == "expire":
-                        
-                        # normalize both values (different data types)
-                        normalized_sheet_value = self.normalize_date(sheet_value)
-                        normalized_odoo_value = self.normalize_date(ccp.expire or "")
-
-                        # comprare normalized values
-                        if normalized_odoo_value != normalized_sheet_value:
-                            _logger.info(
-                                "updateCCP: Field 'expire' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
-                                ccp_id, normalized_odoo_value, normalized_sheet_value
+                            # find product by sku in odoo
+                            product_code_column = sheet_columns.index("Product Code")
+                            product_code = str(row[product_code_column]).strip()
+                            product = self.database.env["product.product"].search(
+                                [("sku", "=", product_code)], limit=1
                             )
-                            ccp.expire = normalized_sheet_value
+                            
+                            # stop if not found
+                            if not product:
+                                _logger.warning(
+                                    "updateCCP: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
+                                    row.index(row) + 1, product_code
+                                )
+                                continue
+                            
+                            # update if found
+                            if ccp.product_id.id != product.id:
+                                _logger.info(
+                                    "updateCCP: Field 'product_id' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
+                                    ccp_id, ccp.product_id.name if ccp.product_id else None, product.name
+                                )
+                                ccp.product_id = product.id
 
-
-                    # handle any other fields by updating directly 
-                    # if you add fields to update that are not char fields in odoo, add a new elif statement to handle it properly before this
-                    else:
-                        odoo_value = ccp[odoo_field]
-                        
-                        # normalize
-                        if isinstance(odoo_value, models.Model):
-                            odoo_value = odoo_value.id
-                        odoo_value_normalized = self.normalize_bools(odoo_field, str(odoo_value).strip() if odoo_value else "")
-
-                        # compare, log, and update
-                        if odoo_value_normalized != sheet_value_normalized:
-                            _logger.info(
-                                "updateCCP: Field '%s' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
-                                odoo_field, ccp_id, odoo_value, sheet_value
+                        elif odoo_field == "owner":
+                            
+                            owner_column_index = sheet_columns.index("Owner ID")
+                            owner_nickname = str(row[owner_column_index]).strip()
+                            
+                            # find company owner in odoo
+                            owner = self.database.env["res.partner"].search(
+                                [("company_nickname", "=", owner_nickname)], limit=1
                             )
-                            ccp[odoo_field] = sheet_value_normalized if sheet_value_normalized else False
+                            
+                            # stop if not found
+                            if not owner:
+                                _logger.warning(
+                                    "updateCCP: Row %d: Owner with nickname '%s' not found. Skipping owner update.",
+                                    row_index, owner_nickname
+                                )
+                                continue
+                            
+                            # update if found
+                            if ccp.owner.id != owner.id:
+                                _logger.info(
+                                    "updateCCP: Field 'owner' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
+                                    ccp_id, ccp.owner.name if ccp.owner else None, owner.name
+                                )
+                                ccp.owner = owner.id
 
-            except Exception as e:
-                _logger.error(
-                    "updateCCP: Error while updating field '%s' for CCP ID %s: %s",
-                    odoo_field, ccp_id, str(e), exc_info=True
-                )
+                        # directly update sku (char field in odoo)
+                        elif odoo_field == "sku":
+                            if ccp.sku != sheet_value:
+                                _logger.info(
+                                    "updateCCP: Field 'sku' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
+                                    ccp_id, ccp.sku, sheet_value
+                                )
+                                ccp.sku = sheet_value
+                                
+                        # normalize and update expiration date
+                        elif odoo_field == "expire":
+                            
+                            # normalize both values (different data types)
+                            normalized_sheet_value = self.normalize_date(sheet_value)
+                            normalized_odoo_value = self.normalize_date(ccp.expire or "")
+
+                            # comprare normalized values
+                            if normalized_odoo_value != normalized_sheet_value:
+                                _logger.info(
+                                    "updateCCP: Field 'expire' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
+                                    ccp_id, normalized_odoo_value, normalized_sheet_value
+                                )
+                                ccp.expire = normalized_sheet_value
+
+
+                        # handle any other fields by updating directly 
+                        # if you add fields to update that are not char fields in odoo, add a new elif statement to handle it properly before this
+                        else:
+                            odoo_value = ccp[odoo_field]
+                            
+                            # normalize
+                            if isinstance(odoo_value, models.Model):
+                                odoo_value = odoo_value.id
+                            odoo_value_normalized = self.normalize_bools(odoo_field, str(odoo_value).strip() if odoo_value else "")
+
+                            # compare, log, and update
+                            if odoo_value_normalized != sheet_value_normalized:
+                                _logger.info(
+                                    "updateCCP: Field '%s' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
+                                    odoo_field, ccp_id, odoo_value, sheet_value
+                                )
+                                ccp[odoo_field] = sheet_value_normalized if sheet_value_normalized else False
+
+                except Exception as e:
+                    _logger.error(
+                        "updateCCP: Error while updating field '%s' for CCP ID %s: %s",
+                        odoo_field, ccp_id, str(e), exc_info=True
+                    )
+            pass
+        except Exception as e:
+            error_msg = f"Row {row_index}: Error updating CCP ID {ccp_id}: {str(e)}"
+            _logger.error(f"updateCCP: {error_msg}", exc_info=True)
+            sync_report.append(f"ERROR: {error_msg}")
+
 
 
     # this function is called to create a new ccp if the eid is not recognized
@@ -290,113 +332,120 @@ class sync_ccp:
     def createCCP(self, eidsn, row, sheet_columns, row_index):
         _logger.info("createCCP: Creating new CCP item with EID/SN '%s'.", eidsn)
         
-        # map the google sheets cells to odoo fields
-        field_mapping = {
-            "EID/SN": "name",
-            "Product Code": "sku",
-            "Product Name": "product_id",
-            "Publish": "publish",
-            "Expiration Date": "expire",
-            "Owner ID": "owner",
-        }
-        
-        # empty dict for all data to write
-        # company_id is a required field, 1 is id of R-E-A-L.iT parent company
-        new_ccp_values = {"company_id": 1}
-        
-        # mandatory check, product_id is required field
-        product_exists = False
-
-        # loop through cells and collect relevant values
-        for column_name, odoo_field in field_mapping.items():
-            try:
-                if column_name in sheet_columns:
-                    
-                    # get value from cell in sheet
-                    column_index = sheet_columns.index(column_name)
-                    sheet_value = str(row[column_index]).strip()
-
-                    # normalize booleans
-                    if odoo_field in ["publish", "expire"]:
-                        normalized_value = self.normalize_bools(odoo_field, sheet_value)
-                        
-                    # normalize date
-                    elif odoo_field == "expire":
-                        normalized_value = self.normalize_date(sheet_value)
-                        
-                    # get product id
-                    elif odoo_field == "product_id":
-                        product_code_column = sheet_columns.index("Product Code")
-                        product_code = str(row[product_code_column]).strip()
-                        product = self.database.env["product.product"].search(
-                            [("sku", "=", product_code)], limit=1
-                        )
-                        
-                        if not product:
-                            _logger.error(
-                                "createCCP: Row %d: Product with SKU '%s' not found. Creation canceled.",
-                                row_index, product_code
-                            )
-                            continue
-                        
-                        normalized_value = product.id
-                        product_exists = True
-                        
-                    # get company id
-                    elif odoo_field == "owner":
-                        owner = self.database.env["res.partner"].search(
-                            [("company_nickname", "=", sheet_value.strip())], limit=1
-                        )
-                        
-                        if not owner:
-                            _logger.warning(
-                                "createCCP: Row %d: Owner with nickname '%s' not found. Skipping owner field.",
-                                row_index, sheet_value
-                            )
-                            continue
-                        
-                        normalized_value = owner.id
-                        
-                    else:
-                        normalized_value = sheet_value
-
-                    # log value being gathered
-                    _logger.info(
-                        "createCCP: Gathering field '%s' for new CCP. Value: '%s'.",
-                        odoo_field, normalized_value
-                    )
-
-                    # add value to dict
-                    new_ccp_values[odoo_field] = normalized_value
-
-            except Exception as e:
-                _logger.error(
-                    "createCCP: Error while processing field '%s' for new CCP: %s",
-                    column_name, str(e), exc_info=True
-                )
-        
-        # log data for debugging
-        _logger.info("createCCP: Data gathered for new CCP: %s", new_ccp_values)
-
-        # create new record
-        if product_exists:
+        try:
+            # map the google sheets cells to odoo fields
+            field_mapping = {
+                "EID/SN": "name",
+                "Product Code": "sku",
+                "Product Name": "product_id",
+                "Publish": "publish",
+                "Expiration Date": "expire",
+                "Owner ID": "owner",
+            }
             
-            try:
+            # empty dict for all data to write
+            # company_id is a required field, 1 is id of R-E-A-L.iT parent company
+            new_ccp_values = {"company_id": 1}
+            
+            # mandatory check, product_id is required field
+            product_exists = False
+
+            # loop through cells and collect relevant values
+            for column_name, odoo_field in field_mapping.items():
+                try:
+                    if column_name in sheet_columns:
+                        
+                        # get value from cell in sheet
+                        column_index = sheet_columns.index(column_name)
+                        sheet_value = str(row[column_index]).strip()
+
+                        # normalize booleans
+                        if odoo_field in ["publish", "expire"]:
+                            normalized_value = self.normalize_bools(odoo_field, sheet_value)
+                            
+                        # normalize date
+                        elif odoo_field == "expire":
+                            normalized_value = self.normalize_date(sheet_value)
+                            
+                        # get product id
+                        elif odoo_field == "product_id":
+                            product_code_column = sheet_columns.index("Product Code")
+                            product_code = str(row[product_code_column]).strip()
+                            product = self.database.env["product.product"].search(
+                                [("sku", "=", product_code)], limit=1
+                            )
+                            
+                            if not product:
+                                _logger.error(
+                                    "createCCP: Row %d: Product with SKU '%s' not found. Creation canceled.",
+                                    row_index, product_code
+                                )
+                                continue
+                            
+                            normalized_value = product.id
+                            product_exists = True
+                            
+                        # get company id
+                        elif odoo_field == "owner":
+                            owner = self.database.env["res.partner"].search(
+                                [("company_nickname", "=", sheet_value.strip())], limit=1
+                            )
+                            
+                            if not owner:
+                                _logger.warning(
+                                    "createCCP: Row %d: Owner with nickname '%s' not found. Skipping owner field.",
+                                    row_index, sheet_value
+                                )
+                                continue
+                            
+                            normalized_value = owner.id
+                            
+                        else:
+                            normalized_value = sheet_value
+
+                        # log value being gathered
+                        _logger.info(
+                            "createCCP: Gathering field '%s' for new CCP. Value: '%s'.",
+                            odoo_field, normalized_value
+                        )
+
+                        # add value to dict
+                        new_ccp_values[odoo_field] = normalized_value
+
+                except Exception as e:
+                    _logger.error(
+                        "createCCP: Error while processing field '%s' for new CCP: %s",
+                        column_name, str(e), exc_info=True
+                    )
+            
+            # log data for debugging
+            _logger.info("createCCP: Data gathered for new CCP: %s", new_ccp_values)
+
+            # create new record
+            if product_exists:
                 
-                # honestly don't know what this block of queries does.
-                # all i know is that if you have a sku that is terribly wrong and messed up, it crashes the entire process
-                # but if you include these quieres, instead of crashing it magically skips it, generates an error, and continues
-                # don't ask me why
-                self.database.env.cr.execute("SAVEPOINT create_ccp_savepoint")
-                new_ccp = self.database.env["stock.lot"].create(new_ccp_values)
-                self.database.env.cr.execute("RELEASE SAVEPOINT create_ccp_savepoint")
-                
-                _logger.info("createCCP: Successfully created new CCP item with ID: %s", new_ccp.id)
-                
-            except Exception as e:
-                
-                self.database.env.cr.execute("ROLLBACK TO SAVEPOINT create_ccp_savepoint")
-                _logger.error("createCCP: Error while creating new CCP item: %s", str(e), exc_info=True)
-                
-        else:
-            return
+                try:
+                    
+                    # honestly don't know what this block of queries does.
+                    # all i know is that if you have a sku that is terribly wrong and messed up, it crashes the entire process
+                    # but if you include these quieres, instead of crashing it magically skips it, generates an error, and continues
+                    # don't ask me why
+                    self.database.env.cr.execute("SAVEPOINT create_ccp_savepoint")
+                    new_ccp = self.database.env["stock.lot"].create(new_ccp_values)
+                    self.database.env.cr.execute("RELEASE SAVEPOINT create_ccp_savepoint")
+                    
+                    _logger.info("createCCP: Successfully created new CCP item with ID: %s", new_ccp.id)
+                    
+                except Exception as e:
+                    
+                    self.database.env.cr.execute("ROLLBACK TO SAVEPOINT create_ccp_savepoint")
+                    _logger.error("createCCP: Error while creating new CCP item: %s", str(e), exc_info=True)
+                    
+            else:
+                return
+            
+            pass
+        except Exception as e:
+            error_msg = f"Row {row_index}: Error creating CCP with EID/SN {eidsn}: {str(e)}"
+            _logger.error(f"createCCP: {error_msg}", exc_info=True)
+            sync_report.append(f"ERROR: {error_msg}")
