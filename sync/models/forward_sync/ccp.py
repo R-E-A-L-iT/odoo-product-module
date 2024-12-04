@@ -47,7 +47,7 @@ class sync_ccp:
                 return ""
 
             # convert datetime object to string
-            if isinstance(value, datetime.date):
+            if isinstance(value, (datetime, date)):
                 return value.strftime("%Y-%m-%d")
 
             # normalize string date values
