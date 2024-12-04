@@ -344,7 +344,7 @@ class sync_ccp:
                             continue
                         
                         normalized_value = product.id
-                        product_id_found = True
+                        product_exists = True
                         
                     # get company id
                     elif odoo_field == "owner":
@@ -383,8 +383,11 @@ class sync_ccp:
         _logger.info("createCCP: Data gathered for new CCP: %s", new_ccp_values)
 
         # create new record
-        try:
-            new_ccp = self.database.env["stock.lot"].create(new_ccp_values)
-            _logger.info("createCCP: Successfully created new CCP item with ID: %s", new_ccp.id)
-        except Exception as e:
-            _logger.error("createCCP: Error while creating new CCP item: %s", str(e), exc_info=True)
+        if product_exists:
+            try:
+                new_ccp = self.database.env["stock.lot"].create(new_ccp_values)
+                _logger.info("createCCP: Successfully created new CCP item with ID: %s", new_ccp.id)
+            except Exception as e:
+                _logger.error("createCCP: Error while creating new CCP item: %s", str(e), exc_info=True)
+        else:
+            return
