@@ -319,8 +319,43 @@ class sync_ccp:
                     # normalize booleans
                     if odoo_field in ["publish", "expire"]:
                         normalized_value = self.normalize_bools(odoo_field, sheet_value)
+                        
+                    # normalize date
                     elif odoo_field == "expire":
                         normalized_value = self.normalize_date(sheet_value)
+                        
+                    # get product id
+                    elif odoo_field == "product_id":
+                        product_code_column = sheet_columns.index("Product Code")
+                        product_code = str(row[product_code_column]).strip()
+                        product = self.database.env["product.product"].search(
+                            [("sku", "=", product_code)], limit=1
+                        )
+                        
+                        if not product:
+                            _logger.warning(
+                                "createCCP: Row %d: Product with SKU '%s' not found. Skipping product_id field.",
+                                row_index, product_code
+                            )
+                            continue
+                        
+                        normalized_value = product.id
+                        
+                    # get company id
+                    elif odoo_field == "owner":
+                        owner = self.database.env["res.partner"].search(
+                            [("company_nickname", "=", sheet_value.strip())], limit=1
+                        )
+                        
+                        if not owner:
+                            _logger.warning(
+                                "createCCP: Row %d: Owner with nickname '%s' not found. Skipping owner field.",
+                                row_index, sheet_value
+                            )
+                            continue
+                        
+                        normalized_value = owner.id
+                        
                     else:
                         normalized_value = sheet_value
 
