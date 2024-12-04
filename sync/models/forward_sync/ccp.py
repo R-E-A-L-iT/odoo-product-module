@@ -339,8 +339,12 @@ class sync_ccp:
                     column_name, str(e), exc_info=True
                 )
         
-        # Log the gathered data (for debugging purposes)
+        # log data for debugging
         _logger.info("createCCP: Data gathered for new CCP: %s", new_ccp_values)
 
-        # Placeholder for writing data to the database
-        return new_ccp_values
+        # create new record
+        try:
+            new_ccp = self.database.env["stock.lot"].create(new_ccp_values)
+            _logger.info("createCCP: Successfully created new CCP item with ID: %s", new_ccp.id)
+        except Exception as e:
+            _logger.error("createCCP: Error while creating new CCP item: %s", str(e), exc_info=True)
