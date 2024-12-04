@@ -58,8 +58,60 @@ class sync_ccp:
             _logger.error("syncCCP: Sheet invalid. The following columns are extras: %s", extra_columns)
             return True, f"Extra columns: {extra_columns}."
         
-        # begin processing rows
         _logger.info("syncCCP: Sheet validated. Proceeding with CCP synchronization.")
+        
+        # start processing rows beginning at row 2
+        for row_index, row in enumerate(self.sheet[1:], start=2):
+        try:
+            
+            # only proceed if the row is marked as valid
+            valid_column = sheet_columns.index("Valid")
+            valid = str(row[valid_column_index]).strip().lower() == "true"
+            
+            if not valid:
+                _logger.info("syncCCP: Row %d: Marked as invalid. Skipping.", row_index)
+                continue
+            
+            
+            # get eid/sn and check if it exists in odoo
+            eidsn_column = sheet_columns.index("EID/SN")
+            eidsn = str(row[eidsn_column_index]).strip()
+            
+            if not eidsn:
+                _logger.warning("syncCCP: Row %d: Missing EID/SN. Skipping.", row_index)
+                continue
+            
+            
+            # check if the eid/sn already exists in odoo
+            ccp_ids = self.database.env["ir.model.data"].search(
+                [("name", "=", eidsn), ("model", "=", "stock.lot")]
+            )
+            
+            if ccp_ids:
+                _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
+                self.updateCCP(ccp_ids[-1].res_id, row, sheet_columns)
+            else:
+                _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
+                self.createCCP(eidsn, row, sheet_columns)
+        
+        except Exception as e:
+            _logger.error("syncCCP: Error occurred while processing row %d: %s", row_index, str(e), exc_info=True)
+        
+        return False, "syncCCP: CCP synchronization completed successfully."
+    
+    # this function is called to update a ccp that already exists
+    # it will attempt to update the ccp cell by cell, and skip updating any info that generates errors
+    # fields that are not updated will be added to a report at the end
+    # note that if the expiration date is "false" or blank, it will not be added to the report, as this is a very common bug and intended to be overlooked
+    def updateCCP(self, ccp_id, row, sheet_columns):
+        _logger.info("updateCCP: Searching for any changes for CCP item: %s.", ccp_id)
+
+    # this function is called to create a new ccp if the eid is not recognized
+    # it will attempt to create the ccp cell by cell, and skip creating any info that generates errors
+    # fields that are not updated will be added to a report at the end
+    # note that if the expiration date is "false" or blank, it will not be added to the report, as this is a very common bug and intended to be overlooked
+    def createCCP(self, eidsn, row, sheet_columns):
+        _logger.info("createCCP: Creating new CCP item with EID/SN '%s'.", eidsn)
         
         # for row in rows:
         #     owner_id =
