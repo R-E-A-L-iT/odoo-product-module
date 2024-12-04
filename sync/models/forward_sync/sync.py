@@ -258,7 +258,10 @@ class sync(models.Model):
         email.body_html = msg
         email.email_to = "sync@store.r-e-a-l.it"
         email_id = {email.id}
-        email.process_email_queue(email_id)
+        
+        # somehow i keep receiving sync emails about it being completed successfully and i'm way too sleep deprived rn so just doing this instead of figuring out the issue
+        if "successfully" not in msg:
+            email.process_email_queue(email_id)
 
     ###################################################################
     def archive_product(self, product_id):
