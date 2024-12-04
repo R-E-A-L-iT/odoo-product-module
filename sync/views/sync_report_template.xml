@@ -4,19 +4,19 @@
             <field name="name">Sync Report Email Template</field>
             <field name="email_from">${object.env.user.email or ''}</field>
             <field name="email_to">${object.email_to or ''}</field>
-            <field name="subject">${object.subject or 'Sync Report'}</field>
+            <field name="subject">${object.subject}</field>
             <field name="body_html" type="html">
                 <![CDATA[
                 <div style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px;">
                     <div style="text-align: center;">
                         <img src="https://cdn.r-e-a-l.it/videos/header_en.png" alt="Header Logo" style="width: 100%; max-width: 400px; animation: fadeIn 2s;">
-                        <h1 style="color: #333; font-size: 24px; margin: 20px 0;">${object.subject or 'Sync Report'}</h1>
+                        <h1 style="color: #333; font-size: 24px; margin: 20px 0;">${object.subject}</h1>
                     </div>
                     <div style="padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
-                        <pre style="white-space: pre-wrap; font-size: 14px; color: #555;">${object.body_content or 'No content available.'}</pre>
+                        <pre style="white-space: pre-wrap; font-size: 14px; color: #555;">${object.body_content or ''}</pre>
                     </div>
                     <div style="text-align: center; margin-top: 20px;">
-                        <a href="https://r-e-a-l.it/web?debug=1#id=34&cids=3-1-15&menu_id=28&action=12&model=ir.cron&view_type=form" 
+                        <a href="https://your-database-link.com/web?debug=1#id=34&cids=3-1-15&menu_id=28&action=12&model=ir.cron&view_type=form" 
                            style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 16px;">
                            Manual Retry
                         </a>
@@ -30,7 +30,7 @@
                 </div>
                 ]]>
             </field>
-            <field name="model_id" ref="base.model_mail_template"/>
+            <field name="model_id" ref="base.model_res_users" />
             <field name="auto_delete" eval="True"/>
         </record>
     </data>
