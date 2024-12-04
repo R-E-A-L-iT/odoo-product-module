@@ -385,9 +385,12 @@ class sync_ccp:
         # create new record
         if product_exists:
             try:
+                self.database.env.cr.execute("SAVEPOINT create_ccp_savepoint")
                 new_ccp = self.database.env["stock.lot"].create(new_ccp_values)
+                self.database.env.cr.execute("RELEASE SAVEPOINT create_ccp_savepoint")
                 _logger.info("createCCP: Successfully created new CCP item with ID: %s", new_ccp.id)
             except Exception as e:
+                self.database.env.cr.execute("ROLLBACK TO SAVEPOINT create_ccp_savepoint")
                 _logger.error("createCCP: Error while creating new CCP item: %s", str(e), exc_info=True)
         else:
             return
