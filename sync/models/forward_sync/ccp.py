@@ -145,10 +145,10 @@ class sync_ccp:
                 
                 if ccp_ids:
                     _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
-                    self.updateCCP(ccp_ids[-1].res_id, row, sheet_columns)
+                    self.updateCCP(ccp_ids[-1].res_id, row, sheet_columns, row_index)
                 else:
                     _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
-                    self.createCCP(eidsn, row, sheet_columns)
+                    self.createCCP(eidsn, row, sheet_columns, row_index)
             
             except Exception as e:
                 _logger.error("syncCCP: Error occurred while processing row %d: %s", row_index, str(e), exc_info=True)
@@ -161,7 +161,7 @@ class sync_ccp:
     # it will attempt to update the ccp cell by cell, and skip updating any info that generates errors
     # fields that are not updated will be added to a report at the end
     # note that if the expiration date is "false" or blank, it will not be added to the report, as this is a very common bug and intended to be overlooked
-    def updateCCP(self, ccp_id, row, sheet_columns):
+    def updateCCP(self, ccp_id, row, sheet_columns, row_index):
         _logger.info("updateCCP: Searching for any changes for CCP item: %s.", ccp_id)
 
         ccp = self.database.env["stock.lot"].browse(ccp_id)
@@ -291,7 +291,7 @@ class sync_ccp:
     # it will attempt to create the ccp cell by cell, and skip creating any info that generates errors
     # fields that are not updated will be added to a report at the end
     # note that if the expiration date is "false" or blank, it will not be added to the report, as this is a very common bug and intended to be overlooked
-    def createCCP(self, eidsn, row, sheet_columns):
+    def createCCP(self, eidsn, row, sheet_columns, row_index):
         _logger.info("createCCP: Creating new CCP item with EID/SN '%s'.", eidsn)
         
                 
