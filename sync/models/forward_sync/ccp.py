@@ -43,11 +43,14 @@ class sync_ccp:
     
     # send sync report
     # executed at end of sync
+    # todo: move this to another file and make it include more details/better format
     def send_report(self, report_content):
         try:
+            # Format the report content for better readability
+            formatted_content = "\n\n".join(report_content)
             mail_values = {
-                "subject": "Sync Report for CCP type",
-                "body_html": f"<pre>{report_content}</pre>",
+                "subject": "Sync Report for type: CCP",
+                "body_html": f"<pre>{formatted_content}</pre>",
                 "email_to": "sync@store.r-e-a-l.it",
             }
             mail = self.database.env["mail.mail"].create(mail_values)
