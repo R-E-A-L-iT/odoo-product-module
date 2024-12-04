@@ -38,7 +38,7 @@ class sync_ccp:
             "Continue": "continue",
         }
         
-        sheet_width = len(self.sheet[i])
+        sheet_width = len(self.sheet[1])
         sheet_columns = self.sheet[0]
         
         # variables that will contain a list of any missing or extra columns in the sheet
