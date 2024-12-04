@@ -186,7 +186,7 @@ class sync_ccp:
                 self.add_to_report("ERROR", f"{error_msg}")
                 
         if self.sync_report:
-            utilities.send_report(self.sync_report, sync_type="CCP", self.database)
+            utilities.send_report(self.sync_report, sync_type="CCP")
         
         return False, "syncCCP: CCP synchronization completed successfully."
     

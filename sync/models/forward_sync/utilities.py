@@ -12,7 +12,7 @@ class utilities:
     # sync_type: the sync type to be printed in the header, like CCP or pricelist
     
     @staticmethod
-    def send_report(report_content, sync_type, database):
+    def send_report(report_content, sync_type):
         try:
             
             template = database.env.ref("sync.sync_report_template")
