@@ -18,7 +18,17 @@ class sync_ccp:
         self.sheet = sheet
         self.database = database
         
-    
+    # utility function
+    # in odoo, booleans are "True" or "False"
+    # in sheets, booleans are "TRUE" or "FALSE"
+    # this function acts to normalize those values
+    def normalize_bools(field, value):
+        if field in ["publish", "expire"]:
+            if value.strip().upper() in ["TRUE", "1"]:
+                return True
+            elif value.strip().upper() in ["FALSE", "0", ""]:
+                return False
+        return value.strip()
         
     # this function will be called to start the synchronization process for ccp.
     # it delegates the function of actually updating or creating the ccp item to the other two functions
@@ -62,7 +72,7 @@ class sync_ccp:
         
         _logger.info("syncCCP: Sheet validated. Proceeding with CCP synchronization.")
         
-        # start processing rows beginning at row 2
+        # start processing rows beginning at second row
         for row_index, row in enumerate(self.sheet[1:], start=2):
             try:
                 
@@ -138,6 +148,7 @@ class sync_ccp:
                     # get new sheets value
                     column_index = sheet_columns.index(column_name)
                     sheet_value = str(row[column_index]).strip()
+                    sheet_value_normalized = normalize_value(odoo_field, sheet_value)
 
                     # handle special cases for specific fields
                     if odoo_field == "product_id":
@@ -202,18 +213,18 @@ class sync_ccp:
                     else:
                         odoo_value = ccp[odoo_field]
                         
-                        # normalize (handles many2one fields)
+                        # normalize
                         if isinstance(odoo_value, models.Model):
                             odoo_value = odoo_value.id
-                        odoo_value = str(odoo_value).strip() if odoo_value else ""
+                        odoo_value_normalized = normalize_value(odoo_field, str(odoo_value).strip() if odoo_value else "")
 
                         # compare, log, and update
-                        if odoo_value != sheet_value:
+                        if odoo_value_normalized != sheet_value_normalized:
                             _logger.info(
                                 "updateCCP: Field '%s' changed for CCP ID %s. Old Value: '%s', New Value: '%s'.",
                                 odoo_field, ccp_id, odoo_value, sheet_value
                             )
-                            ccp[odoo_field] = sheet_value if sheet_value else False
+                            ccp[odoo_field] = sheet_value_normalized if sheet_value_normalized else False
 
             except Exception as e:
                 _logger.error(
