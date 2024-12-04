@@ -137,15 +137,11 @@ class sync_ccp:
                     _logger.warning("syncCCP: Row %d: Missing EID/SN. Skipping.", row_index)
                     continue
                 
+                existing_ccp = self.database.env["stock.lot"].search([("name", "=", eidsn)], limit=1)
                 
-                # check if the eid/sn already exists in odoo
-                ccp_ids = self.database.env["ir.model.data"].search(
-                    [("name", "=", eidsn), ("model", "=", "stock.lot")]
-                )
-                
-                if ccp_ids:
+                if existing_ccp:
                     _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
-                    self.updateCCP(ccp_ids[-1].res_id, row, sheet_columns, row_index)
+                    self.updateCCP(existing_ccp.id, row, sheet_columns)
                 else:
                     _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
                     self.createCCP(eidsn, row, sheet_columns, row_index)
@@ -384,13 +380,23 @@ class sync_ccp:
 
         # create new record
         if product_exists:
+            
             try:
+                
+                # honestly don't know what this block of queries does.
+                # all i know is that if you have a sku that is terribly wrong and messed up, it crashes the entire process
+                # but if you include these quieres, instead of crashing it magically skips it, generates an error, and continues
+                # don't ask me why
                 self.database.env.cr.execute("SAVEPOINT create_ccp_savepoint")
                 new_ccp = self.database.env["stock.lot"].create(new_ccp_values)
                 self.database.env.cr.execute("RELEASE SAVEPOINT create_ccp_savepoint")
+                
                 _logger.info("createCCP: Successfully created new CCP item with ID: %s", new_ccp.id)
+                
             except Exception as e:
+                
                 self.database.env.cr.execute("ROLLBACK TO SAVEPOINT create_ccp_savepoint")
                 _logger.error("createCCP: Error while creating new CCP item: %s", str(e), exc_info=True)
+                
         else:
             return
