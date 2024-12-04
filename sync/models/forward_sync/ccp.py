@@ -62,40 +62,40 @@ class sync_ccp:
         
         # start processing rows beginning at row 2
         for row_index, row in enumerate(self.sheet[1:], start=2):
-        try:
+            try:
+                
+                # only proceed if the row is marked as valid
+                valid_column = sheet_columns.index("Valid")
+                valid = str(row[valid_column_index]).strip().lower() == "true"
+                
+                if not valid:
+                    _logger.info("syncCCP: Row %d: Marked as invalid. Skipping.", row_index)
+                    continue
+                
+                
+                # get eid/sn and check if it exists in odoo
+                eidsn_column = sheet_columns.index("EID/SN")
+                eidsn = str(row[eidsn_column_index]).strip()
+                
+                if not eidsn:
+                    _logger.warning("syncCCP: Row %d: Missing EID/SN. Skipping.", row_index)
+                    continue
+                
+                
+                # check if the eid/sn already exists in odoo
+                ccp_ids = self.database.env["ir.model.data"].search(
+                    [("name", "=", eidsn), ("model", "=", "stock.lot")]
+                )
+                
+                if ccp_ids:
+                    _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
+                    self.updateCCP(ccp_ids[-1].res_id, row, sheet_columns)
+                else:
+                    _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
+                    self.createCCP(eidsn, row, sheet_columns)
             
-            # only proceed if the row is marked as valid
-            valid_column = sheet_columns.index("Valid")
-            valid = str(row[valid_column_index]).strip().lower() == "true"
-            
-            if not valid:
-                _logger.info("syncCCP: Row %d: Marked as invalid. Skipping.", row_index)
-                continue
-            
-            
-            # get eid/sn and check if it exists in odoo
-            eidsn_column = sheet_columns.index("EID/SN")
-            eidsn = str(row[eidsn_column_index]).strip()
-            
-            if not eidsn:
-                _logger.warning("syncCCP: Row %d: Missing EID/SN. Skipping.", row_index)
-                continue
-            
-            
-            # check if the eid/sn already exists in odoo
-            ccp_ids = self.database.env["ir.model.data"].search(
-                [("name", "=", eidsn), ("model", "=", "stock.lot")]
-            )
-            
-            if ccp_ids:
-                _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
-                self.updateCCP(ccp_ids[-1].res_id, row, sheet_columns)
-            else:
-                _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
-                self.createCCP(eidsn, row, sheet_columns)
-        
-        except Exception as e:
-            _logger.error("syncCCP: Error occurred while processing row %d: %s", row_index, str(e), exc_info=True)
+            except Exception as e:
+                _logger.error("syncCCP: Error occurred while processing row %d: %s", row_index, str(e), exc_info=True)
         
         return False, "syncCCP: CCP synchronization completed successfully."
     
