@@ -140,7 +140,7 @@ class sync_ccp:
                     sheet_value = str(row[column_index]).strip()
                     
                     # get old odoo value
-                    odoo_value = ccp_item[odoo_field]
+                    odoo_value = ccp[odoo_field]
                     
                     # normalize
                     if isinstance(odoo_value, models.Model):
@@ -155,7 +155,7 @@ class sync_ccp:
                         )
                         
                         # update the field
-                        ccp_item[odoo_field] = sheet_value if sheet_value else False
+                        ccp[odoo_field] = sheet_value if sheet_value else False
 
             except Exception as e:
                 _logger.error(
