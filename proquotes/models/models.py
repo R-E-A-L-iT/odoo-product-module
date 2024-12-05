@@ -898,97 +898,6 @@ class order(models.Model):
             return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
         else:
             pass
-    # @api.returns('mail.message', lambda value: value.id)
-    # def message_post(self, **kwargs):
-    #     if self.env.context.get('mark_so_as_sent'):
-    #         self.filtered(lambda o: o.state == 'draft').with_context(tracking_disable=True).write({'state': 'sent'})
-    #     so_ctx = {'mail_post_autofollow': self.env.context.get('mail_post_autofollow', True)}
-    #     if self.env.context.get('mark_so_as_sent') and 'mail_notify_author' not in kwargs:
-    #         kwargs['notify_author'] = self.env.user.partner_id.id in (kwargs.get('partner_ids') or [])
-    #         return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
-    #     sales_email_id = 64744
-    #     sales_email = self.env['res.partner'].browse(sales_email_id)
-        
-    #     if 'partner_ids' not in kwargs:
-    #         kwargs['partner_ids'] = []
-    #     if sales_email.id not in kwargs['partner_ids']:
-    #         kwargs['partner_ids'].append(sales_email.id)
-    #     #_logger.info('>>>>>>>>>>>>> kwargs: %s', kwargs)
-    #     if 'tracking_value_ids' not in kwargs:
-    #         return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
-    #     else:
-    #         pass
-
-     
-    # def message_post(self, **kwargs):
-        
-    #     # Variable mail_post_autofollow is true when using send message function but not when log note
-    #     mail_post_autofollow = self.env.context.get('mail_post_autofollow', True)
-        
-    #     message_type = kwargs.get('message_type', False)
-        
-    #     if 'body' not in kwargs:
-    #         kwargs['body'] = ''
-            
-    #     # DEBUGGING
-        
-    #     # kwargs['body'] += f"<br/><br/>[DEBUG] mail_post_autofollow: {mail_post_autofollow}, message_type: {kwargs.get('message_type', 'undefined')}"
-
-    #     # internal note feature
-    #     if not mail_post_autofollow:
-    #         # Call super without adding any email contacts, since it's a log note
-    #         return super(order, self).message_post(**kwargs)
-        
-    #     elif "Quotation viewed by customer" in kwargs['body']:
-    #         # only send to salesperson (user_id = salesperson)
-    #         # sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
-    #         if order and order.user_id:
-    #             kwargs['partner_ids'] = [order.user_id.id]
-    #         else:
-    #             kwargs['partner_ids'] = []
-                
-    #         return super(order, self).message_post(**kwargs)
-        
-    #     elif "Product prices have been recomputed" in kwargs['body']:
-    #         return False
-        
-    #     elif "Signed by" in kwargs['body'] or "Bon signé" in kwargs['body']:
-    #         if order and order.user_id:
-    #             kwargs['partner_ids'] = [order.user_id.id]
-    #         else:
-    #             kwargs['partner_ids'] = []
-                
-    #         return super(order, self).message_post(**kwargs)
-        
-    #     elif "Extra line with" in kwargs['body']:
-    #         return False
-
-    #     # send message feature
-    #     else:
-    #         if 'partner_ids' not in kwargs:
-    #             kwargs['partner_ids'] = []
-
-    #         # Add email contacts from the many2many field
-    #         contacts = [partner.id for partner in self.email_contacts]
-
-    #         # Add static email partner 'sales@r-e-a-l.it'
-    #         sales_partner = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
-    #         if sales_partner:
-    #             contacts.append(sales_partner.id)
-                
-    #         # this removes the default partner_id, which is the email attatched to the company contact
-    #         filtered_partner_ids = kwargs['partner_ids'][0:] if len(kwargs['partner_ids']) > 1 else []
-
-    #         all_contacts = list(set(filtered_partner_ids + contacts))
-    #         kwargs['partner_ids'] = all_contacts
-            
-    #         # if kwargs['partner_ids']:
-    #         #     contacts += kwargs['partner_ids'][1:] 
-            
-    #         # kwargs['partner_ids'] = contacts
-
-    #         # Call the super method to proceed with posting the message
-    #         return super(order, self).message_post(**kwargs)
     
     @api.depends('rental_start', 'rental_end')
     def _compute_duration(self):
@@ -1002,17 +911,12 @@ class order(models.Model):
     
     def get_translated_term(self, title, lang):
         if "translate" in title:
-
             terms = title.split("+", 2)
-
             if terms[0] == "#translate":
                 english = terms[1]
                 french = terms[2]
-
-                if lang == 'fr_CA':
-                    return french
-                else:
-                    return english
+                return french if lang == 'fr_CA' else english
+        return title
 
     def _default_footer(self):
         # Get Company

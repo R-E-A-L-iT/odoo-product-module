@@ -286,6 +286,12 @@
                     </td>
                 </tr>
             </t>
+
+            <t t-if="'translate' in line.name">
+                <td colspan="100">
+                    <span t-esc="sale_order.get_translated_term(line.name, language)" class="section-header"/>
+                </td>
+            </t>
         </xpath>
 
         <!-- Handle Special Sections Seperatly -->
