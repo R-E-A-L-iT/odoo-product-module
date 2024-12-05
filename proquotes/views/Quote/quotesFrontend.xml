@@ -11,7 +11,7 @@
     </template>
 
     <template id="sale_order_portal_notification" inherit_id="sale.sale_order_portal_content">
-        <xpath expr="//div[@id='quote_content']" position="before">
+        <xpath expr="//*[@id='wrapwrap']/main/div[1]" position="inside">
             <t t-if="sale_order.partner_id.lang == 'fr_CA' and request.lang.code in ('en_US', 'en_CA')">
                 <div id="language-notification" class="alert alert-info alert-dismissible fade show" role="alert">
                     <h4 class="alert-heading">Préféreriez-vous voir cette citation en français?</h4>
