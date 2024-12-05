@@ -37,3 +37,39 @@
 	margin-left: 0px;
 	margin-right: 0px;
 }
+
+
+/* css for the notification that appears if customer lang is french but you're viewing the page in english */
+#language-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    background-color: #ffcccc; /* Light red background */
+    color: black; /* Black text */
+    z-index: 1050; /* Ensure it floats above content */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #d9534f; /* Slightly darker red border */
+    padding: 15px;
+    border-radius: 8px;
+}
+
+#language-notification .btn-primary {
+    background-color: #d9d9d9; /* Dark grey button */
+    color: #333333; /* Darker grey text for the button */
+    border: none;
+}
+
+#language-notification .btn-primary:hover {
+    background-color: #c0c0c0; /* Slightly lighter grey on hover */
+}
+
+#language-notification .btn-close {
+    color: black; /* Black close button */
+    opacity: 0.7;
+}
+
+#language-notification .btn-close:hover {
+    opacity: 1;
+}
