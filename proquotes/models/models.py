@@ -1796,6 +1796,19 @@ class pdf_quote(models.Model):
 #                 move.state = 'cancel'
 #         return super(StockPicking, self).button_validate()
 
+class MailMail(models.Model):
+    _inherit = 'mail.mail'
+
+    def send(self, auto_commit=False, raise_exception=False):
+        # Check if the mail is related to sale orders and cancel it
+        for mail in self:
+            if mail.model == 'sale.order':
+                _logger.info(f"Preventing email sending for sale order ID {mail.res_id}")
+                return False  # Cancel the email send process
+        
+        # Proceed with normal sending for other models
+        return super(MailMail, self).send(auto_commit=auto_commit, raise_exception=raise_exception)
+
 class ProjectTask(models.Model):
     _inherit = 'project.task'
 
