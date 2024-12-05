@@ -884,7 +884,7 @@ class order(models.Model):
             return None
         
         # proceed with posting non-email messages (log notes, etc.)
-        return super(SaleOrder, self).message_post(**kwargs)
+        return super(order, self).message_post(**kwargs)
 
 
     # @api.returns('mail.message', lambda value: value.id)
