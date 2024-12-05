@@ -878,20 +878,31 @@ class order(models.Model):
 
     @api.returns('mail.message', lambda value: value.id)
     def message_post(self, **kwargs):
-        sales_email = self.env['res.partner'].browse(64744)
-        if ('partner_ids' in kwargs) and sales_email:
-            kwargs['partner_ids'].append(sales_email.id)
-        if self.env.context.get('mark_so_as_sent'):
-            self.filtered(lambda o: o.state == 'draft').with_context(tracking_disable=True).write({'state': 'sent'})
-        so_ctx = {'mail_post_autofollow': self.env.context.get('mail_post_autofollow', True)}
-        if self.env.context.get('mark_so_as_sent') and 'mail_notify_author' not in kwargs:
-            kwargs['notify_author'] = self.env.user.partner_id.id in (kwargs.get('partner_ids') or [])
-        #_logger.info('>>>>>>>>>>>>> kwargs: %s', kwargs)
-        return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
-        if 'tracking_value_ids' not in kwargs:
-            return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
-        else:
-            pass
+        
+        # cancel original email from being sent
+        if kwargs.get('message_type') == 'email':
+            return None
+        
+        # proceed with posting non-email messages (log notes, etc.)
+        return super(SaleOrder, self).message_post(**kwargs)
+
+
+    # @api.returns('mail.message', lambda value: value.id)
+    # def message_post(self, **kwargs):
+    #     sales_email = self.env['res.partner'].browse(64744)
+    #     if ('partner_ids' in kwargs) and sales_email:
+    #         kwargs['partner_ids'].append(sales_email.id)
+    #     if self.env.context.get('mark_so_as_sent'):
+    #         self.filtered(lambda o: o.state == 'draft').with_context(tracking_disable=True).write({'state': 'sent'})
+    #     so_ctx = {'mail_post_autofollow': self.env.context.get('mail_post_autofollow', True)}
+    #     if self.env.context.get('mark_so_as_sent') and 'mail_notify_author' not in kwargs:
+    #         kwargs['notify_author'] = self.env.user.partner_id.id in (kwargs.get('partner_ids') or [])
+    #     #_logger.info('>>>>>>>>>>>>> kwargs: %s', kwargs)
+    #     return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
+    #     if 'tracking_value_ids' not in kwargs:
+    #         return super(order, self.with_context(**so_ctx)).message_post(**kwargs)
+    #     else:
+    #         pass
     
     @api.depends('rental_start', 'rental_end')
     def _compute_duration(self):
