@@ -880,7 +880,9 @@ class order(models.Model):
     def message_post(self, **kwargs):
         
         # cancel original email from being sent
-        if kwargs.get('message_type') == 'email':
+        if 'partner_ids' in kwargs:
+            kwargs['partner_ids'] = []
+            _logger.info("Original sales order email cancelled.")
             return None
         
         # proceed with posting non-email messages (log notes, etc.)
