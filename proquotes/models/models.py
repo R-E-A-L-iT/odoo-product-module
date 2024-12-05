@@ -869,7 +869,7 @@ class order(models.Model):
         if 'partner_ids' in kwargs:
             kwargs['partner_ids'] = []
             _logger.info("Original sales order email cancelled.")
-            return None
+            # return None
         
         # proceed with posting non-email messages (log notes, etc.)
         return super(order, self).message_post(**kwargs)
