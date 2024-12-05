@@ -613,18 +613,12 @@ class invoice(models.Model):
     
     def get_translated_term(self, title, lang):
         if "translate" in title:
-
-            _logger.info("PDF QUOTE - TRANSLATION FUNCTION ACTIVATED")
-            terms =  title.split("+",2)
-
+            terms = title.split("+", 2)
             if terms[0] == "#translate":
                 english = terms[1]
                 french = terms[2]
-
-                if lang == 'fr_CA':
-                    return french
-                else:
-                    return english
+                return french if lang == 'fr_CA' else english
+        return title
 
     @api.depends("company_id")
     def _get_default_footer(self):

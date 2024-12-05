@@ -287,11 +287,11 @@
                 </tr>
             </t>
 
-            <t t-if="'translate' in line.name">
+            <!-- <t t-if="'translate' in line.name">
                 <td colspan="100">
                     <span t-esc="sale_order.get_translated_term(line.name, language)" class="section-header"/>
                 </td>
-            </t>
+            </t> -->
         </xpath>
 
         <!-- Handle Special Sections Seperatly -->
@@ -330,11 +330,14 @@
                                checked="true"/>
                         <input t-else="" class="optionalSectionCheckbox" type="checkbox"/>
                     </t>
-                    <span t-if="line.name.strip()[0] != '#'" t-field="line.name"/>
+                    <t t-if="'translate' in line.name">
+                        <span t-esc="sale_order.get_translated_term(line.name, language)" class="section-header"/>
+                    </t>
+                    <!-- <span t-if="line.name.strip()[0] != '#'" t-field="line.name"/>
                     <span t-elif="line.name.strip()[0] == '#'">
                         <t t-set="sname" t-value="line.name[1:].strip()"/>
                         <t t-call="proquotes.section_name_resolution"/>
-                    </span>
+                    </span> -->
                     <span class="line_id" t-attf-id="{{line}}"/>
                 </label>
 
