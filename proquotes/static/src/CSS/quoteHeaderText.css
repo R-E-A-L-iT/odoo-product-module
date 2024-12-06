@@ -69,9 +69,18 @@
 }
 
 #language-notification .btn {
-	color: white;
     font-size: 0.85rem;
     padding: 5px 10px;
+}
+
+#language-notification .btn-close {
+    filter: invert(1);
+    opacity: 1;
+}
+
+#language-notification .btn-close:hover {
+    filter: invert(0.8);
+    opacity: 0.9;
 }
 
 /* #language-notification .btn-primary {
