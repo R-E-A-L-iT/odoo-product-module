@@ -64,6 +64,7 @@
 }
 
 #language-notification p {
+	color: #888 !important;
     font-size: 0.9rem;
     margin-bottom: 10px;
 }
