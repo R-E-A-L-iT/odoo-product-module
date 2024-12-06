@@ -15,7 +15,7 @@
             <t t-if="sale_order.partner_id.lang == 'fr_CA' and request.lang.code in ('en_US', 'en_CA')">
                 <div id="language-notification" class="alert alert-dismissible fade show" role="alert">
                     <h4 class="alert-heading">Préféreriez-vous voir cette quotation en français?</h4>
-                    <p>Si vous préférez, cliquez ici pour changer la langue de ce document en français.</p>
+                    <!-- <p>Si vous préférez, cliquez ici pour changer la langue de ce document en français.</p> -->
                     <a t-att-href="'/website/lang/fr_CA?r=' + sale_order.get_portal_url()" class="btn btn-primary">
                         Changer la langue
                     </a>

@@ -44,7 +44,7 @@
     position: fixed;
     top: 20px;
     right: 20px;
-    width: 30%;
+    width: 20%;
     background-color: #24272A;
     color: black;
     z-index: 1050;
@@ -63,11 +63,11 @@
     margin-bottom: 10px;
 }
 
-#language-notification p {
+/* #language-notification p {
 	color: #888 !important;
     font-size: 0.9rem;
     margin-bottom: 10px;
-}
+} */
 
 #language-notification .btn {
     font-size: 0.85rem;
