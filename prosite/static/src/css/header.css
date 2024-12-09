@@ -255,15 +255,16 @@
 
 /* Subheader Styling */
 .subheader {
-    position: sticky !important; /* Makes it stick to the top when scrolling */
-    top: 70px !important; /* Ensures it sits directly under the navbar */
-    z-index: 900 !important; /* Below the navbar (1000) and submenus (999) */
+    position: fixed; /* Fix it to the viewport */
+    top: 70px; /* Align directly beneath the navbar */
+    z-index: 950; /* Below the navbar but above the content */
     background-color: rgba(26, 26, 26, 0.7) !important; /* Slightly more transparent background */
     color: #888 !important; /* Text color */
     padding: 10px 0 !important; /* Vertical padding */
     display: flex !important; /* Flexbox for horizontal layout */
     justify-content: center !important; /* Center horizontally */
     gap: 10px !important; /* Space between items */
+    width: 100%; /* Full width */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* Subtle shadow for better separation */
 }
 
@@ -284,4 +285,5 @@
     margin: 0; /* Remove margin for consistent spacing */
     font-size: 16px; /* Adjust font size */
     text-transform: uppercase; /* Ensure text is uppercase */
+    font-family: roboto, sans-serif !important;
 }
