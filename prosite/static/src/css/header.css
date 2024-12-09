@@ -19,8 +19,10 @@
 
 /* Submenu Container */
 .submenu {
+    border-top: 1px solid #333;
+    border-bottom: 1px solid #333;
     display: none; /* Hidden by default */
-    background-color: rgba(0, 0, 0, 0.95); /* Dark background */
+    background-color: rgba(0, 0, 0, 0.85); /* Dark background */
     color: #fff;
     padding: 10px; /* Spacing from edges */
     width: 100%; /* Full width */
@@ -32,18 +34,18 @@
     top: 70px; /* Ensure it is underneath the menu items */
     left: 0; /* Align with the left edge of the navbar */
     transition: opacity 0.2s ease, visibility 0.2s ease; /* Smooth transitions */
-    display: flex; /* Flexbox for horizontal alignment */
-    flex-wrap: wrap; /* Allow columns to wrap if necessary */
-    justify-content: flex-start; /* Align columns to the left */
-    gap: 20px; /* Spacing between columns */
-    pointer-events: none; /* Prevent flickering when hovering between submenu and menu item */
+    display: flex;
+    overflow-x: auto; /* Allow horizontal scrolling */
+    gap: 10px; /* Spacing between columns */
+    scroll-behavior: smooth; /* Smooth scrolling effect */
+    mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0)); /* Fade-out effect */
+    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0)); /* For WebKit browsers */
 }
 
 /* Submenu Active State */
 .submenu.active {
     opacity: 1; /* Fully visible */
     visibility: visible; /* Make submenu appear */
-    pointer-events: auto; /* Enable interaction */
 }
 
 /* Submenu Columns */
@@ -51,9 +53,12 @@
     display: flex;
     flex-direction: column; /* Vertical alignment of items */
     justify-content: flex-start;
-    flex: 1 1 200px; /* Columns take up more room (min-width: 200px) */
+    width: 300px; /* Fixed width for columns */
     padding: 10px; /* Internal spacing for each column */
     color: #888; /* Default grey for submenu text */
+    background-color: rgba(50, 50, 50, 0.9); /* Slightly darker background for columns */
+    box-sizing: border-box;
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 /* Column Titles */
@@ -73,7 +78,7 @@
     position: relative; /* Position relative to the navbar */
     top: 0;
 }
-``
+
 
 
 
