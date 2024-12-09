@@ -9,11 +9,11 @@
 
             <div class="items-group">
                 <ul class="menu-links">
-                    <li class="menu-item" data-submenu="submenu-1"><a href="/equipment">Equipment</a></li>
-                    <li class="menu-item" data-submenu="submenu-2"><a href="/accessories">Accessories</a></li>
-                    <li class="menu-item" data-submenu="submenu-3"><a href="/software">Software</a></li>
-                    <li class="menu-item" data-submenu="submenu-4"><a href="/industries">Industries</a></li>
-                    <li class="menu-item" data-submenu="submenu-5"><a href="/other">Other</a></li>
+                    <li class="menu-item item-with-submenu" data-submenu="submenu-1"><a href="/equipment">Equipment</a></li>
+                    <li class="menu-item item-with-submenu" data-submenu="submenu-2"><a href="/accessories">Accessories</a></li>
+                    <li class="menu-item item-with-submenu" data-submenu="submenu-3"><a href="/software">Software</a></li>
+                    <li class="menu-item item-with-submenu" data-submenu="submenu-4"><a href="/industries">Industries</a></li>
+                    <li class="menu-item item-with-submenu" data-submenu="submenu-5"><a href="/other">Other</a></li>
                 </ul>
             </div>
 

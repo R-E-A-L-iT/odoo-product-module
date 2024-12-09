@@ -1,34 +1,26 @@
 console.log("header.js file loaded");
 
-odoo.define("prosite.header", function (require) {
-  "use strict";
+const items_with_menus = document.querySelectorAll(".item-with-submenu")
+const submenus = document.querySelectorAll(".submenu")
 
-  const $ = require("jquery"); // Include jQuery as a dependency
+if (items_with_menus.length > 0 && submenus.length > 0) {
+    console.log("found submenus")
 
-  $(document).ready(function () {
-    console.log("header.js loaded using jQuery");
+    // make submenus visible on hover
+    items_with_menus.forEach((item) => {
+        item.addEventListener("mouseenter", function () {
+            const rel_submenu = item.getAttribute("data-submenu");
+            console.log("found related submenu")
+            submenus.forEach((submenu) => {
+                console.log("making submenu visible")
+                submenu.style.display = submenu.id === rel_submenu ? "flex" : "none";
+            })
+        })
+    })
 
-    const menuItems = $(".menu-item");
-    const submenus = $(".submenu");
-
-    console.log("menuItems found:", menuItems.length);
-    console.log("submenus found:", submenus.length);
-
-    menuItems.on("mouseenter", function () {
-      const submenuId = $(this).data("submenu");
-      console.log("Hovered on menu item:", submenuId);
-
-      submenus.each(function () {
-        const submenu = $(this);
-        submenu.css(
-          "display",
-          submenu.attr("id") === submenuId ? "flex" : "none"
-        );
-      });
+    // make all submenus invisible on leave header
+    navbar.addEventListener("mouseleave", () => {
+        console.log("removing submenus")
+        submenus.forEach((submenu) => (submenu.style.display = "none"));
     });
-
-    $("#custom-navbar").on("mouseleave", function () {
-      submenus.css("display", "none");
-    });
-  });
-});
+}
