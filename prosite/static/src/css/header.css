@@ -30,8 +30,8 @@
 }
 
 #custom-navbar .logo img {
-    max-height: 40px;
-    width: auto;
+    max-width: 15%;
+    height: auto;
     vertical-align: middle;
 }
 
