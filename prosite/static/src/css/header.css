@@ -38,8 +38,10 @@
     overflow-x: auto; /* Allow horizontal scrolling */
     gap: 10px; /* Spacing between columns */
     scroll-behavior: smooth; /* Smooth scrolling effect */
-    mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0.85)); /* Fade-out effect */
-    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0.85)); /* For WebKit browsers */
+
+    /* Fading effect for text on the rightmost edge */
+    mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0.85) 100%);
+    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0.85) 100%);
     pointer-events: auto;
 }
 
@@ -68,7 +70,6 @@
     flex-shrink: 0; /* Prevent shrinking */
     background-color: transparent; /* Ensure transparency */
 }
-
 
 /* Column Titles */
 .submenu-column .column-title {
