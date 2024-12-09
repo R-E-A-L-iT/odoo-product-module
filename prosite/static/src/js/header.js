@@ -1,3 +1,5 @@
+console.log("header.js file loaded");
+
 document.addEventListener("DOMContentLoaded", function () {
   const menuItems = document.querySelectorAll(".menu-item");
   const submenus = document.querySelectorAll(".submenu");
