@@ -38,8 +38,8 @@
     overflow-x: auto; /* Allow horizontal scrolling */
     gap: 10px; /* Spacing between columns */
     scroll-behavior: smooth; /* Smooth scrolling effect */
-    mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0)); /* Fade-out effect */
-    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0)); /* For WebKit browsers */
+    mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0.85)); /* Fade-out effect */
+    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0.85)); /* For WebKit browsers */
     pointer-events: auto;
 }
 
