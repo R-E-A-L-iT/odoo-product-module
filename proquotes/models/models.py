@@ -897,6 +897,44 @@ class order(models.Model):
                 french = terms[2]
                 return french if lang == 'fr_CA' else english
         return title
+    
+    def parse_ccp_label(self, label):
+        try:
+            if not label.startswith('#ccplabel+'):
+                return label
+            
+            parts = label.split('+')
+            # if len(parts) != 4:
+            #     return label
+            
+            product_code = parts[2]
+            expiry_date = parts[3]
+            product_name = product_code
+
+            expiry_date_obj = datetime.strptime(expiry_date, '%Y-%m-%d')
+            if self.env.context.get('lang') == 'fr_CA':
+                month_name = expiry_date_obj.strftime('%B').capitalize()
+                months_fr = {
+                    'January': 'Janvier', 'February': 'Février', 'March': 'Mars',
+                    'April': 'Avril', 'May': 'Mai', 'June': 'Juin',
+                    'July': 'Juillet', 'August': 'Août', 'September': 'Septembre',
+                    'October': 'Octobre', 'November': 'Novembre', 'December': 'Décembre'
+                }
+                month_name = months_fr.get(month_name, month_name)
+                formatted_date = f"{expiry_date_obj.day} {month_name}, {expiry_date_obj.year}"
+            else:
+                formatted_date = expiry_date_obj.strftime('%d %B, %Y')
+
+            product = self.env['product.product'].search([('name', '=', product_code)], limit=1)
+            if product:
+                product_name = product.with_context(lang=self.env.context.get('lang', 'en_US')).name
+
+            if self.env.context.get('lang') == 'fr_CA':
+                return f"{product_name} ({parts[1]}) - Expiration: {formatted_date}"
+            else:
+                return f"{product_name} ({parts[1]}) - Expiration: {formatted_date}"
+        except Exception:
+            return label
 
     def _default_footer(self):
         # Get Company
@@ -1041,9 +1079,6 @@ class order(models.Model):
             self.is_renewal = True
         else:
             self.is_renewal = False
-
-    def test_action(self, *args):
-        _logger.error("HELLO THERE" + str(args[0]))
 
     def generate_section_line(self, name, *, special="regular", selected="true"):
         section = self.env["sale.order.line"].new(
