@@ -1,17 +1,80 @@
 /* Navbar */
+/* Navbar */
 #custom-navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.85); /* Semi-transparent black */
+    background-color: rgba(0, 0, 0, 0.85);
     color: #fff;
-    height: 75px; /* Fixed height */
-    padding: 0 20px; /* Horizontal padding for overall spacing */
+    height: 70px; /* Increased height */
+    padding: 0 20px;
     width: 100%;
     position: fixed;
     top: 0;
     z-index: 1000;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Submenu Container */
+.submenus {
+    position: absolute;
+    top: 70px; /* Directly underneath the header */
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background-color: rgba(0, 0, 0, 0.95);
+    overflow: hidden; /* Prevent unwanted overflow during transitions */
+}
+
+/* Individual Submenus */
+.submenu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 200px; /* Adjust submenu height */
+    color: #fff;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+/* Submenu Columns */
+.submenu-column {
+    width: 33.33%;
+    padding: 0 15px;
+}
+
+/* Hover Effect to Show Submenu */
+.menu-item:hover ~ .submenus #submenu-1,
+.menu-item:hover ~ .submenus #submenu-2,
+.menu-item:hover ~ .submenus #submenu-3,
+.menu-item:hover ~ .submenus #submenu-4,
+.menu-item:hover ~ .submenus #submenu-5 {
+    display: flex;
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+
+/* Menu Links */
+.menu-links a {
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 10px 15px;
+    transition: color 0.3s;
+}
+
+.menu-links a:hover {
+    color: #ddd;
 }
 
 /* Logo Group */
@@ -26,6 +89,7 @@
 #custom-navbar .logo-group img {
     max-height: 40px !important;
     width: auto !important;
+    padding-left: 10px !important;
 }
 
 /* Items Group (Menu Links) */

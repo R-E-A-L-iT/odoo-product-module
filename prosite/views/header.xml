@@ -9,25 +9,39 @@
 
             <div class="items-group">
                 <ul class="menu-links">
-                    <li><a href="/equipment">Equipment</a></li>
-                    <li><a href="/accessories">Accessories</a></li>
-                    <li><a href="/software">Software</a></li>
-                    <li><a href="/industries">Industries</a></li>
-                    <li><a href="/other">Other</a></li>
+                    <li class="menu-item" data-submenu="submenu-1"><a href="/equipment">Equipment</a></li>
+                    <li class="menu-item" data-submenu="submenu-2"><a href="/accessories">Accessories</a></li>
+                    <li class="menu-item" data-submenu="submenu-3"><a href="/software">Software</a></li>
+                    <li class="menu-item" data-submenu="submenu-4"><a href="/industries">Industries</a></li>
+                    <li class="menu-item" data-submenu="submenu-5"><a href="/other">Other</a></li>
                 </ul>
             </div>
 
             <div class="icons-group">
-                <a href="/live-chat" class="icon">
-                    <i class="fa fa-comments"></i>
-                </a>
-                <a href="/language" class="icon">
-                    <i class="fa fa-globe"></i>
-                </a>
-                <a href="/account" class="icon">
-                    <i class="fa fa-user"></i>
-                </a>
+                <a href="/live-chat" class="icon"><i class="fa fa-comments"></i></a>
+                <a href="/language" class="icon"><i class="fa fa-globe"></i></a>
+                <a href="/account" class="icon"><i class="fa fa-user"></i></a>
             </div>
         </nav>
+
+        <!-- Submenus -->
+        <div class="submenus">
+            <div id="submenu-1" class="submenu">
+                <div class="submenu-column">Test 1.1<br>Test 1.2<br>Test 1.3</div>
+                <div class="submenu-column">Test 1.4<br>Test 1.5<br>Test 1.6</div>
+                <div class="submenu-column">Test 1.7<br>Test 1.8<br>Test 1.9</div>
+            </div>
+            <div id="submenu-2" class="submenu">
+                <div class="submenu-column">Test 2.1<br>Test 2.2<br>Test 2.3</div>
+                <div class="submenu-column">Test 2.4<br>Test 2.5<br>Test 2.6</div>
+                <div class="submenu-column">Test 2.7<br>Test 2.8<br>Test 2.9</div>
+            </div>
+            <div id="submenu-3" class="submenu">
+                <div class="submenu-column">Test 3.1<br>Test 3.2<br>Test 3.3</div>
+                <div class="submenu-column">Test 3.4<br>Test 3.5<br>Test 3.6</div>
+                <div class="submenu-column">Test 3.7<br>Test 3.8<br>Test 3.9</div>
+            </div>
+            <!-- Add more submenus as needed -->
+        </div>
     </template>
 </odoo>
