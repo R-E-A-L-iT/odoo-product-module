@@ -24,9 +24,7 @@ const intervalId = setInterval(() => {
           if (submenu.id === rel_submenu) {
             console.log("making submenu visible");
             submenu.classList.add("active");
-            submenu.style.display = "flex";
-            submenu.style.opacity = "1";
-            submenu.style.visibility = "visible";
+            navbar.style.opacity = 1;
             navbar.classList.add("submenu-active"); // Add the class for black navbar
           } else {
             submenu.classList.remove("active");
@@ -41,18 +39,14 @@ const intervalId = setInterval(() => {
       submenu.addEventListener("mouseenter", function () {
         console.log("hovering over submenu");
         submenu.classList.add("active");
-        submenu.style.display = "flex";
-        submenu.style.opacity = "1";
-        submenu.style.visibility = "visible";
+        navbar.style.opacity = 1;
         navbar.classList.add("submenu-active"); // Keep navbar fully black
       });
 
       submenu.addEventListener("mouseleave", function () {
         console.log("leaving submenu");
         submenu.classList.remove("active");
-        submenu.style.display = "none";
-        submenu.style.opacity = "0";
-        submenu.style.visibility = "hidden";
+        navbar.style.opacity = 0;
         navbar.classList.remove("submenu-active"); // Reset navbar to partially transparent
       });
     });
@@ -62,9 +56,7 @@ const intervalId = setInterval(() => {
       console.log("removing submenus");
       submenus.forEach((submenu) => {
         submenu.classList.remove("active");
-        submenu.style.display = "none";
-        submenu.style.opacity = "0";
-        submenu.style.visibility = "hidden";
+        navbar.style.opacity = 0;
       });
       navbar.classList.remove("submenu-active");
     });
