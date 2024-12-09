@@ -1,30 +1,32 @@
 console.log("header.js file loaded");
 
-window.addEventListener("load", function () {
-  console.log("header.js loaded after window load");
+odoo.define("prosite.header", function (require) {
+  "use strict";
 
-  const menuItems = document.querySelectorAll(".menu-item");
-  const submenus = document.querySelectorAll(".submenu");
+  $(document).ready(function () {
+    console.log("header.js loaded using jQuery");
 
-  console.log("menuItems found:", menuItems.length);
-  console.log("submenus found:", submenus.length);
+    const menuItems = $(".menu-item");
+    const submenus = $(".submenu");
 
-  menuItems.forEach((item) => {
-    item.addEventListener("mouseenter", function () {
-      const submenuId = item.getAttribute("data-submenu");
+    console.log("menuItems found:", menuItems.length);
+    console.log("submenus found:", submenus.length);
+
+    menuItems.on("mouseenter", function () {
+      const submenuId = $(this).data("submenu");
       console.log("Hovered on menu item:", submenuId);
-      submenus.forEach((submenu) => {
-        submenu.style.display = submenu.id === submenuId ? "flex" : "none";
+
+      submenus.each(function () {
+        const submenu = $(this);
+        submenu.css(
+          "display",
+          submenu.attr("id") === submenuId ? "flex" : "none"
+        );
       });
     });
-  });
 
-  const navbar = document.querySelector("#custom-navbar");
-  if (navbar) {
-    navbar.addEventListener("mouseleave", () => {
-      submenus.forEach((submenu) => (submenu.style.display = "none"));
+    $("#custom-navbar").on("mouseleave", function () {
+      submenus.css("display", "none");
     });
-  } else {
-    console.log("Navbar not found");
-  }
+  });
 });
