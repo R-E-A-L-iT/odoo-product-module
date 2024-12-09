@@ -257,8 +257,8 @@
 .subheader {
     position: fixed; /* Fix it to the viewport */
     top: 70px; /* Align directly beneath the navbar */
-    z-index: 950; /* Below the navbar but above the content */
-    background-color: rgba(26, 26, 26, 0.7) !important; /* Slightly more transparent background */
+    z-index: 999; /* Below the navbar but above the content */
+    background-color: rgba(26, 26, 26, 0.8) !important; /* Slightly more transparent background */
     color: #888 !important; /* Text color */
     padding: 10px 0 !important; /* Vertical padding */
     display: flex !important; /* Flexbox for horizontal layout */
