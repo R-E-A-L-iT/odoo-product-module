@@ -2,6 +2,12 @@
 	display: none;
 }
 
+.quoteLineRowNote > td {
+    padding: 10px !important;
+    padding-left: 15px !important;
+}
+
+
 .english-mode+div+div {
 	display: none;
 }
