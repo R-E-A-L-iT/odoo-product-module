@@ -22,6 +22,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             </t>
+            <t t-elif="sale_order.partner_id.lang in ('en_US', 'en_CA') and request.lang.code == 'fr_CA'">
+            <div id="language-notification" class="alert alert-dismissible fade show" role="alert">
+                <h4 class="alert-heading">Would you prefer to see this quote in English?</h4>
+                <a t-att-href="'/website/lang/en_US?r=' + sale_order.get_portal_url()" class="btn btn-primary">
+                    Change Language
+                </a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </t>
         </xpath>
     </template>
 
@@ -349,11 +358,11 @@
                     <t t-if="'translate' in line.name">
                         <span t-esc="sale_order.get_translated_term(line.name, language)" class="section-header"/>
                     </t>
-                    <!-- <span t-if="line.name.strip()[0] != '#'" t-field="line.name"/>
+                    <span t-if="line.name.strip()[0] != '#'" t-field="line.name"/>
                     <span t-elif="line.name.strip()[0] == '#'">
                         <t t-set="sname" t-value="line.name[1:].strip()"/>
                         <t t-call="proquotes.section_name_resolution"/>
-                    </span> -->
+                    </span>
                     <span class="line_id" t-attf-id="{{line}}"/>
                 </label>
 
