@@ -14,7 +14,7 @@
         "views/header.xml",
     ],
     "assets": [
-        "static/css/header.css"  
+        "static/src/css/header.css"  
     ],
     "version": "1.0",
 }
