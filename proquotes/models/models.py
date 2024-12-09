@@ -930,7 +930,7 @@ class order(models.Model):
                 product_name = product.with_context(lang=self.env.context.get('lang', 'en_US')).name
 
             if self.env.context.get('lang') == 'fr_CA':
-                return f"{product_name} ({parts[1]}) - Expiration : {formatted_date}"
+                return f"{product_name} ({parts[1]}) - Expiration: {formatted_date}"
             else:
                 return f"{product_name} ({parts[1]}) - Expiration: {formatted_date}"
         except Exception:
