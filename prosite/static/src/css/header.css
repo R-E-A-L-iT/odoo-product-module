@@ -36,7 +36,7 @@
     padding: 10px 0; /* Vertical padding */
     width: 100%; /* Full width */
     box-sizing: border-box; /* Include padding in width */
-    z-index: 999; /* Ensure submenus appear beneath navbar items */
+    z-index: 500; /* Ensure submenus appear beneath navbar items */
     opacity: 0; /* Initially invisible */
     visibility: hidden; /* Hide completely to prevent flickering */
     position: absolute; /* Remove from document flow */
