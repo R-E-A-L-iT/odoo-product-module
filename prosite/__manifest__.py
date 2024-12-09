@@ -15,7 +15,6 @@
     ],
     "assets": {
         "web.assets_frontend": [
-            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
             "prosite/static/src/css/header.css",
             "prosite/static/src/js/header.js",
         ],
