@@ -1,27 +1,35 @@
 console.log("header.js file loaded");
 
 document.addEventListener("DOMContentLoaded", function () {
-    const menuItems = document.querySelectorAll(".menu-item");
-    const submenus = document.querySelectorAll(".submenu");
+  const menuItems = document.querySelectorAll(".menu-item");
+  const submenus = document.querySelectorAll(".submenu");
 
-    menuItems.forEach((item) => {
-        item.addEventListener("mouseenter", function () {
-            console.log("mouseenter event listener added");
-            const submenuId = item.getAttribute("data-submenu");
-            submenus.forEach((submenu) => {
-                submenu.style.display = submenu.id === submenuId ? "flex" : "none";
-                console.log("mouseenter triggered");
-            });
-        });
-    });
+  console.log("menuItems found:", menuItems.length);
+  console.log("submenus found:", submenus.length);
 
-    document
-        .querySelector("#custom-navbar")
-        .addEventListener("mouseleave", () => {
-            console.log("mouseleave event listener added");
-            submenus.forEach((submenu) => {
-                submenu.style.display = "none";
-                console.log("mouseenter triggered");
-            });
-        });
+  menuItems.forEach((item) => {
+    console.log("Adding event listener to:", item);
+    item.addEventListener("mouseenter", function () {
+      const submenuId = item.getAttribute("data-submenu");
+      console.log("Hovered on menu item:", submenuId);
+      submenus.forEach((submenu) => {
+        submenu.style.display = submenu.id === submenuId ? "flex" : "none";
+        console.log("Showing submenu:", submenu.id);
+      });
     });
+  });
+
+  const navbar = document.querySelector("#custom-navbar");
+  if (navbar) {
+    navbar.addEventListener("mouseleave", () => {
+      console.log("Mouse left navbar");
+      submenus.forEach((submenu) => {
+        submenu.style.display = "none";
+        console.log("Hiding submenu");
+      });
+    });
+  } else {
+    console.log("Navbar not found");
+  }
+});
+
