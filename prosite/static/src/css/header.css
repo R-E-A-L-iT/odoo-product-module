@@ -24,16 +24,18 @@
     color: #fff;
     padding: 10px; /* Spacing from edges */
     width: 100%; /* Full width */
-    box-sizing: border-box;
+    box-sizing: border-box; /* Include padding in width */
     z-index: 1000; /* Ensure it appears above other elements */
     opacity: 0; /* Initially invisible */
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    display: flex; /* Enable flexbox for horizontal alignment */
-    flex-wrap: wrap; /* Allow columns to wrap if there's not enough space */
+    position: absolute; /* Remove from document flow */
+    top: 100%; /* Position directly below the navbar */
+    left: 0; /* Align with the left edge of the navbar */
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transitions */
+    display: flex; /* Flexbox for horizontal alignment */
+    flex-wrap: wrap; /* Allow columns to wrap if necessary */
     justify-content: flex-start; /* Align columns to the left */
-    gap: 20px; /* Add spacing between columns */
-    position: relative; /* Dynamic height based on content */
+    gap: 20px; /* Spacing between columns */
 }
 
 /* Submenu Active State */
@@ -64,12 +66,12 @@
     margin-bottom: 5px; /* Spacing between submenu items */
 }
 
-/* Submenu Wrapper */
+/* Navbar Wrapper */
 .submenus {
-    position: relative; /* Adjust relative to the navbar */
-    top: 70px; /* Ensure it aligns with the header */
-    left: 0;
+    position: relative; /* Position relative to the navbar */
+    top: 0;
 }
+
 
 
 
