@@ -158,19 +158,20 @@
     color: #ddd;
 }
 
-/* Logo Group */
 #custom-navbar .logo-group {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 15%; /* Fixed 15% width */
-    padding: 10px 10px; /* Internal padding for spacing */
+    justify-content: center; /* Horizontally center the logo */
+    align-items: center; /* Vertically center the logo */
+    width: 15%; /* Fixed width */
+    padding: 10px 0; /* Adjust padding to prevent crowding */
+    margin-left: auto; /* Prevents alignment issues with left margin */
+    margin-right: auto; /* Center the container itself */
+    box-sizing: border-box; /* Ensure padding doesn't affect layout */
 }
 
 #custom-navbar .logo-group img {
-    max-height: 40px !important;
-    width: auto !important;
-    padding-left: 10px !important;
+    max-height: 40px !important; /* Adjust logo height */
+    width: auto !important; /* Maintain aspect ratio */
 }
 
 /* Items Group (Menu Links) */
@@ -286,4 +287,5 @@
     font-size: 16px; /* Adjust font size */
     text-transform: uppercase; /* Ensure text is uppercase */
     font-family: roboto, sans-serif !important;
+    font-weight: lighter;
 }
