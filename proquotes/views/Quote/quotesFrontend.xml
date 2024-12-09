@@ -370,7 +370,7 @@
                     <!-- <t t-esc="section_subtotal"/> -->
                     <span t-if="line.special != 'optional' or line.selected == 'true'"
                           class="text-left" t-att-data-section_id="line_section_id"
-                          style="font-weight: 400 !important;"><t t-esc='"%.2f" %  section_subtotal'/></span>
+                          style="font-weight: 400 !important;"><t t-esc='"%.2f" %  section_subtotal'/>$</span>
                     <span t-elif="clang == 'en_CA' or clang == 'en_US'" class="text-left"
                           style="font-weight: 400 !important;">0.00 $
                     </span>
