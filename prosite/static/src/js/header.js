@@ -21,9 +21,12 @@ const intervalId = setInterval(() => {
                 const rel_submenu = item.getAttribute("data-submenu");
                 console.log("found related submenu");
                 submenus.forEach((submenu) => {
-                    console.log("making submenu visible");
-                    submenu.style.display =
-                        submenu.id === rel_submenu ? "flex" : "none";
+                    if (submenu.id === rel_submenu) {
+                      console.log("making submenu visible");
+                      submenu.classList.add("active");
+                    } else {
+                      submenu.classList.remove("active");
+                    }
                 });
             });
         });
@@ -31,7 +34,7 @@ const intervalId = setInterval(() => {
         // Add event listener to hide submenus on navbar mouseleave
         navbar.addEventListener("mouseleave", () => {
             console.log("removing submenus");
-            submenus.forEach((submenu) => (submenu.style.display = "none"));
+            submenus.forEach((submenu) => submenu.classList.remove("active"));
         });
     } else {
         console.log("Waiting for elements to load...");
