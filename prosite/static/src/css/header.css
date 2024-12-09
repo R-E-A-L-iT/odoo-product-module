@@ -16,7 +16,7 @@
 }
 
 #custom-navbar.submenu-active {
-    background-color: rgba(0, 0, 0, 1); /* Fully black */
+    background-color: rgba(0, 0, 0, 1) !important; /* Fully black */
 }
 
 /* Navbar turns fully black when submenu is active */
