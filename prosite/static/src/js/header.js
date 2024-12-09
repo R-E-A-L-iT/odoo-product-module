@@ -1,7 +1,7 @@
 console.log("header.js file loaded");
 
 const intervalId = setInterval(() => {
-    const items_with_menus = document.querySelectorAll(".item-with-submenu");
+    const items_with_menus = document.querySelectorAll(".menu-item");
     const submenus = document.querySelectorAll(".submenu");
     const navbar = document.querySelector("#custom-navbar");
 
