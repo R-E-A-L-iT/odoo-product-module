@@ -5,8 +5,8 @@ const intervalId = setInterval(() => {
     const submenus = document.querySelectorAll(".submenu");
     const navbar = document.querySelector("#custom-navbar");
 
-    console.log("check 2: " + items_with_menus.toString());
-    console.log("check 3: " + submenus.toString());
+    console.log("check 2: " + items_with_menus.length.toString());
+    console.log("check 3: " + submenus.length.toString());
 
     // Ensure both elements exist
     if (items_with_menus.length > 0 && submenus.length > 0 && navbar) {
