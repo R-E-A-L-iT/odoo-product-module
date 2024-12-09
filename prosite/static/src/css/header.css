@@ -1,39 +1,47 @@
-/* Navbar Container */
+/* Navbar */
 #custom-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background-color: rgba(0, 0, 0, 0.85); /* Semi-transparent black */
     color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px 20px; /* Increased padding for height */
+    height: 50px; /* Fixed height */
+    padding: 0 20px; /* Horizontal padding for overall spacing */
     width: 100%;
     position: fixed;
     top: 0;
     z-index: 1000;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    height: 80px; /* Increased height for spacing */
 }
 
-/* Logo */
-#custom-navbar .logo {
+/* Logo Group */
+#custom-navbar .logo-group {
     display: flex;
+    justify-content: center;
     align-items: center;
-    margin-right: 20px; /* Space between logo and menu */
+    width: 15%; /* Fixed 15% width */
+    padding: 0 10px; /* Internal padding for spacing */
 }
 
-#custom-navbar .logo img {
-    max-height: 50px; /* Make the logo readable but not too large */
+#custom-navbar .logo-group img {
+    max-height: 30px; /* Adjust for readability */
     width: auto; /* Maintain aspect ratio */
-    vertical-align: middle;
 }
 
-/* Centered Menu Links */
+/* Items Group (Menu Links) */
+#custom-navbar .items-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1; /* Take up remaining space */
+    padding: 0 20px; /* Internal padding for spacing */
+}
+
 #custom-navbar .menu-links {
-    flex: 1; /* Allow menu to expand and center between logo and icons */
     display: flex;
     justify-content: center;
     list-style: none;
-    gap: 30px; /* Spacing between menu items */
+    gap: 30px; /* Space between menu items */
     padding: 0;
     margin: 0;
 }
@@ -55,18 +63,22 @@
     color: #ddd;
 }
 
-/* Header Icons */
-#custom-navbar .header-icons {
+/* Icons Group */
+#custom-navbar .icons-group {
     display: flex;
-    gap: 20px; /* Space between icons */
+    justify-content: center;
+    align-items: center;
+    width: 15%; /* Fixed 15% width */
+    gap: 15px; /* Space between icons */
+    padding: 0 10px; /* Internal padding for spacing */
 }
 
-#custom-navbar .header-icons .icon {
+#custom-navbar .icons-group .icon {
     color: #fff;
     font-size: 18px;
     transition: color 0.3s;
 }
 
-#custom-navbar .header-icons .icon:hover {
+#custom-navbar .icons-group .icon:hover {
     color: #ddd;
 }

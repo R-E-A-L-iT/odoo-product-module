@@ -1,16 +1,13 @@
 <odoo>
     <template id="prosite.header" name="ProSite Header">
         <nav id="custom-navbar">
-            <div class="container">
+            <div class="logo-group">
+                <a href="/">
+                    <img src="https://cdn.r-e-a-l.it/images/icons/product-cycle.gif" alt="Logo">
+                </a>
+            </div>
 
-                <!-- logo -->
-                <div class="logo">
-                    <a href="/">
-                        <img src="https://cdn.r-e-a-l.it/videos/header_en.png" alt="Logo"></img>
-                    </a>
-                </div>
-
-                <!-- items -->
+            <div class="items-group">
                 <ul class="menu-links">
                     <li><a href="/equipment">Equipment</a></li>
                     <li><a href="/accessories">Accessories</a></li>
@@ -18,20 +15,18 @@
                     <li><a href="/industries">Industries</a></li>
                     <li><a href="/other">Other</a></li>
                 </ul>
+            </div>
 
-                <!-- icons -->
-                <div class="header-icons">
-                    <a href="/live-chat" class="icon">
-                        <i class="fa fa-comments"></i>
-                    </a>
-                    <a href="/language" class="icon">
-                        <i class="fa fa-globe"></i>
-                    </a>
-                    <a href="/account" class="icon">
-                        <i class="fa fa-user"></i>
-                    </a>
-                </div>
-
+            <div class="icons-group">
+                <a href="/live-chat" class="icon">
+                    <i class="fa fa-comments"></i>
+                </a>
+                <a href="/language" class="icon">
+                    <i class="fa fa-globe"></i>
+                </a>
+                <a href="/account" class="icon">
+                    <i class="fa fa-user"></i>
+                </a>
             </div>
         </nav>
     </template>
