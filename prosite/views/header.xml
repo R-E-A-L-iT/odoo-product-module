@@ -9,11 +9,11 @@
 
             <div class="items-group">
                 <ul class="menu-links">
-                    <li class="menu-item item-with-submenu" data-submenu="submenu-1"><a href="/equipment">Equipment</a></li>
-                    <li class="menu-item item-with-submenu" data-submenu="submenu-2"><a href="/accessories">Accessories</a></li>
-                    <li class="menu-item item-with-submenu" data-submenu="submenu-3"><a href="/software">Software</a></li>
-                    <li class="menu-item item-with-submenu" data-submenu="submenu-4"><a href="/industries">Industries</a></li>
-                    <li class="menu-item item-with-submenu" data-submenu="submenu-5"><a href="/other">Other</a></li>
+                    <li class="menu-item item-with-submenu" data-submenu="submenu-1"><a>Equipment</a></li>
+                    <li class="menu-item item-with-submenu" data-submenu="submenu-2"><a>Accessories</a></li>
+                    <li class="menu-item item-with-submenu" data-submenu="submenu-3"><a>Software</a></li>
+                    <li class="menu-item item-with-submenu" data-submenu="submenu-4"><a>Industries</a></li>
+                    <li class="menu-item item-with-submenu" data-submenu="submenu-5"><a>Other</a></li>
                 </ul>
             </div>
 
@@ -28,81 +28,96 @@
         <div class="submenus">
             <div id="submenu-1" class="submenu">
                 <div class="submenu-column">
-                    <div class="column-title">Title 1</div>
-                    <div>Test 1.1</div>
-                    <div>Test 1.2</div>
-                    <div>Test 1.3</div>
+                    <div class="column-title">Robotic</div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/robotic/blkarc/">BLK ARC</a></div>
                 </div>
                 <div class="submenu-column">
-                    <div class="column-title">Title 2</div>
-                    <div>Test 2.1</div>
-                    <div>Test 2.2</div>
-                    <div>Test 2.3</div>
+                    <div class="column-title">Efficient</div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/efficient/pegasus-trk/">Pegasus TRK</a></div>
                 </div>
                 <div class="submenu-column">
-                    <div class="column-title">Title 3</div>
-                    <div>Test 3.1</div>
-                    <div>Test 3.2</div>
-                    <div>Test 3.3</div>
+                    <div class="column-title">Aerial</div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/aerial/blk2fly/">BLK2FLY</a></div>
                 </div>
                 <div class="submenu-column">
-                    <div class="column-title">Title 4</div>
-                    <div>Test 4.1</div>
-                    <div>Test 4.2</div>
-                    <div>Test 4.3</div>
+                    <div class="column-title">Localized</div>
                 </div>
                 <div class="submenu-column">
-                    <div class="column-title">Title 5</div>
-                    <div>Test 5.1</div>
-                    <div>Test 5.2</div>
-                    <div>Test 5.3</div>
+                    <div class="column-title">Inertial</div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/efficient/blk2go/">BLK2GO</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/efficient/blk2go-pulse/">BLK2GO Pulse</a></div>
                 </div>
                 <div class="submenu-column">
-                    <div class="column-title">Title 6</div>
-                    <div>Test 6.1</div>
-                    <div>Test 6.2</div>
-                    <div>Test 6.3</div>
+                    <div class="column-title">Terrestrial</div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/terrestrial/rtc360/">RTC360</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/terrestrial/blk360-g2/">BLK360</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/terrestrial/pseries/">P-Series</a></div>
                 </div>
             </div>
 
             <div id="submenu-2" class="submenu">
                 <div class="submenu-column">
-                    <div class="column-title">Title</div>
-                    <div>Test 2.1</div>
-                    <div>Test 2.2</div>
-                    <div>Test 2.3</div>
+                    <div class="column-title">Specialized Tripods</div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/uplift">UPLIFT</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/upside-down-tripod">Upside-Down Tripod</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/horizontal-scan">Horizontal Scan</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/kangur-lift">Automatic Lifter</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/whippy-scan">Whippy Scan</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/blk360-window-scan">BLK360 Window Scan</a></div>
                 </div>
                 <div class="submenu-column">
-                    <div class="column-title">Title</div>
-                    <div>Test 2.4</div>
-                    <div>Test 2.5</div>
-                    <div>Test 2.6</div>
+                    <div class="column-title">Backpacks</div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/blk2go-backpack">BLK2GO Backpack</a></div>
                 </div>
                 <div class="submenu-column">
-                    <div class="column-title">Title</div>
-                    <div>Test 2.7</div>
-                    <div>Test 2.8</div>
-                    <div>Test 2.9</div>
+                    <div class="column-title">LED Lights</div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/led-lights-for-tripod">LED Lights for Tripod</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/led-lights-for-blk2go">LED Lights for BLK2GO</a></div>
+                </div>
+                <div class="submenu-column">
+                    <div class="column-title">Car Roof Scanning</div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/level-plane">Level Plane</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/smart-lift-roof">Smart Lift Roof</a></div>
+                    <div><a href="https://www.r-e-a-l.it/equipment/level-lift-roof">Level Lift Roof</a></div>
                 </div>
             </div>
             <div id="submenu-3" class="submenu">
                 <div class="submenu-column">
-                    <div class="column-title">Title</div>
-                    <div>Test 3.1</div>
-                    <div>Test 3.2</div>
-                    <div>Test 3.3</div>
+                    <div class="column-title">Cyclone</div>
+                    <div><a href="https://www.r-e-a-l.it/software/cyclone-register360/">Cyclone REGISTER 360 PLUS</a></div>
+                    <div><a href="https://www.r-e-a-l.it/capture/software/cyclone-workflow/">Cyclone WORKFLOW</a></div>
+                    <div><a href="https://www.r-e-a-l.it/software/cyclone-enterprise/">Cyclone ENTERPRISE</a></div>
+                    <div><a href="https://www.r-e-a-l.it/software/cyclone-3dr/">Cyclone 3DR</a></div>
+                    <div><a href="https://www.r-e-a-l.it/capture/software/cyclone-pegasus/">Cyclone PEGASUS OFFICE</a></div>
                 </div>
                 <div class="submenu-column">
-                    <div class="column-title">Title</div>
-                    <div>Test 3.4</div>
-                    <div>Test 3.5</div>
-                    <div>Test 3.6</div>
+                    <div class="column-title">Epic Games</div>
+                    <div><a href="https://www.r-e-a-l.it/software/realitycapture/">RealityCapture</a></div>
+                    <div><a href="https://www.r-e-a-l.it/software/realitycloudstudio/">Reality Cloud Studio</a></div>
                 </div>
                 <div class="submenu-column">
-                    <div class="column-title">Title</div>
-                    <div>Test 3.7</div>
-                    <div>Test 3.8</div>
-                    <div>Test 3.9</div>
+                    <div class="column-title">Other</div>
+                    <div><a href="https://www.r-e-a-l.it/software/cloudworx/">CloudWorx</a></div>
+                    <div><a href="https://www.r-e-a-l.it/software/rithm/">Rithm</a></div>
+                    <div><a href="https://www.r-e-a-l.it/software/verity/">Verity</a></div>
+                    <div><a href="https://www.r-e-a-l.it/software/truview/">TruView</a></div>
+                </div>
+            </div>
+            <div id="submenu-4" class="submenu">
+                <div class="submenu-column">
+                    <div><a href="https://www.r-e-a-l.it/industries/surveying">Surveying</a></div>
+                    <div><a href="https://www.r-e-a-l.it/industries/architecture">Architecture</a></div>
+                    <div><a href="https://www.r-e-a-l.it/industries/engineering">Engineering</a></div>
+                    <div><a href="https://www.r-e-a-l.it/industries/construction">Construction</a></div>
+                    <div><a href="https://www.r-e-a-l.it/industries/manufacturing">Manufacturing</a></div>
+                </div>
+            </div>
+            <div id="submenu-5" class="submenu">
+                <div class="submenu-column">
+                    <div><a href="">News</a></div>
+                    <div><a href="">TV</a></div>
+                    <div><a href="">Contact</a></div>
+                    <div><a href="">Deals</a></div>
                 </div>
             </div>
         </div>
