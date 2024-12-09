@@ -178,14 +178,14 @@
                     </td>
                 </tr>
             </t>
-            <t t-if="line.name == '$software'">
+            <t t-elif="line.name == '$software'">
                 <tr>
                     <td style="border-style: none;" colspan="100">
                         <t t-call="proquotes.renewal-software"/>
                     </td>
                 </tr>
             </t>
-            <t t-if="line.name == '$subscription'">
+            <t t-elif="line.name == '$subscription'">
                 <tr>
                     <td style="border-style: none;" colspan="100">
                         <t t-call="proquotes.renewal-subscription"/>
@@ -193,7 +193,7 @@
                 </tr>
             </t>
             <!-- Keep for backwards combatibility due to how Quotes Are Rendered -->
-            <t t-if="line.name == '$rental_pricenote'">
+            <t t-elif="line.name == '$rental_pricenote'">
                 <tr>
                     <td style="border-style: none;" colspan="100">
                         <p class="rental_price_explain" t-if="language == 'en_CA' or language == 'en_US'">
@@ -246,7 +246,7 @@
                 </tr>
             </t>
             <!--  Keep for Backwards Compatibility-->
-            <t t-if="line.name == '$rental_address'">
+            <t t-elif="line.name == '$rental_address'">
                 <t t-set="rental_estimate_display" t-value="False"/>
                 <tr>
                     <td style="border-style: none;" colspan="100">
@@ -265,7 +265,7 @@
             </t>
 
             <!-- New Table Header Rows-->
-            <t t-if="line.name == '$block' or line.name == '$block+'">
+            <t t-elif="line.name == '$block' or line.name == '$block+'">
                 <tr class="quote-head">
                     <td class="text-left">
                         <span t-if="language == 'en_CA' or language == 'en_US'" class="cHead"
@@ -303,12 +303,16 @@
                     </td>
                 </tr>
             </t>
-
-            <!-- <t t-if="'translate' in line.name">
+            <t t-elif="'translate' in line.name">
                 <td colspan="100">
                     <span t-esc="sale_order.get_translated_term(line.name, language)" class="section-header"/>
                 </td>
-            </t> -->
+            </t>
+            <t t-else="">
+                <td colspan="100">
+                    <span t-esc="line.name" class="section-header"/>
+                </td>
+            </t>
         </xpath>
 
         <!-- Handle Special Sections Seperatly -->
