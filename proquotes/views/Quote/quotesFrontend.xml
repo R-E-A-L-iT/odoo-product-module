@@ -355,10 +355,8 @@
                     <t t-if="'translate' in line.name">
                         <span t-esc="sale_order.get_translated_term(line.name, language)" class="section-header"/>
                     </t>
-                    <t t-if="'#ccplabel' in line.name">
-                        <td colspan="100">
-                            <span t-if="line.name" t-esc="sale_order.parse_ccp_label(line.name)" class="section-header"/>
-                        </td>
+                    <t t-if="'ccplabel' in line.name">
+                        <span t-esc="sale_order.parse_ccp_label(line.name)" class="section-header"/>
                     </t>
                     <span t-if="line.name.strip()[0] != '#'" t-field="line.name"/>
                     <span t-elif="line.name.strip()[0] == '#'">
