@@ -5,7 +5,7 @@
     align-items: center;
     background-color: rgba(0, 0, 0, 0.85); /* Semi-transparent black */
     color: #fff;
-    height: 50px; /* Fixed height */
+    height: 75px; /* Fixed height */
     padding: 0 20px; /* Horizontal padding for overall spacing */
     width: 100%;
     position: fixed;
@@ -24,8 +24,8 @@
 }
 
 #custom-navbar .logo-group img {
-    max-height: 30px; /* Adjust for readability */
-    width: auto; /* Maintain aspect ratio */
+    max-height: 40px !important;
+    width: auto !important;
 }
 
 /* Items Group (Menu Links) */
