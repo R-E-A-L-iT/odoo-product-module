@@ -259,7 +259,7 @@
 .subheader {
     position: fixed !important; /* Ensure it's on a separate rendering layer */
     top: 70px !important; /* Stays below the navbar */
-    z-index: 999 !important; /* Very high to stay above all elements, including iframes */
+    z-index: 998 !important; /* Very high to stay above all elements, including iframes */
     background-color: rgba(26, 26, 26, 0.7) !important; /* Slight transparency */
     color: #888 !important;
     padding: 10px 0 !important;
