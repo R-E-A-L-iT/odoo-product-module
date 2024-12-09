@@ -118,7 +118,7 @@
 		width: 100vw;
 	}
 
-	#custom-webpage-root .subheader {
+	/* #custom-webpage-root .subheader {
 		flex-wrap: wrap;
         padding-top: 5px !important;
         padding-bottom: 5px !important;
@@ -128,7 +128,7 @@
 		margin: 0px;
 		font-size: .75rem;
 		padding: 3px;
-	}
+	} */
 
 	#custom-webpage-root .product-landing-text {
 		width: 75%;
@@ -485,7 +485,7 @@
     
 }
                 
-.subheader {
+/* .subheader {
 
     padding-top: 5px !important;
     padding-bottom: 5px !important;
@@ -497,7 +497,7 @@
     margin-left: 2px;
     margin-right: 2px;
     
-}
+} */
 
 @media (min-width:540px) and (max-width: 749px) {
     
