@@ -1,53 +1,88 @@
-.r_header_container {
+#custom-navbar {
+    background-color: rgba(0, 0, 0, 0.75);
+    color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: rgba(0, 0, 0, 0.75);
-    padding: 20px 0;
-    color: #fff;
-}
-
-.r_header_container .r_headerlogo img {
-    max-width: 200px;
-}
-
-.r_header_nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    gap: 20px;
-}
-
-.r_header_nav ul li {
-    font-size: 16px;
-    text-transform: uppercase;
-    cursor: pointer;
-}
-
-.r_header_subnav {
-    background: rgba(50, 50, 50, 0.75);
-    text-align: center;
     padding: 10px 0;
-    position: sticky;
-    top: 0;
-    display: none;
+    position: relative;
+    z-index: 1000;
+    width: 100%;
 }
 
-.r_header_subnav ul {
+#custom-navbar .logo img {
+    max-width: 200px;
+    height: auto;
+}
+
+#custom-navbar .menu-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+#custom-navbar .menu-links li {
+    position: relative;
+    text-align: center;
+}
+
+#custom-navbar .menu-links a {
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 14px;
+    padding: 5px 10px;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+#custom-navbar .menu-links a:hover {
+    color: #aaa;
+}
+
+/* Dropdown Styling */
+#custom-navbar .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: rgba(50, 50, 50, 0.9);
+    width: 100%;
+    padding: 20px 0;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+#custom-navbar .dropdown-content ul {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
     list-style: none;
     padding: 0;
     margin: 0;
-    display: flex;
-    gap: 15px;
-    justify-content: center;
 }
 
-.r_header_subnav ul li {
-    font-size: 14px;
-    cursor: pointer;
+#custom-navbar .dropdown-content li {
+    text-align: center;
 }
 
-.s_custom_header.has-subnav .subnav {
+/* Submenu Styling */
+#custom-navbar .submenu {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background-color: rgba(50, 50, 50, 0.9);
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+#custom-navbar .menu-links li:hover .dropdown-content,
+#custom-navbar .dropdown-content li:hover .submenu {
     display: block;
 }

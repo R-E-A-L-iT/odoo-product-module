@@ -1,44 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="proportal.navbar" name="Proportal Navbar" inherit_id="portal.frontend_layout">
-        <xpath expr="//div[@id='wrapwrap']/header" position="replace">
-            <nav id="custom-navbar">
-                <div class="logo">
-                    <a href="/">
-                        <img src="https://cdn.r-e-a-l.it/images/icons/product-cycle.gif" alt="Logo"></img>
-                    </a>
-                </div>
-                <ul class="menu-links">
-                    <li>
-                        <a href="/">Equipment</a>
-                        <div class="dropdown-content">
-                            <ul>
-                                <li><a href="/equipment/robotic/blkarc/">BLK ARC</a></li>
-                                <li><a href="/equipment/efficient/pegasus-trk/">PEGASUS TRK</a></li>
-                                <li><a href="/equipment/aerial/blk2fly/">BLK2FLY</a></li>
-                                <li><a href="/equipment/terrestrial/rtc360/">RTC360</a></li>
-                            </ul>
-                        </div>
-                    </li>
-                    <li>
-                        <a href="/accessories">Accessories</a>
-                        <div class="dropdown-content">
-                            <ul>
-                                <li><a href="/equipment/uplift">UPLIFT</a></li>
-                                <li><a href="/equipment/blk2go-backpack">BLK2GO BACKPACK</a></li>
-                                <li><a href="/equipment/led-lights-for-tripod">LED LIGHTS</a></li>
-                            </ul>
-                        </div>
-                    </li>
-                    <li><a href="/software">Software</a></li>
-                    <li><a href="/dev">Dev</a></li>
-                    <li><a href="/industries">Industries</a></li>
-                    <li><a href="/news">News</a></li>
-                    <li><a href="/shop">Deals</a></li>
-                    <li><a href="https://www.youtube.com/channel/UCDH9jd3buX-cCzKfBoUlFiA">TV</a></li>
-                    <li><a href="/book-a-demo">Contact</a></li>
-                    <li><a href="/my/home">My R-E-A-L.iT</a></li>
-                </ul>
-            </nav>
-        </xpath>
-    </template>
+	<template id="proportal.navbar" name="Proportal navbar" inherit_id="portal.frontend_layout">
+		<xpath expr="//div[@id='wrapwrap']/header" position="replace">
+			<nav id="custom-navbar" class="navbar navbar-expand">
+				<div class="container">
+					<a href="/home" class="navbar-brand logo" id="custom-navbar-logo">
+						<img src="https://cdn.r-e-a-l.it/images/icons/product-cycle.gif"
+						t-att-alt="'Logo of %s' % res_company.name" t-att-title="res_company.name"/>
+					</a>
+				</div>
+<!--				<t t-call="custom.menu-links"/>-->
+			</nav>
+		</xpath>
+	</template>
 </odoo>

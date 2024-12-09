@@ -10,5 +10,11 @@
     "depends": [
         "website",
     ],
+    "views": [
+        "views/header.xml",
+    ],
+    "assets": [
+        "static/css/header.css"  
+    ],
     "version": "1.0",
 }

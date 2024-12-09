@@ -1,9 +1,0 @@
-<odoo>
-    <template id="header_snippet_options" inherit_id="website.snippet_options">
-        <xpath expr="." position="inside">
-            <div data-selector=".r_header" data-js="HeaderSnippetOptions">
-                <we-toggler data-attribute="subnav" string="Enable SubHeader" />
-            </div>
-        </xpath>
-    </template>
-</odoo>

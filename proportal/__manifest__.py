@@ -48,7 +48,7 @@
         "views/customer_portal.xml",
         "views/portalProject.xml",
         "views/navButton.xml",
-        "views/navbarCustom.xml",
+        # "views/navbarCustom.xml",
         # "views/cart.xml",
         "views/carousel.xml",
         "views/shopTile.xml",
