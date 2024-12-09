@@ -52,6 +52,25 @@
     visibility: visible;
 }
 
+.submenu:before,
+.submenu:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%; /* Full width */
+    height: 1px; /* Border thickness */
+    background: linear-gradient(to right, transparent, #333 50%, transparent); /* Gradient for fading edges */
+    z-index: 1000;
+}
+
+.submenu:before {
+    top: 0; /* Top border */
+}
+
+.submenu:after {
+    bottom: 0; /* Bottom border */
+}
+
 /* Submenu Active State */
 .submenu.active {
     opacity: 1; /* Fully visible */
