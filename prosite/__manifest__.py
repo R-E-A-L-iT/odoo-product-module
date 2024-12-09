@@ -15,7 +15,8 @@
     ],
     "assets": {
         "web.assets_frontend": [
-            "prosite/static/src/css/header.css",  # Correctly include the CSS file
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
+            "prosite/static/src/css/header.css",
         ],
     },
     "version": "1.0",
