@@ -80,12 +80,25 @@
     border-right: none;
 }
 
+/* General submenu link styling */
+.submenu a {
+    color: #888; /* Default grey color for submenu links */
+    text-decoration: none; /* Remove underline */
+    transition: color 0.2s ease; /* Smooth color transition on hover */
+}
+
+/* Hover effect for submenu links */
+.submenu a:hover {
+    color: #fff; /* Change to white on hover */
+}
+
 /* Column Titles */
 .submenu-column .column-title {
-    color: #fff; /* White for column titles */
+    color: #fff; /* Keep titles white */
     font-weight: bold;
-    margin-bottom: 10px; /* Space between title and items */
+    margin-bottom: 10px; /* Add spacing below the title */
 }
+
 
 /* Submenu Text */
 .submenu-column div {

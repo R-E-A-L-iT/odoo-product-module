@@ -20,7 +20,7 @@
             <div class="icons-group">
                 <a href="/live-chat" class="icon"><i class="fa fa-comments"></i></a>
                 <a href="/language" class="icon"><i class="fa fa-globe"></i></a>
-                <a href="/account" class="icon"><i class="fa fa-user"></i></a>
+                <a href="/my/home" class="icon"><i class="fa fa-user"></i></a>
             </div>
         </nav>
 
