@@ -3,7 +3,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.85);
+    background-color: rgba(0, 0, 0, 0.85); /* Initially semi-transparent */
     color: #fff;
     height: 70px; /* Increased height */
     padding: 0 20px;
@@ -12,19 +12,23 @@
     top: 0;
     z-index: 1000;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease; /* Smooth background transition */
 }
 
-
-
+/* Make navbar fully black when submenu is hovered */
+.submenu:hover ~ #custom-navbar,
+.menu-item:hover ~ #custom-navbar {
+    background-color: rgba(0, 0, 0, 1); /* Fully opaque black */
+}
 
 /* Submenu Container */
 .submenu {
     border-top: 1px solid #333;
     border-bottom: 1px solid #333;
     display: none; /* Hidden by default */
-    background-color: rgba(0, 0, 0, 0.85); /* Dark background */
+    background-color: rgba(0, 0, 0, 1); /* Fully black */
     color: #fff;
-    padding: 10px; /* Spacing from edges */
+    padding: 10px 0; /* Vertical padding */
     width: 100%; /* Full width */
     box-sizing: border-box; /* Include padding in width */
     z-index: 999; /* Ensure submenus appear beneath navbar items */
@@ -38,37 +42,7 @@
     overflow-x: auto; /* Allow horizontal scrolling */
     gap: 10px; /* Spacing between columns */
     scroll-behavior: smooth; /* Smooth scrolling effect */
-
-    /* Fading effect for text on the rightmost edge */
-    mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0.85) 100%);
-    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0.85) 100%);
     pointer-events: auto;
-}
-
-.menu-item:hover + .submenu,
-.submenu:hover {
-    display: flex; /* Ensure it stays visible */
-    opacity: 1;
-    visibility: visible;
-}
-
-.submenu:before,
-.submenu:after {
-    content: '';
-    position: absolute;
-    left: 0;
-    width: 100%; /* Full width */
-    height: 1px; /* Border thickness */
-    background: linear-gradient(to right, transparent, #333 50%, transparent); /* Gradient for fading edges */
-    z-index: 1000;
-}
-
-.submenu:before {
-    top: 0; /* Top border */
-}
-
-.submenu:after {
-    bottom: 0; /* Bottom border */
 }
 
 /* Submenu Active State */
@@ -82,12 +56,23 @@
     display: flex;
     flex-direction: column; /* Vertical alignment of items */
     justify-content: flex-start;
-    width: 300px; /* Fixed width for columns */
+    width: 200px; /* Reduced column width */
     padding: 10px; /* Internal spacing for each column */
     color: #888; /* Default grey for submenu text */
     box-sizing: border-box;
     flex-shrink: 0; /* Prevent shrinking */
+    border-left: 1px solid #888; /* Divider line */
     background-color: transparent; /* Ensure transparency */
+}
+
+/* Remove left border for the first column */
+.submenu-column:first-child {
+    border-left: none;
+}
+
+/* Remove right border for the last column */
+.submenu-column:last-child {
+    border-right: none;
 }
 
 /* Column Titles */
@@ -108,13 +93,6 @@
     top: 0;
 }
 
-
-
-
-
-
-
-
 /* Hover Effect to Show Submenu */
 .menu-item:hover ~ .submenus #submenu-1,
 .menu-item:hover ~ .submenus #submenu-2,
@@ -126,6 +104,10 @@
     opacity: 1;
     transition: opacity 0.3s;
 }
+
+
+
+
 
 /* Menu Links */
 .menu-links a {
