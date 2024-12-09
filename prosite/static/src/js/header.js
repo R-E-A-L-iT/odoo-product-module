@@ -3,6 +3,8 @@ console.log("header.js file loaded");
 odoo.define("prosite.header", function (require) {
   "use strict";
 
+  const $ = require("jquery"); // Include jQuery as a dependency
+
   $(document).ready(function () {
     console.log("header.js loaded using jQuery");
 
