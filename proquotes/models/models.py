@@ -904,8 +904,8 @@ class order(models.Model):
                 return label
             
             parts = label.split('+')
-            if len(parts) != 4:
-                return label
+            # if len(parts) != 4:
+            #     return label
             
             product_code = parts[2]
             expiry_date = parts[3]
