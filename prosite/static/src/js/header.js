@@ -5,11 +5,12 @@ const intervalId = setInterval(() => {
     const submenus = document.querySelectorAll(".submenu");
     const navbar = document.querySelector("#custom-navbar");
 
-    console.log("check 2");
+    console.log("check 2: " + items_with_menus.toString());
+    console.log("check 3: " + submenus.toString());
 
     // Ensure both elements exist
     if (items_with_menus.length > 0 && submenus.length > 0 && navbar) {
-        console.log("found submenus - check 3");
+        console.log("found submenus - check 4");
 
         // Stop the interval once elements are found
         clearInterval(intervalId);
