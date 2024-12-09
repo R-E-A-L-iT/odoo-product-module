@@ -227,3 +227,40 @@
 #custom-navbar .icons-group .icon:hover {
     color: #ddd;
 }
+
+
+
+
+
+/* Subheader Styling */
+.subheader {
+    position: sticky; /* Makes it stick to the top when scrolling */
+    top: 70px; /* Ensures it sits directly under the navbar */
+    z-index: 900; /* Below the navbar (1000) and submenus (999) */
+    background-color: rgba(26, 26, 26, 0.7); /* Slightly more transparent background */
+    color: #888; /* Text color */
+    padding: 10px 0; /* Vertical padding */
+    display: flex; /* Flexbox for horizontal layout */
+    justify-content: center; /* Center horizontally */
+    gap: 10px; /* Space between items */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for better separation */
+}
+
+/* Links in Subheader */
+.subheader a {
+    text-decoration: none; /* Remove underline */
+    color: #888; /* Text color matches subheader */
+    transition: color 0.2s ease; /* Smooth transition on hover */
+}
+
+/* Links Hover Effect */
+.subheader a:hover {
+    color: #fff; /* Change to white when hovered */
+}
+
+/* Heading Style inside Subheader */
+.subheader h3 {
+    margin: 0; /* Remove margin for consistent spacing */
+    font-size: 16px; /* Adjust font size */
+    text-transform: uppercase; /* Ensure text is uppercase */
+}
