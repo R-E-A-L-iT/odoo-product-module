@@ -3,8 +3,10 @@ console.log("header.js file loaded");
 const items_with_menus = document.querySelectorAll(".item-with-submenu")
 const submenus = document.querySelectorAll(".submenu")
 
+console.log("check 2");
+
 if (items_with_menus.length > 0 && submenus.length > 0) {
-    console.log("found submenus")
+    console.log("found submenus - check 3");
 
     // make submenus visible on hover
     items_with_menus.forEach((item) => {
