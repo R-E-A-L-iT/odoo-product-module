@@ -357,7 +357,7 @@
                     </t>
                     <t t-if="'#ccplabel' in line.name">
                         <td colspan="100">
-                            <span t-esc="sale_order.parse_ccp_label(line.name)" class="section-header"/>
+                            <span t-if="line.name" t-esc="sale_order.parse_ccp_label(line.name)" class="section-header"/>
                         </td>
                     </t>
                     <span t-if="line.name.strip()[0] != '#'" t-field="line.name"/>
