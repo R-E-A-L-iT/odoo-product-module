@@ -40,6 +40,14 @@
     scroll-behavior: smooth; /* Smooth scrolling effect */
     mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0)); /* Fade-out effect */
     -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, rgba(0, 0, 0, 0)); /* For WebKit browsers */
+    pointer-events: auto;
+}
+
+.menu-item:hover + .submenu,
+.submenu:hover {
+    display: flex; /* Ensure it stays visible */
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Submenu Active State */
@@ -56,10 +64,11 @@
     width: 300px; /* Fixed width for columns */
     padding: 10px; /* Internal spacing for each column */
     color: #888; /* Default grey for submenu text */
-    background-color: rgba(50, 50, 50, 0.9); /* Slightly darker background for columns */
     box-sizing: border-box;
     flex-shrink: 0; /* Prevent shrinking */
+    background-color: transparent; /* Ensure transparency */
 }
+
 
 /* Column Titles */
 .submenu-column .column-title {
