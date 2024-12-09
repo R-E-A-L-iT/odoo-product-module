@@ -1,0 +1,35 @@
+<odoo>
+    <template id="r_header" name="R-E-A-L.iT Header with SubHeader">
+        <section class="r_header_container" data-name="R-E-A-L.iT Header" data-snippet="r_header">
+            <header class="r_header">
+                <div class="r_header_logo">
+                    <img src="https://cdn.r-e-a-l.it/videos/header_en.png" alt="Logo">
+                </div>
+                <nav class="r_header_nav">
+                    <ul>
+                        <li>EQUIPMENT</li>
+                        <li>ACCESSORIES</li>
+                        <li>SOFTWARE</li>
+                        <li>DEV</li>
+                        <li>INDUSTRIES</li>
+                        <li>NEWS</li>
+                        <li>DEALS</li>
+                        <li>TV</li>
+                        <li>CONTACT</li>
+                        <li>MY.R-E-A-L.IT</li>
+                    </ul>
+                </nav>
+            </header>
+            <!-- Subnav -->
+            <div class="r_header_subnav" t-if="subnav">
+                <ul>
+                    <li>OVERVIEW</li>
+                    <li>TECHNOLOGY</li>
+                    <li>USE CASES</li>
+                    <li>SPECIFICATIONS</li>
+                    <li>REQUEST A DEMO</li>
+                </ul>
+            </div>
+        </section>
+    </template>
+</odoo>
