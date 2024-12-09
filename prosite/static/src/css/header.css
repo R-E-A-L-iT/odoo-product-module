@@ -15,6 +15,10 @@
     transition: background-color 0.3s ease; /* Smooth background transition */
 }
 
+#custom-navbar.submenu-active {
+    background-color: rgba(0, 0, 0, 1); /* Fully black */
+}
+
 /* Navbar turns fully black when submenu is active */
 .submenu:hover ~ #custom-navbar,
 .menu-item:hover ~ #custom-navbar,
