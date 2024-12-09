@@ -1,88 +1,72 @@
+/* Navbar Container */
 #custom-navbar {
     background-color: rgba(0, 0, 0, 0.75);
     color: #fff;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    padding: 10px 0;
-    position: relative;
-    z-index: 1000;
+    justify-content: space-between;
+    padding: 10px 20px;
     width: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Navbar Inner Container */
+#custom-navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Left: Logo */
 #custom-navbar .logo img {
-    max-width: 800px;
-    height: auto;
+    max-height: 40px;
 }
 
+/* Center: Menu Links */
 #custom-navbar .menu-links {
     display: flex;
     justify-content: center;
-    flex-wrap: wrap;
     list-style: none;
+    margin: 0;
     padding: 0;
-    margin: 10px 0 0;
-    gap: 20px;
-    width: 100%;
-    max-width: 1200px;
+    gap: 30px;
 }
 
 #custom-navbar .menu-links li {
     position: relative;
-    text-align: center;
 }
 
 #custom-navbar .menu-links a {
     color: #fff;
+    text-decoration: none;
     text-transform: uppercase;
     font-size: 14px;
-    padding: 5px 10px;
-    text-decoration: none;
+    font-weight: 500;
     transition: color 0.3s;
 }
 
 #custom-navbar .menu-links a:hover {
-    color: #aaa;
+    color: #ddd;
 }
 
-/* Dropdown Styling */
-#custom-navbar .dropdown-content {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: rgba(50, 50, 50, 0.9);
-    width: 100%;
-    padding: 20px 0;
-    z-index: 1000;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-#custom-navbar .dropdown-content ul {
+/* Right: Header Icons */
+#custom-navbar .header-icons {
     display: flex;
-    justify-content: center;
-    gap: 40px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
+    gap: 20px;
 }
 
-#custom-navbar .dropdown-content li {
-    text-align: center;
+#custom-navbar .header-icons .icon {
+    color: #fff;
+    font-size: 18px;
+    transition: color 0.3s;
 }
 
-/* Submenu Styling */
-#custom-navbar .submenu {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 100%;
-    background-color: rgba(50, 50, 50, 0.9);
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-#custom-navbar .menu-links li:hover .dropdown-content,
-#custom-navbar .dropdown-content li:hover .submenu {
-    display: block;
+#custom-navbar .header-icons .icon:hover {
+    color: #ddd;
 }

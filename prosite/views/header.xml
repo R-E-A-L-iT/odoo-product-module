@@ -1,56 +1,38 @@
 <odoo>
     <template id="prosite.header" name="ProSite Header">
         <nav id="custom-navbar">
-            <div class="logo">
-                <a href="/">
-                    <img src="https://cdn.r-e-a-l.it/images/icons/product-cycle.gif" alt="Logo" />
-                </a>
+            <div class="container">
+
+                <!-- logo -->
+                <div class="logo">
+                    <a href="/">
+                        <img src="https://cdn.r-e-a-l.it/images/icons/product-cycle.gif" alt="Logo">
+                    </a>
+                </div>
+
+                <!-- items -->
+                <ul class="menu-links">
+                    <li><a href="/equipment">Equipment</a></li>
+                    <li><a href="/accessories">Accessories</a></li>
+                    <li><a href="/software">Software</a></li>
+                    <li><a href="/industries">Industries</a></li>
+                    <li><a href="/other">Other</a></li>
+                </ul>
+
+                <!-- icons -->
+                <div class="header-icons">
+                    <a href="/live-chat" class="icon">
+                        <i class="fa fa-comments"></i>
+                    </a>
+                    <a href="/language" class="icon">
+                        <i class="fa fa-globe"></i>
+                    </a>
+                    <a href="/account" class="icon">
+                        <i class="fa fa-user"></i>
+                    </a>
+                </div>
+
             </div>
-
-            <!-- Main Navigation -->
-            <ul class="menu-links">
-                <!-- Equipment Menu -->
-                <li class="dropdown">
-                    <a href="/equipment">Equipment</a>
-                    <div class="dropdown-content">
-                        <ul>
-                            <li class="dropdown">
-                                <a href="/equipment/terrestrial">Terrestrial</a>
-                                <div class="dropdown-content submenu">
-                                    <ul>
-                                        <li><a href="/equipment/terrestrial/rtc360">RTC360</a></li>
-                                        <li><a href="/equipment/terrestrial/pegasus-scanner">Pegasus Scanner</a></li>
-                                        <li><a href="/equipment/terrestrial/p-series">P-Series</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li><a href="/equipment/robotic">Robotic</a></li>
-                            <li><a href="/equipment/aerial">Aerial</a></li>
-                        </ul>
-                    </div>
-                </li>
-
-                <!-- Accessories Menu -->
-                <li class="dropdown">
-                    <a href="/accessories">Accessories</a>
-                    <div class="dropdown-content">
-                        <ul>
-                            <li><a href="/accessories/uplift">Uplift</a></li>
-                            <li><a href="/accessories/blk2go-backpack">BLK2GO Backpack</a></li>
-                        </ul>
-                    </div>
-                </li>
-
-                <!-- Other Menu Items -->
-                <li><a href="/software">Software</a></li>
-                <li><a href="/dev">Dev</a></li>
-                <li><a href="/industries">Industries</a></li>
-                <li><a href="/news">News</a></li>
-                <li><a href="/shop">Deals</a></li>
-                <li><a href="https://www.youtube.com/channel/UCDH9jd3buX-cCzKfBoUlFiA">TV</a></li>
-                <li><a href="/book-a-demo">Contact</a></li>
-                <li><a href="/my/home">My R-E-A-L.iT</a></li>
-            </ul>
         </nav>
     </template>
 </odoo>
