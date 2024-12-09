@@ -172,6 +172,7 @@
 #custom-navbar .logo-group img {
     max-height: 40px !important; /* Adjust logo height */
     width: auto !important; /* Maintain aspect ratio */
+    padding-left: 15px !important;
 }
 
 /* Items Group (Menu Links) */
@@ -256,18 +257,26 @@
 
 /* Subheader Styling */
 .subheader {
-    position: fixed; /* Fix it to the viewport */
-    top: 70px; /* Align directly beneath the navbar */
-    z-index: 999; /* Below the navbar but above the content */
-    background-color: rgba(26, 26, 26, 0.8) !important; /* Slightly more transparent background */
-    color: #888 !important; /* Text color */
-    padding: 10px 0 !important; /* Vertical padding */
-    display: flex !important; /* Flexbox for horizontal layout */
-    justify-content: center !important; /* Center horizontally */
-    gap: 10px !important; /* Space between items */
-    width: 100%; /* Full width */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* Subtle shadow for better separation */
+    position: fixed !important; /* Ensure it's on a separate rendering layer */
+    top: 70px !important; /* Stays below the navbar */
+    z-index: 9999 !important; /* Very high to stay above all elements, including iframes */
+    background-color: rgba(26, 26, 26, 0.7) !important; /* Slight transparency */
+    color: #888 !important;
+    padding: 10px 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
+
+/* If the page contains iframes */
+iframe {
+    position: relative; /* Ensure it’s positioned relative to other elements */
+    z-index: 1; /* Lower than the subheader */
+    pointer-events: none; /* Prevent interactions blocking the subheader */
+}
+
 
 /* Links in Subheader */
 .subheader a {
@@ -287,5 +296,6 @@
     font-size: 16px; /* Adjust font size */
     text-transform: uppercase; /* Ensure text is uppercase */
     font-family: roboto, sans-serif !important;
-    font-weight: lighter;
+    font-weight: 100 !important;
+    font-size: 1rem !important;
 }
