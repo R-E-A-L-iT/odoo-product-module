@@ -19,41 +19,32 @@
     background-color: rgba(0, 0, 0, 1); /* Fully black */
 }
 
-/* Navbar turns fully black when submenu is active */
+/* Navbar turns fully black when submenu is active
 .submenu:hover ~ #custom-navbar,
 .menu-item:hover ~ #custom-navbar,
 .submenu.active ~ #custom-navbar {
-    background-color: rgba(0, 0, 0, 1); /* Fully opaque black */
-}
+    background-color: rgba(0, 0, 0, 1);
+} */
 
-/* Submenu Container */
+/* Submenu Default */
 .submenu {
-    border-top: 1px solid #333;
-    border-bottom: 1px solid #333;
     display: none; /* Hidden by default */
-    background-color: rgba(0, 0, 0, 1); /* Fully black */
-    color: #fff;
-    padding: 10px 0; /* Vertical padding */
-    width: 100%; /* Full width */
-    box-sizing: border-box; /* Include padding in width */
-    z-index: 999; /* Ensure submenus appear beneath navbar items */
-    opacity: 0; /* Initially invisible */
-    visibility: hidden; /* Hide completely to prevent flickering */
-    position: absolute; /* Remove from document flow */
-    top: 70px; /* Ensure it is underneath the menu items */
-    left: 0; /* Align with the left edge of the navbar */
-    transition: opacity 0.2s ease, visibility 0.2s ease, background-color 0.3s ease; /* Smooth transitions */
-    display: flex;
-    overflow-x: auto; /* Allow horizontal scrolling */
-    gap: 10px; /* Spacing between columns */
-    scroll-behavior: smooth; /* Smooth scrolling effect */
-    pointer-events: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth fade */
+    position: absolute;
+    top: 70px; /* Positioned below navbar */
+    left: 0;
+    background-color: rgba(0, 0, 0, 1); /* Fully black background */
+    z-index: 1000;
+    padding: 10px;
 }
 
 /* Submenu Active State */
 .submenu.active {
-    opacity: 1; /* Fully visible */
-    visibility: visible; /* Make submenu appear */
+    display: flex;
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Submenu Columns */
