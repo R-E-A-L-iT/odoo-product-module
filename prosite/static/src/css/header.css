@@ -25,23 +25,25 @@
     padding: 10px; /* Spacing from edges */
     width: 100%; /* Full width */
     box-sizing: border-box; /* Include padding in width */
-    z-index: 1000; /* Ensure it appears above other elements */
+    z-index: 999; /* Ensure submenus appear beneath navbar items */
     opacity: 0; /* Initially invisible */
-    visibility: hidden;
+    visibility: hidden; /* Hide completely to prevent flickering */
     position: absolute; /* Remove from document flow */
-    top: 100%; /* Position directly below the navbar */
+    top: 70px; /* Ensure it is underneath the menu items */
     left: 0; /* Align with the left edge of the navbar */
-    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transitions */
+    transition: opacity 0.2s ease, visibility 0.2s ease; /* Smooth transitions */
     display: flex; /* Flexbox for horizontal alignment */
     flex-wrap: wrap; /* Allow columns to wrap if necessary */
     justify-content: flex-start; /* Align columns to the left */
     gap: 20px; /* Spacing between columns */
+    pointer-events: none; /* Prevent flickering when hovering between submenu and menu item */
 }
 
 /* Submenu Active State */
 .submenu.active {
-    opacity: 1;
-    visibility: visible;
+    opacity: 1; /* Fully visible */
+    visibility: visible; /* Make submenu appear */
+    pointer-events: auto; /* Enable interaction */
 }
 
 /* Submenu Columns */
@@ -71,6 +73,7 @@
     position: relative; /* Position relative to the navbar */
     top: 0;
 }
+``
 
 
 
