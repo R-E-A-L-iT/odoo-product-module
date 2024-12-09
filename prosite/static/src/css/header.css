@@ -234,16 +234,16 @@
 
 /* Subheader Styling */
 .subheader {
-    position: sticky; /* Makes it stick to the top when scrolling */
-    top: 70px; /* Ensures it sits directly under the navbar */
-    z-index: 900; /* Below the navbar (1000) and submenus (999) */
-    background-color: rgba(26, 26, 26, 0.7); /* Slightly more transparent background */
-    color: #888; /* Text color */
-    padding: 10px 0; /* Vertical padding */
-    display: flex; /* Flexbox for horizontal layout */
-    justify-content: center; /* Center horizontally */
-    gap: 10px; /* Space between items */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for better separation */
+    position: sticky !important; /* Makes it stick to the top when scrolling */
+    top: 70px !important; /* Ensures it sits directly under the navbar */
+    z-index: 900 !important; /* Below the navbar (1000) and submenus (999) */
+    background-color: rgba(26, 26, 26, 0.7) !important; /* Slightly more transparent background */
+    color: #888 !important; /* Text color */
+    padding: 10px 0 !important; /* Vertical padding */
+    display: flex !important; /* Flexbox for horizontal layout */
+    justify-content: center !important; /* Center horizontally */
+    gap: 10px !important; /* Space between items */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* Subtle shadow for better separation */
 }
 
 /* Links in Subheader */
