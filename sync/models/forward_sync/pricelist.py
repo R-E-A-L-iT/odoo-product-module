@@ -174,7 +174,7 @@ class sync_pricelist:
                     self.add_to_report("WARNING", f"{warning_msg}")
                     continue
                 
-                existing_product = self.database.env["stock.lot"].search([("name", "=", eidsn)], limit=1)
+                existing_product = self.database.env["product.template"].search([("sku", "=", sku)], limit=1)
                 
                 if existing_ccp:
                     _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, eidsn)
