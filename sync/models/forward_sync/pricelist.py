@@ -82,31 +82,32 @@ class sync_pricelist:
 
         # variables to verify format
         # if you need to add more columns for new sync data, add them here
-        expected_width = 23
+        expected_width = 24
         expected_columns = {
             "SKU": "sku",
             "EN-Name": "name_en",
             "EN-Description": "desc_en",
             "FR-Name": "name_fr",
             "FR-Description": "desc_fr",
+            "PriceCAD": "price_cad",
+            "PriceUSD": "price_usd",
+            "Can Rental": "rental_can",
+            "US Rental": "rental_usd",
+            "Store Image": "store_image",
+            "Store Title": "store_title",
+            "Store Description": "store_desc",
+            "Publish_CA": "publish_can",
+            "Publish_USA": "publish_usa",
+            "Can_Be_Sold": "can_be_sold",
+            "Can_Be_Rented": "can_be_rented",
             "isSoftware": "is_software",
             "Type": "type",
             "ProductCategory": "category",
-            "PriceCAD": "price_cad",
-            "PriceUSD": "price_usd",
-            "Can_Be_Sold": "can_be_sold",
-            "Can_Be_Rented": "can_be_rented",
-            "E-Commerce_Website_Code": "store_code",
-            "CAN PL ID": "can_pl_id",
-            "US PL ID": "us_pl_id",
-            "CAN R SEL": "can_r_sel",
-            "CAN R ID": "can_r_id",
-            "US R SEL": "us_r_sel",
-            "US R ID": "us_r_id",
+            "Product Type": "product_type",
             "ECOM-FOLDER": "folder",
             "ECOM-MEDIA": "media",
-            "Continue": "continue",
             "Valid": "valid",
+            "Continue": "continue",
         }
 
         sheet_width = len(self.sheet[1]) if len(self.sheet) > 1 else 0
