@@ -8,15 +8,31 @@ import binascii
 from odoo import fields, http, _
 from odoo.exceptions import AccessError, MissingError, UserError
 from odoo.http import request
+from odoo.http import Response
 from odoo.addons.portal.controllers.mail import _message_post_helper
 from odoo.addons.portal.controllers.portal import CustomerPortal as cPortal
-from odoo.addons.sale.controllers.portal import CustomerPortal as SalesOrder
 from odoo.addons.portal.controllers.portal import pager as portal_pager
+from odoo.addons.website.controllers.main import Website as WebsiteINH
 from odoo.osv import expression
 import re
 
 _logger = logging.getLogger(__name__)
 
+
+# class CustomPortalSaleOrder(http.Controller):
+
+#     @http.route(['/my/orders/<int:order_id>'], type='http', auth="public", website=True)
+#     def update_requesT_lang(self, sale_order_id, **kwargs):
+#         sale_order = request.env['sale.order'].sudo().browse(sale_order_id)
+
+#         # Check if the partner's language is French and set the request language to French
+#         if sale_order.partner_id.lang.code == 'fr_CA':
+#             request.lang.code = 'fr_CA'
+#         else:
+#             request.lang = request.lang  # Keep the default website language
+
+#         # Call the default controller or return your own response
+#         return request.render("sale.sale_order_portal_content", {'sale_order': sale_order})
 
 class QuoteCustomerPortal(cPortal):
     def validate(string):
@@ -40,7 +56,7 @@ class QuoteCustomerPortal(cPortal):
 
         if str(order_sudo.state) == "sale":
             _logger.info("Locked Quote")
-            order_sudo._amount_all()
+            order_sudo._compute_tax_totals()
             results = self._get_portal_order_details(order_sudo)
 
             results["sale_inner_template"] = request.env["ir.ui.view"]._render_template(
@@ -75,7 +91,7 @@ class QuoteCustomerPortal(cPortal):
 
         if str(order_sudo.state) == "sale":
             _logger.info("Locked Quote")
-            order_sudo._amount_all()
+            order_sudo._compute_tax_totals()
             results = self._get_portal_order_details(order_sudo)
 
             results["sale_inner_template"] = request.env["ir.ui.view"]._render_template(
@@ -121,7 +137,7 @@ class QuoteCustomerPortal(cPortal):
             if order_sudo != select_sudo.order_id:
                 return request.redirect(order_sudo.get_portal_url())
 
-        order_sudo._amount_all()
+        order_sudo._compute_tax_totals()
         results = self._get_portal_order_details(order_sudo)
 
         results["sale_inner_template"] = request.env["ir.ui.view"]._render_template(
@@ -153,7 +169,7 @@ class QuoteCustomerPortal(cPortal):
 
         if str(order_sudo.state) == "sale":
             _logger.info("Locked Quote")
-            order_sudo._amount_all()
+            order_sudo._compute_tax_totals()
             results = self._get_portal_order_details(order_sudo)
 
             results["sale_inner_template"] = request.env["ir.ui.view"]._render_template(
@@ -208,7 +224,7 @@ class QuoteCustomerPortal(cPortal):
             if order_sudo != select_sudo.order_id:
                 return request.redirect(order_sudo.get_portal_url())
 
-        order_sudo._amount_all()
+        order_sudo._compute_tax_totals()
         results = self._get_portal_order_details(order_sudo)
 
         results["sale_inner_template"] = request.env["ir.ui.view"]._render_template(
@@ -285,7 +301,7 @@ class QuoteCustomerPortal(cPortal):
 
         if str(order_sudo.state) == "sale":
             _logger.info("Locked Quote")
-            order_sudo._amount_all()
+            order_sudo._compute_tax_totals()
             results = self._get_portal_order_details(order_sudo)
 
             results["sale_inner_template"] = request.env["ir.ui.view"]._render_template(
@@ -312,14 +328,13 @@ class QuoteCustomerPortal(cPortal):
         )
 
         # Update Line
-        if quantity <= 0:
-            raise UserError("Product Quantity Must Be 1 or Greater")
         select_sudo.product_uom_qty = quantity
-
+        if quantity <= 0:
+            raise UserError(_("Product Quantity Must Be At Least 1"))
 
         if order_sudo != select_sudo.order_id:
             return request.redirect(order_sudo.get_portal_url())
-        order_sudo._amount_all()
+        order_sudo._compute_tax_totals()
 
         results = self._get_portal_order_details(order_sudo)
 
@@ -332,20 +347,26 @@ class QuoteCustomerPortal(cPortal):
         )
 
         return results
-
-
-       
-# inheriting the controller of an existing model
-# class QuoteAddressSelection(SalesOrder):
-
-#     SaleOrder = request.env['sale.order']
     
-#     @http.route(["/create/weboperation"], type="http", methods=["GET", "POST"], auth="public", website=True, sitemap=False)
-#     def create_webop(self, qcontext):
-#         values['partner_invoice_id'] = qcontext.get('partner_invoice_id')
-#         #update record in model
-#         your_record_id = qcontext.get('form_input_recordid')
-#         sale_record = self.env['sale.order'].browse(your_record_id)
-#         sale_record.write(values)
-#             # create record in model
-#             # my_new_record = self.env['sale'].create(values)
+    class Website(WebsiteINH):
+        @http.route('/website/lang/<lang>', type='http', auth="public", website=True, multilang=False)
+        def change_lang(self, lang, r='/', **kwargs):
+            """ :param lang: supposed to be value of `url_code` field """
+            _logger.info('**********************************',kwargs)
+            if lang == 'default':
+                lang = request.website.default_lang_id.url_code
+                r = '/%s%s' % (lang, r or '/')
+            lang_code = request.env['res.lang']._lang_get_code(lang)
+            # replace context with correct lang, to avoid that the url_for of request.redirect remove the
+            # default lang in case we switch from /fr -> /en with /en as default lang.
+            _logger.info('>>>>>>>lang_code>>>>>>>',lang_code)
+            request.update_context(lang=lang_code)
+            redirect = request.redirect(r or ('/%s' % lang))
+            redirect.set_cookie(key='frontend_lang', value=str(lang_code), path='/')
+            
+            request.session['lang'] = lang_code
+            request.env['res.lang']._activate_lang(lang_code)
+            _logger.info('>>>>>>>lang_code after>>>>>>>:%s',lang_code)
+            #
+            _logger.info('>>>>>>>123456789>>>>>>>')
+            return redirect

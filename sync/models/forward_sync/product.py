@@ -23,28 +23,31 @@ class sync_products:
         self.database = database
 
     def syncProducts(self, sheet):
+        _logger.debug("PRODUCT.PY: Starting product synchronization.")
+        skipped_items = []  # List to store skipped rows and errors
+
         # Confirm GS Tab is in the correct Format
-       
         columns = dict()
         columnsMissing = False
         msg = ""
         i = 1
 
-        # Check if the header match the appropriate format
+        # Debugging: Validating header format
+        _logger.debug("PRODUCT.PY: Validating sheet header.")
         productHeaderDict = dict()
-        productHeaderDict["SKU"]              = "sku"
-        productHeaderDict["EN-Name"]          = "english_name"
-        productHeaderDict["FR-Name"]          = "french_name"
-        productHeaderDict["EN-Description"]   = "english_description"
-        productHeaderDict["FR-Description"]   = "french_description"
-        productHeaderDict["PriceCAD"]        = "priceCAD"
-        productHeaderDict["PriceUSD"]        = "priceUSD"
-        productHeaderDict["Product Type"]     = "type"
-        productHeaderDict["Tracking"]         = "tracking"
-        productHeaderDict["CanBeSold"]        = "can_be_sold"
-        productHeaderDict["Valid"]            = "valid"
-        productHeaderDict["Continue"]         = "continue"    
-        sheetWidth = len(productHeaderDict)                                            
+        productHeaderDict["SKU"] = "sku"
+        productHeaderDict["EN-Name"] = "english_name"
+        productHeaderDict["FR-Name"] = "french_name"
+        productHeaderDict["EN-Description"] = "english_description"
+        productHeaderDict["FR-Description"] = "french_description"
+        productHeaderDict["PriceCAD"] = "priceCAD"
+        productHeaderDict["PriceUSD"] = "priceUSD"
+        productHeaderDict["Product Type"] = "type"
+        productHeaderDict["Tracking"] = "tracking"
+        productHeaderDict["CanBeSold"] = "can_be_sold"
+        productHeaderDict["Valid"] = "valid"
+        productHeaderDict["Continue"] = "continue"
+        sheetWidth = len(productHeaderDict)
         columns, msg, columnsMissing = utilities.checkSheetHeader(productHeaderDict, self.sheet, self.name)
 
         if sheetWidth != len(sheet[i]) or columnsMissing:
@@ -59,71 +62,47 @@ class sync_products:
                 + msg
             )
             self.database.sendSyncReport(msg)
-            _logger.info(msg)
+            _logger.warning(f"PRODUCT.PY: Sheet header validation failed. {msg}")
             return True, msg
 
-        # loop through all the rows        
+        # Debugging: Starting row processing
+        _logger.debug("PRODUCT.PY: Starting row processing.")
         while True:
-            # check if should continue
+            # Check if the process should continue
             if str(sheet[i][columns["continue"]]).upper() != "TRUE":
+                _logger.debug(f"PRODUCT.PY: Stopping processing at row {i}.")
                 break
 
-            # validation checks
-            # Primary Key used in Google Sheet Database
+            # Validation checks
             key = str(sheet[i][columns["sku"]])
-            if not utilities.check_id(key):
-                msg = utilities.buildMSG(msg, self.name, key, "Key Error")
-                i += 1
-                continue
-
-            if not utilities.check_price(sheet[i][columns["priceCAD"]]):
-                msg = utilities.buildMSG(msg, self.name, key, "CAD Price Invalid")
-                i += 1
-                continue
-
-            if not utilities.check_price(sheet[i][columns["priceUSD"]]):
-                msg = utilities.buildMSG(msg, self.name, key, "USD Price Invalid")
-                i += 1
-                continue
-
-            # if it gets here data should be valid
-            
-            #
-            # This is the source of tuple index out of range issue
-            #
-            
             try:
-                # attempts to access existing item (item/row)
+                # Validation: Check SKU
+                if not utilities.check_id(key):
+                    raise ValueError(f"Invalid SKU {key} at row {i}.")
+
+                # Validation: Check CAD Price
+                if not utilities.check_price(sheet[i][columns["priceCAD"]]):
+                    raise ValueError(f"Invalid CAD price at row {i}.")
+
+                # Validation: Check USD Price
+                if not utilities.check_price(sheet[i][columns["priceUSD"]]):
+                    raise ValueError(f"Invalid USD price at row {i}.")
+
+                # Processing the row
                 external_id = str(sheet[i][columns["sku"]])
-                
-                _logger.info("Checkpoint #0")
-                
                 product_ids = self.database.env["ir.model.data"].search(
                     [("name", "=", external_id), ("model", "=", "product.template")]
                 )
-                
-                _logger.info("Checkpoint #1")
 
                 if len(product_ids) > 0:
                     product = self.database.env["product.template"].browse(
-                        product_ids[len(product_ids) - 1].res_id
+                        product_ids[-1].res_id
                     )
-                    
-                    _logger.info("Checkpoint #2")
-                    
-                    # error occurs after checkpoint 2, chekpoint 3 4 and 5 not triggered
-                    
+
                     if len(product) != 1:
-                        msg = utilities.buildMSG(
-                            msg,
-                            self.name,
-                            key,
-                            "Product ID Recognized But Product Count is Invalid",
+                        raise ValueError(
+                            f"Product ID recognized, but product count is invalid for SKU {key}."
                         )
-                        i = i + 1
-                        
-                        _logger.info("Checkpoint #3")
-                        continue
 
                     self.updateProducts(
                         product,
@@ -136,10 +115,8 @@ class sync_products:
                         sheet[i][columns["priceUSD"]],  # product_price_usd
                         "serial",  # product_tracking
                         "product",
-                        sheet[i][columns["can_be_sold"]]
+                        sheet[i][columns["can_be_sold"]],
                     )  # product_type
-                    
-                    _logger.info("Checkpoint #4")
                 else:
                     self.createAndUpdateProducts(
                         external_id,
@@ -152,56 +129,55 @@ class sync_products:
                         sheet[i][columns["priceUSD"]],  # product_price_usd
                         "serial",  # product_tracking
                         "product",
-                        sheet[i][columns["can_be_sold"]]
+                        sheet[i][columns["can_be_sold"]],
                     )  # product_type
-                    
-                    _logger.info("Checkpoint #5")
 
             except Exception as e:
-                _logger.info("Products Exception")
-                _logger.error(e)
-                _logger.exception("Traceback: ")
-                msg = utilities.buildMSG(msg, self.name, key, str(e))
-                return True, msg
+                # Log the error and skip the problematic row
+                error_message = f"PRODUCT.PY: Error occurred for SKU {key} at row {i}: {str(e)}"
+                _logger.error(error_message, exc_info=True)
+                skipped_items.append({
+                    "row": i,
+                    "sku": key,
+                    "error": str(e)
+                })
 
             i += 1
 
-        return False, msg
+        # Compile skipped items report
+        if skipped_items:
+            report = "\n".join(
+                [f"Row {item['row']}: SKU {item['sku']} - Error: {item['error']}" for item in skipped_items]
+            )
+            _logger.warning(f"PRODUCT.PY: Skipped items report:\n{report}")
+            self.database.sendSyncReport(f"<h1>Skipped Items Report</h1><pre>{report}</pre>")
 
-    # Method to create a product
-    # Input
-    #   external_id:    The external id, wich is the SKU key in the GoogleSheet Database.
-    #   product_name:   Name of the product
-    # Output
-    #   product:        The product generated by Odoo
+        _logger.info("PRODUCT.PY: Product synchronization completed successfully.")
+        return False, ""
+
 
     def createProducts(self, external_id, product_name):
-        # creates record
-        product = None
+        _logger.debug(f"PRODUCT.PY: Creating product with external ID {external_id}.")
+
+        # Set company_id explicitly
+        company_id = self.database.env.company.id
+
         ext = self.database.env["ir.model.data"].create(
             {"name": external_id, "model": "product.template"}
         )[0]
-        product = self.database.env["product.template"].create({"name": product_name})[0]
+
+        product = self.database.env["product.template"].create({
+            "name": product_name,
+            "company_id": company_id,  # Ensure the product belongs to the current company
+        })[0]
 
         product.tracking = "serial"
         product.type = "product"
         ext.res_id = product.id
 
-        _logger.info("Created Product" + str(product.name))
-
+        _logger.info(f"PRODUCT.PY: Created product {product.name} with company_id {company_id}.")
         return product
 
-    # Methode to update product information.
-    # Input
-    #   product:                    The product generated with product.template model
-    #   product_stringRep:          The GoogleSheet line that represent all the informations of the product
-    #   product_name:               Product Name
-    #   product_description_sale:   English dercription
-    #   product_price_cad:          Price in CAD
-    #   product_price_usd:          Price in USD
-    #   product_tracking:           Tracking
-    #   product_type:               Type
-    #   product.sale_ok             can_be_sold if the product can be sold or not
 
     def updateProducts(
         self,
@@ -215,13 +191,14 @@ class sync_products:
         product_price_usd,
         product_tracking,
         product_type,
-        can_be_sold
+        can_be_sold,
     ):
-        # check if any update to item is needed and skips if there is none
+        _logger.debug(f"PRODUCT.PY: Checking if update is needed for product {product.name}.")
         if product.stringRep == product_stringRep and SKIP_NO_CHANGE:
+            _logger.info(f"PRODUCT.PY: No changes detected for product {product.name}. Skipping update.")
             return
 
-        # reads values and puts them in appropriate fields
+        _logger.info(f"PRODUCT.PY: Updating product {product.name}.")
         product.name = product_name_english
 
         product_sync_common.translatePricelist(
@@ -240,46 +217,24 @@ class sync_products:
         )
 
         product.description_sale = product_description_sale_english
-        _logger.warning("Tracking")
-        # product.tracking = product_tracking
+        _logger.debug("PRODUCT.PY: Updating tracking, price, and sale settings.")
         product.type = product_type
         product.stringRep = product_stringRep
-        # pricelist need to be done before modifiyng the product.price
-        # since it will be erased be the addProductToPricelist.  Apparently,
-        # Odoo set to price to 0 if we set the product in a pricelist.
+
         product_sync_common.addProductToPricelist(
             self.database, product, "🇨🇦", product_price_cad
         )
         product_sync_common.addProductToPricelist(
             self.database, product, "🇺🇸", product_price_usd
         )
-        product.price = product_price_cad
+        product.list_price = product_price_cad
         product.cadVal = product_price_cad
         product.usdVal = product_price_usd
-        # product.list_price = product_price_cad
-
-        product.sale_ok = can_be_sold
 
         if str(can_be_sold).upper() == "TRUE":
             product.sale_ok = True
         else:
-            product.sale_ok = False                              
-
-
-
-    # Method to create and update a product
-    # Input
-    #   external_id:                The SKU in GoogleSheet
-    #   product_stringRep:          The GoogleSheet line that represent all the informations of the product
-    #   product_name:               Product Name
-    #   product_description_sale:   English dercription
-    #   product_price_cad:          Price in CAD
-    #   product_price_usd:          Price in USD
-    #   product_tracking:           Tracking
-    #   product_type:               Type
-    #   product.sale_ok             can_be_sold if the product can be sold or not    
-    # Output
-    #   product:                    The product created
+            product.sale_ok = False
 
     def createAndUpdateProducts(
         self,
@@ -293,9 +248,9 @@ class sync_products:
         product_price_usd,
         product_tracking,
         product_type,
-        can_be_sold
+        can_be_sold,
     ):
-        # creates record and updates it
+        _logger.debug(f"PRODUCT.PY: Creating and updating product with external ID {external_id}.")
         product = self.createProducts(external_id, product_name_english)
         self.updateProducts(
             product,
@@ -308,7 +263,7 @@ class sync_products:
             product_price_usd,
             product_tracking,
             product_type,
-            can_be_sold
+            can_be_sold,
         )
 
         product_created = self.database.env["product.template"].search(

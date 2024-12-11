@@ -30,80 +30,115 @@ class mail(models.TransientModel):
             result[key]["reply_to_force_new"] = True
         return result
 
-class MailMessage(models.Model):
-    _inherit = 'mail.message'
-    
-    @api.model
-    def get_base_url(self):
-        return self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-    
-    @api.model
-    def get_tracking_url(self, name, target_url):
-        
-        # target_url = "https://erp.gyeongcc.com" + record.get_portal_url()
-        link_tracker = self.env['link.tracker'].sudo().search([('url', '=', target_url)], limit=1)
-        if not link_tracker:
-            try:
-                link_tracker = self.env['link.tracker'].sudo().create({
-                    'title': name,
-                    'url': target_url,
-                })
-                
-                _logger.info("link tracker created successfully")
-                return link_tracker.short_url
-            except:
-                _logger.info("exception occured.")
-                return target_url
-        else:
-            return link_tracker.short_url
+# class MailMessage(models.Model):
+#     _inherit = 'mail.message'
 
-    @api.model_create_multi
-    def create(self, values_list):
-        messages = super(MailMessage, self).create(values_list)
-        for message in messages:
-            if message.model=='sale.order' and message.res_id and message.body:
-                order = self.env['sale.order'].sudo().browse(int(message.res_id))
-                if order:
-                    body = message.body
-                    
-                    # bottom_footer = _("\r\n \r\n Quotation: %s") % (str(self.get_base_url()) + "/my/orders/" + str(order.sudo().id) + "?access_token=" + str(order.sudo().access_token))
-                    
-                    url = str(self.get_base_url()) + "/my/orders/" + str(order.sudo().id) + "?access_token=" + str(order.sudo().access_token)
-                    
-                    bottom_footer = _("\r\n \r\n Quotation: %s") % (self.get_tracking_url("Quotation: " + str(order.sudo().name), url))
-                    
-                    # link = (str(self.get_base_url()) + "/my/orders/" + str(order.sudo().id) + "?access_token=" + str(order.sudo().access_token))
-                    
-                    # html_data = """<a style='color:red;' href='""" + link + """'>View Quote</a> """
-                    
-                    # bottom_footer = _("\n Quotation: " + html_data)
-                    
-                    body = body + bottom_footer
-                    message.body = body
-            elif message.model=='slide.channel' and message.res_id and message.body:
-                body = message.body
-                course = self.env['slide.channel'].sudo().browse(int(message.res_id))
-                if course:
-                    
-                    url = course.sudo().website_url
-                    
-                    footer = _("\r\n \r\n Course: %s") % (self.get_tracking_url("Course: " + str(course.sudo().display_name), url))
-                    
-                    body = body + footer
-                    message.body = body
-            
-            # if message is for ticket, add link to bottom but also add signature that is the same html every time but swap out email address to be address of employee sending email.        
-            
-            elif message.model=='project.task' and message.res_id and message.body:
-                body = message.body
-                task = self.env['project.task'].sudo().browse(int(message.res_id))
-                if task:
-                    
-                    url = str(self.get_base_url() + task.sudo().access_url)
-                    
-                    footer = str("\r\n \r\n Task: " + str(self.get_tracking_url("Task: " + str(task.sudo().display_name), url)))
-                    
-                    body = body + footer
-                    message.body = body
-                    
-        return messages
+    # @api.model_create_multi
+    # def create(self, values_list):
+    #     messages = super(MailMessage, self).create(values_list)
+    #     for message in messages:
+    #         if message.model=='sale.order' and message.res_id and message.body:
+    #             order = self.env['sale.order'].sudo().browse(int(message.res_id))
+    #             if order:
+    #                 # Collect the recipients (partners)
+    #                 # recipients = [(4, partner.id) for partner in message.partner_ids]
+    #
+    #                 # # Add email contacts from the order
+    #                 # for contact in order.email_contacts:
+    #                 #     recipients.append((4, contact.id))
+    #
+    #                 # # Add a static recipient
+    #                 # sales_email = self.env['res.partner'].sudo().search([('email', '=', 'sales@r-e-a-l.it')], limit=1)
+    #                 # if sales_email:
+    #                 #     recipients.append((4, sales_email.id))
+    #
+    #                 # # Update the partner_ids with new recipients
+    #                 # message.partner_ids = recipients
+    #
+    #                 base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+    #
+    #                 # Append quotation info to the message body
+    #                 body = message.body
+    #                 lang = order.partner_id.lang
+    #
+    #                 # add back link tracker generated link
+    #
+    #
+    #                 # if lang:
+    #                 #     bottom_footer = _("\r\n \r\n Quotation: %s") % (str(base_url) + "/" + str(lang) + "/my/orders/" + str(order.id) + "?access_token=" + str(order.access_token))
+    #                 #     body = body + bottom_footer # + str(message.partner_ids)
+    #                 message.body = body
+    #                 # message.notify = True
+    #     return messages
+
+class MailThread(models.AbstractModel):
+    _inherit = 'mail.thread'
+
+    def _notify_get_recipients_groups(self, message, model_description, msg_vals=None):
+        groups = [
+            [
+                'user',
+                lambda pdata: pdata['type'] == 'user',
+                {
+                    'active': True,
+                    'has_button_access': self._is_thread_message(msg_vals=msg_vals),
+                }
+            ], [
+                'portal',
+                lambda pdata: pdata['type'] == 'portal',
+                {
+                    'active': False,  # activate only on demand if rights are enabled
+                    'has_button_access': False,
+                }
+            ], [
+                'follower',
+                lambda pdata: pdata['is_follower'],
+                {
+                    'active': False,  # activate only on demand if rights are enabled
+                    'has_button_access': False,
+                }
+            ], [
+                'customer',
+                lambda pdata: True,
+                {
+                    'active': True,
+                    'has_button_access': False,
+                }
+            ]
+        ]
+        if not self:
+            return groups
+
+        portal_enabled = isinstance(self, self.env.registry['portal.mixin'])
+        if not portal_enabled:
+            return groups
+
+        customer = self._mail_get_partners(introspect_fields=False)[self.id]
+        if customer:
+            access_token = self._portal_ensure_token()
+            local_msg_vals = dict(msg_vals or {})
+            local_msg_vals['access_token'] = access_token
+            local_msg_vals['pid'] = customer[0].id
+            local_msg_vals['hash'] = self._sign_token(customer[0].id)
+            local_msg_vals.update(customer[0].signup_get_auth_param()[customer[0].id])
+            access_link = self._notify_get_action_link('view', **local_msg_vals)
+
+            new_group = [
+                ('portal_customer', lambda pdata: pdata['id'] == customer[0].id, {
+                    'active': True,
+                    'button_access': {
+                        'url': access_link,
+                    },
+                    'has_button_access': True,
+                })
+            ]
+        else:
+            new_group = []
+
+        # enable portal users that should have access through portal (if not access rights
+        # will do their duty)
+        portal_group = next(group for group in groups if group[0] == 'portal')
+        portal_group[2]['active'] = True
+        portal_group[2]['has_button_access'] = True
+
+        return new_group + groups

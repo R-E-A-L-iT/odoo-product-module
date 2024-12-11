@@ -27,10 +27,14 @@ class sync_pricelist:
     def syncPricelist(self):
         # Confirm GS Tab is in the correct Format
         sheetWidth = 34
+        # pricelistHeaderDict["ProductCategory"] = "productCategory"
         columns = dict()
         columnsMissing = False
         msg = ""
         i = 1
+        
+        # Debugging: Starting the header check process
+        _logger.debug("PRICELIST.PY: Initializing header dictionary for pricelist sync.")
 
         # Check if the header match the appropriate format
         pricelistHeaderDict = dict()
@@ -41,7 +45,7 @@ class sync_pricelist:
         pricelistHeaderDict["FR-Description"]   = "fDisc"            # Optionnal 
         pricelistHeaderDict["isSoftware"]       = "isSoftware"  
         pricelistHeaderDict["Type"]             = "type"        
-        pricelistHeaderDict["ProductCategory"]  = "productCategory"        
+        pricelistHeaderDict["ProductCategory"]  = "productCategory"
         pricelistHeaderDict["PriceCAD"]         = "cadSale"     
         pricelistHeaderDict["PriceUSD"]         = "usdSale"     
         pricelistHeaderDict["Can Rental"]       = "cadRental"   
@@ -60,7 +64,8 @@ class sync_pricelist:
         pricelistHeaderDict["ECOM-FOLDER"]      = "folder"          # E-Commerce
         pricelistHeaderDict["ECOM-MEDIA"]       = "media"           # E-Commerce
         pricelistHeaderDict["Continue"]         = "continue"
-        pricelistHeaderDict["Valid"]            = "valid"       
+        pricelistHeaderDict["Valid"]            = "valid"     
+        _logger.debug("PRICELIST.PY: Checking sheet header against defined dictionary.")  
         columns, msg, columnsMissing = utilities.checkSheetHeader(pricelistHeaderDict, self.sheet, self.name)  
 
         if len(self.sheet[i]) != sheetWidth or columnsMissing:
@@ -75,30 +80,35 @@ class sync_pricelist:
                 + msg
             )
             self.database.sendSyncReport(msg)
-            _logger.info(msg)
+            _logger.warning("PRICELIST.PY: Pricelist sheet validation failed. Report sent.")
             return True, msg
 
         # loop through all the rows
+        _logger.debug("PRICELIST.PY: Starting row processing.")
         while True:
             # check if should continue
             if (
                 i == len(self.sheet)
                 or str(self.sheet[i][columns["continue"]]) != "TRUE"
             ):
+                _logger.debug(f"PRICELIST.PY: Stopping row processing at index {i}.")
                 break
 
             # validation checks
             if str(self.sheet[i][columns["valid"]]) != "TRUE":
                 i = i + 1
+                _logger.debug(f"PRICELIST.PY: Row {i} marked invalid. Skipping.")
                 continue
 
             key = self.sheet[i][columns["sku"]]
             if not utilities.check_id(str(key)):
+                _logger.warning(f"PRICELIST.PY: Invalid SKU at row {i}: {key}")
                 msg = utilities.buildMSG(msg, self.name, key, "Key Error")
                 i = i + 1
                 continue
 
             if not utilities.check_id(str(self.sheet[i][columns["canPLID"]])):
+                _logger.warning(f"PRICELIST.PY: Invalid Canada Pricelist ID at row {i}.")
                 msg = utilities.buildMSG(
                     msg, self.name, key, "Canada Pricelist ID Invalid"
                 )
@@ -106,25 +116,30 @@ class sync_pricelist:
                 continue
 
             if not utilities.check_id(str(self.sheet[i][columns["usPLID"]])):
+                _logger.warning(f"PRICELIST.PY: Invalid US Pricelist ID at row {i}.")
                 msg = utilities.buildMSG(msg, self.name, key, "US Pricelist ID Invalid")
                 i = i + 1
                 continue
 
             if not utilities.check_price(self.sheet[i][columns["cadSale"]]):
+                _logger.warning(f"PRICELIST.PY: Invalid Canada price at row {i}.")
                 msg = utilities.buildMSG(msg, self.name, key, "Canada Price Invalid")
                 i = i + 1
                 continue
 
             if not utilities.check_price(self.sheet[i][columns["usdSale"]]):
+                _logger.warning(f"PRICELIST.PY: Invalid US price at row {i}.")
                 msg = utilities.buildMSG(msg, self.name, key, "US Price Invalid")
                 i = i + 1
                 continue
 
             # if it gets here data should be valid
             try:
-                # Creates or fetch corrisponding record
+                # Debugging: Creating or fetching product record
+                _logger.debug(f"PRICELIST.PY: Processing SKU {key} at row {i}.")
                 product, new = self.pricelistProduct(sheetWidth, i, columns)
                 if product.stringRep == str(self.sheet[i][:]) and SKIP_NO_CHANGE:
+                    _logger.debug(f"PRICELIST.PY: No changes for product {key} at row {i}. Skipping.")
                     i = i + 1
                     continue
                 # Add Prices to the 4 pricelists
@@ -134,16 +149,17 @@ class sync_pricelist:
                 self.pricelist(product, "usdRental", "USD RENTAL", i, columns)
 
                 if new:
+                    # _loggerPRICELIST.PY: Setting stringRep for new product {key}.")
                     product.stringRep = ""
                 else:
                     product.stringRep = str(self.sheet[i][:])
             except Exception as e:
-                _logger.error(e)
-                _logger.exception("Traceback:")
+                _logger.error(f"PRICELIST.PY: Exception at row {i} for SKU {key}: {str(e)}", exc_info=True)
                 msg = utilities.buildMSG(msg, self.name, key, str(e))
                 return True, msg                   
 
             i = i + 1           
+        _logger.info("PRICELIST.PY: Row processing completed successfully.")
         return False, msg
 
     def pricelistProduct(self, sheetWidth, i, columns):
@@ -163,7 +179,7 @@ class sync_pricelist:
             )
         else:
             product = self.createPricelistProducts(
-                external_id, 
+                external_id,
                 self.sheet[i][columns["eName"]]
             )
             product = self.updatePricelistProducts(product, i, columns)
@@ -201,7 +217,7 @@ class sync_pricelist:
             str(self.sheet[i][columns["cadSale"]]) != " "
             and str(self.sheet[i][columns["cadSale"]]) != ""
         ):
-            product.price = self.sheet[i][columns["cadSale"]]
+            product.list_price = self.sheet[i][columns["cadSale"]]
             product.cadVal = self.sheet[i][columns["cadSale"]]
 
         if (
@@ -228,17 +244,15 @@ class sync_pricelist:
         if str(self.sheet[i][columns["canBeSold"]]) == "TRUE":
             product.sale_ok = True
         else:
-            product.sale_ok = False  
-
+            product.sale_ok = False
+            
         if str(self.sheet[i][columns["canBeRented"]]) == "TRUE":
             product.rent_ok = True
         else:
-            product.rent_ok = False              
-            
-        #Product Category
+            product.rent_ok = False
+        # Product Category
         catId = self.getProductCategoryId(str(self.sheet[i][columns["productCategory"]]))
         product.categ_id = catId
-       
 
         product.active = True
 
@@ -270,22 +284,22 @@ class sync_pricelist:
             product.type_selection = False
         return product
 
-    ####################
-
     def getProductCategoryId(self, category):
         categoryID = self.database.env["product.category"].search([("name", "=", category)])
-
         if (len(categoryID) == 1):
-             return categoryID.id
+            return categoryID.id
         else:
-            return self.database.env["product.category"].search([("name", "=", "All")]).id   
-
+            return self.database.env["product.category"].search([("name", "=", "All")]).id
+        
     # creates record and updates it
     def createPricelistProducts(self, external_id, product_name):
         ext = self.database.env["ir.model.data"].create(
             {"name": external_id, "model": "product.template"}
         )[0]
-        product = self.database.env["product.template"].create({"name": product_name})[0]
+        
+        company_id = self.env.company.id
+        
+        product = self.database.env["product.template"].create({"name": product_name, "company_id": company_id,})[0]
         ext.res_id = product.id
 
         product.tracking = "serial"
