@@ -289,7 +289,8 @@ class sync_pricelist:
                             price = float(sheet_value) if sheet_value else 0.0
 
                             # default product price is set to cad
-                            product.list_price = price if pricelist_name = "🇨🇦" else 0.0
+                            if pricelist_name = "🇨🇦":
+                                product.list_price = price
 
                             # search for the pricelist
                             pricelist = self.database.env["product.pricelist"].search([("name", "=", pricelist_name)], limit=1)
