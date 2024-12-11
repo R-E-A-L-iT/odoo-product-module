@@ -395,17 +395,19 @@ class sync_pricelist:
                                 })
 
 
-                        # Update Store Image field
+                        # update store image field
+                        # only give a warning when failed because most products do not have images
                         if column_name == "Store Image":
                             image_url = sheet_value.strip()
                             if image_url:
                                 try:
-                                    # Fetch the image from the URL
+
+                                    # fetch the image from the URL
                                     response = requests.get(image_url, timeout=10)
                                     if response.status_code == 200:
                                         image_data = base64.b64encode(response.content)
 
-                                        # Compare existing image data with the new one
+                                        # compare existing image data with the new one
                                         existing_image = product.image_1920 or b""
                                         if existing_image != image_data:
                                             _logger.info(
