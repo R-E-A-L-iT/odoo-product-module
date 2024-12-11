@@ -289,7 +289,7 @@ class sync_pricelist:
                             price = float(sheet_value) if sheet_value else 0.0
 
                             # default product price is set to cad
-                            if pricelist_name = "🇨🇦":
+                            if pricelist_name == "🇨🇦":
                                 product.list_price = price
 
                             # search for the pricelist
