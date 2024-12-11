@@ -139,6 +139,8 @@ class sync_pricelist:
         
         _logger.info("syncPricelist: Sheet validated. Proceeding with Pricelist synchronization.")
 
+        return False, "syncCCP: CCP synchronization completed successfully."
+
 
 
 
