@@ -188,7 +188,7 @@ class sync_ccp:
         if self.sync_report:
             utilities.send_report(self.sync_report, "CCP", self.database)
         
-        return False, "syncCCP: CCP synchronization completed successfully."
+        return True, "syncCCP: CCP synchronization completed successfully."
     
     
     

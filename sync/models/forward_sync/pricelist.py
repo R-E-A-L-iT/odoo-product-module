@@ -139,7 +139,72 @@ class sync_pricelist:
         
         _logger.info("syncPricelist: Sheet validated. Proceeding with Pricelist synchronization.")
 
-        return False, "syncCCP: CCP synchronization completed successfully."
+        # start processing rows beginning at second row
+        for row_index, row in enumerate(self.sheet[1:], start=2):
+            try:
+                
+                # only proceed if the value for continue is marked as true
+                continue_column = sheet_columns.index("Continue")
+                should_continue = str(row[continue_column]).strip().lower() == "true"
+                
+                if not should_continue:
+                    _logger.info("syncPricelist: Row %d: Continue is set to false. Stopping the sync here.", row_index)
+                    break
+                
+                
+                # only proceed if the row is marked as valid
+                valid_column = sheet_columns.index("Valid")
+                valid = str(row[valid_column]).strip().lower() == "true"
+                
+                if not valid:
+                    warning_msg = f"Row {row_index}: Marked as invalid. Skipping."
+                    _logger.info(f"syncPricelist: {warning_msg}")
+                    # not sending this to report because intended feature
+                    # sync_report.append(f"WARNING: {warning_msg}")
+                    continue
+    
+                
+                # get eid/sn and check if it exists in odoo
+                sku_column = sheet_columns.index("SKU")
+                sku = str(row[sku_column]).strip()
+                
+                if not sku:
+                    warning_msg = f"Row {row_index}: Missing SKU. Skipping."
+                    _logger.warning(f"syncPricelist: {warning_msg}")
+                    self.add_to_report("WARNING", f"{warning_msg}")
+                    continue
+                
+                existing_product = self.database.env["stock.lot"].search([("name", "=", eidsn)], limit=1)
+                
+                if existing_ccp:
+                    _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, eidsn)
+                    self.updateProduct(existing_product.id, row, sheet_columns, row_index)
+                else:
+                    _logger.info("syncPricelist: Row %d: SKU '%s' not found in Odoo. Calling createProduct.", row_index, eidsn)
+                    self.createProduct(sku, row, sheet_columns, row_index)
+            
+            except Exception as e:
+                error_msg = f"Row {row_index}: Error occurred while processing: {str(e)}"
+                _logger.error(f"syncPricelist: {error_msg}", exc_info=True)
+                self.add_to_report("ERROR", f"{error_msg}")
+                
+        if self.sync_report:
+            utilities.send_report(self.sync_report, "Pricelist", self.database)
+
+        return True, "syncPricelist: Pricelist synchronization completed successfully."
+
+    # this function is called to update a product that already exists
+    # it will attempt to update the product cell by cell, and skip updating any info that generates errors
+    # fields that are not updated will be added to a report at the end
+    def updateProduct(self, product_id, row, sheet_columns, row_index):
+        _logger.info("updateProduct: Searching for any changes for product: %s.", product_id)
+
+    # this function is called to create a new product if the sku is not recognized
+    # it will attempt to create the product cell by cell, and skip creating any info that generates errors
+    # fields that are not updated will be added to a report at the end
+    def createProduct(self, product_id, row, sheet_columns, row_index):
+        _logger.info("createProduct: Creating new product with SKU: %s.", product_id)
+
 
 
 
