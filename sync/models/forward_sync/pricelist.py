@@ -234,32 +234,32 @@ class sync_pricelist:
                             # this is necessary for comparison because odoo adds SKU to beginning of product name
                             lang = "en_US" if column_name == "EN-Name" else "fr_CA"
                             odoo_name = product.with_context(lang=lang).name
-                            normalized_odoo_name = (
-                                odoo_name.split(" - ", 1)[-1] if " - " in odoo_name else odoo_name
-                            )
 
                             # compare normalized names and update if necessary
-                            if normalized_odoo_name != name:
+                            if odoo_name != name:
                                 _logger.info(
                                     "updateProduct: Field 'name' (%s) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
-                                    "English" if lang == "en_US" else "French", product_id, normalized_odoo_name, name
+                                    "English" if lang == "en_US" else "French", product_id, odoo_name, name
                                 )
-                                product.with_context(lang=lang).write({"name": name})
+                                # product.with_context(lang=lang).write({"name": name})
+                                product_sync_common.translatePricelist(
+                                    self.database,
+                                    product,
+                                    name=name,
+                                    lang=lang,
+                                )
 
                             # double check translation worked
                             updated_name = product.with_context(lang=lang).name
-                            normalized_updated_name = (
-                                updated_name.split(" - ", 1)[-1] if " - " in updated_name else updated_name
-                            )
-                            if normalized_updated_name != name:
+                            if updated_name != name:
                                 _logger.error(
                                     "updateProduct: Post-update mismatch for 'name' (%s) on Product ID %s. Expected: '%s', Actual: '%s'.",
-                                    "English" if lang == "en_US" else "French", product_id, name, normalized_updated_name
+                                    "English" if lang == "en_US" else "French", product_id, name, updated_name
                                 )
                                 self.add_to_report(
                                     "ERROR",
                                     f"Post-update mismatch for 'name' ({'English' if lang == 'en_US' else 'French'}) "
-                                    f"on Product ID {product_id}. Expected: '{name}', Actual: '{normalized_updated_name}'."
+                                    f"on Product ID {product_id}. Expected: '{name}', Actual: '{updated_name}'."
                                 )
 
                         elif column_name in ["EN-Description", "FR-Description"]:
@@ -273,7 +273,13 @@ class sync_pricelist:
                                     "updateProduct: Field 'description_sale' (%s) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
                                     "English" if lang == "en_US" else "French", product_id, current_description, description
                                 )
-                                product.with_context(lang=lang).write({"description_sale": description})
+                                # product.with_context(lang=lang).write({"description_sale": description})
+                                product_sync_common.translatePricelist(
+                                    self.database,
+                                    product,
+                                    description=description,
+                                    lang=lang,
+                                )
 
                             # double check translation worked
                             updated_description = product.with_context(lang=lang).description_sale or ""
