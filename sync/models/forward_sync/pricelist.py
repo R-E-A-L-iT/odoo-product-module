@@ -241,13 +241,7 @@ class sync_pricelist:
                                     "updateProduct: Field 'name' (%s) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
                                     "English" if lang == "en_US" else "French", product_id, odoo_name, name
                                 )
-                                # product.with_context(lang=lang).write({"name": name})
-                                product_sync_common.translatePricelist(
-                                    self.database,
-                                    product,
-                                    name=name,
-                                    lang=lang,
-                                )
+                                product.with_context(lang=lang).write({"name": name})
 
                             # double check translation worked
                             updated_name = product.with_context(lang=lang).name
@@ -273,13 +267,7 @@ class sync_pricelist:
                                     "updateProduct: Field 'description_sale' (%s) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
                                     "English" if lang == "en_US" else "French", product_id, current_description, description
                                 )
-                                # product.with_context(lang=lang).write({"description_sale": description})
-                                product_sync_common.translatePricelist(
-                                    self.database,
-                                    product,
-                                    description=description,
-                                    lang=lang,
-                                )
+                                product.with_context(lang=lang).write({"description_sale": description})
 
                             # double check translation worked
                             updated_description = product.with_context(lang=lang).description_sale or ""
