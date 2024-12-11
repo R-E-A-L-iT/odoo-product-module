@@ -200,7 +200,7 @@ class sync_pricelist:
         _logger.info("updateProduct: Searching for any changes for product: %s.", product_id)
 
         try:
-            product = self.database.env["stock.lot"].browse(product_id)
+            product = self.database.env["product.template"].browse(product_id)
             
             # map the google sheets cells to odoo fields
             field_mapping = {
