@@ -238,7 +238,7 @@ class sync_pricelist:
                                 odoo_name.split(" - ", 1)[-1] if " - " in odoo_name else odoo_name
                             )
 
-                            # Compare normalized names and update if necessary
+                            # compare normalized names and update if necessary
                             if normalized_odoo_name != name:
                                 _logger.info(
                                     "updateProduct: Field 'name' (%s) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
@@ -246,9 +246,25 @@ class sync_pricelist:
                                 )
                                 product.with_context(lang=lang).write({"name": name})
 
+                            # double check translation worked
+                            updated_name = product.with_context(lang=lang).name
+                            normalized_updated_name = (
+                                updated_name.split(" - ", 1)[-1] if " - " in updated_name else updated_name
+                            )
+                            if normalized_updated_name != name:
+                                _logger.error(
+                                    "updateProduct: Post-update mismatch for 'name' (%s) on Product ID %s. Expected: '%s', Actual: '%s'.",
+                                    "English" if lang == "en_US" else "French", product_id, name, normalized_updated_name
+                                )
+                                self.add_to_report(
+                                    "ERROR",
+                                    f"Post-update mismatch for 'name' ({'English' if lang == 'en_US' else 'French'}) "
+                                    f"on Product ID {product_id}. Expected: '{name}', Actual: '{normalized_updated_name}'."
+                                )
+
                         elif column_name in ["EN-Description", "FR-Description"]:
                             
-                            # Extract description and update
+                            # extract description and update
                             lang = "en_US" if column_name == "EN-Description" else "fr_CA"
                             description = sheet_value
                             current_description = product.with_context(lang=lang).description_sale or ""
@@ -258,6 +274,19 @@ class sync_pricelist:
                                     "English" if lang == "en_US" else "French", product_id, current_description, description
                                 )
                                 product.with_context(lang=lang).write({"description_sale": description})
+
+                            # double check translation worked
+                            updated_description = product.with_context(lang=lang).description_sale or ""
+                            if updated_description != description:
+                                _logger.error(
+                                    "updateProduct: Post-update mismatch for 'description_sale' (%s) on Product ID %s. Expected: '%s', Actual: '%s'.",
+                                    "English" if lang == "en_US" else "French", product_id, description, updated_description
+                                )
+                                self.add_to_report(
+                                    "ERROR",
+                                    f"Post-update mismatch for 'description_sale' ({'English' if lang == 'en_US' else 'French'}) "
+                                    f"on Product ID {product_id}. Expected: '{description}', Actual: '{updated_description}'."
+                                )
 
                 except Exception as e:
                     _logger.error(
