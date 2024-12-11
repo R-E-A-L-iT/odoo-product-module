@@ -74,7 +74,7 @@ class sync_pricelist:
             return str(value)
 
 
-    
+
     # this function will be called to start the synchronization process for ccp.
     # it delegates the function of actually updating or creating the ccp item to the other two functions
     def syncPricelist(self):
@@ -198,6 +198,102 @@ class sync_pricelist:
     # fields that are not updated will be added to a report at the end
     def updateProduct(self, product_id, row, sheet_columns, row_index):
         _logger.info("updateProduct: Searching for any changes for product: %s.", product_id)
+
+        try:
+            ccp = self.database.env["stock.lot"].browse(ccp_id)
+            
+            # map the google sheets cells to odoo fields
+            field_mapping = {
+                "SKU": "sku",
+                "EN-Name": "name",
+                "FR-Name": "name",
+                "EN-Description": "description_sale",
+                "FR-Description": "description_sale",
+                "Store Image": "image_1920",
+                "PriceCAD": "list_price",
+                "PriceUSD": "list_price",
+                "CAN Rental": "",
+                "US Rental": "",
+            }
+
+            for column_name, odoo_field in field_mapping.items():
+                try:
+                    if column_name in sheet_columns:
+                        
+                        # get new sheets value
+                        column_index = sheet_columns.index(column_name)
+                        sheet_value = str(row[column_index]).strip()
+                        sheet_value_normalized = self.normalize_bools(odoo_field, sheet_value)
+
+                        # handle special cases for specific fields
+                        if column_name == "EN-Name":
+
+                            name_column_index = sheet_columns.index("EN-Name")
+                            name = str(row[name_column_index]).strip()
+                            
+                            # find product by sku in odoo
+                            product_sku_column = sheet_columns.index("SKU")
+                            product_sku = str(row[product_sku_column]).strip()
+                            product = self.database.env["product.template"].search(
+                                [("sku", "=", product_sku)], limit=1
+                            )
+
+                            # stop if not found
+                            if not product:
+                                _logger.warning(
+                                    "updateCCP: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
+                                    row.index(row) + 1, product_code
+                                )
+                                continue
+
+                            # update if found
+                            if product.with_context(lang="en_US").name != name:
+                                _logger.info(
+                                    "updateProduct: Field 'name' (English) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
+                                    product_id, product_id.name if product_id else None, name
+                                )
+                                product.with_context(lang="en_US").write({"name": name})
+
+                        elif column_name == "FR-Name":
+
+                            name_column_index = sheet_columns.index("FR-Name")
+                            name = str(row[name_column_index]).strip()
+                            
+                            # find product by sku in odoo
+                            product_sku_column = sheet_columns.index("SKU")
+                            product_sku = str(row[product_sku_column]).strip()
+                            product = self.database.env["product.template"].search(
+                                [("sku", "=", product_sku)], limit=1
+                            )
+
+                            # stop if not found
+                            if not product:
+                                _logger.warning(
+                                    "updateCCP: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
+                                    row.index(row) + 1, product_code
+                                )
+                                continue
+
+                            # update if found
+                            if product.with_context(lang="fr_CA").name != name:
+                                _logger.info(
+                                    "updateProduct: Field 'name' (French) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
+                                    product_id, product_id.name if product_id else None, name
+                                )
+                                product.with_context(lang="fr_CA").write({"name": name})
+
+                except Exception as e:
+                    _logger.error(
+                        "updateCCP: Error while updating field '%s' for CCP ID %s: %s",
+                        odoo_field, ccp_id, str(e), exc_info=True
+                    )
+                    self.add_to_report("ERROR", f"updateCCP: Error while updating field {odoo_field} for CCP ID {ccp_id}: {str(e)}")
+            pass
+
+        except Exception as e:
+            error_msg = f"Row {row_index}: Error updating Product with SKU {product_id}: {str(e)}"
+            _logger.error(f"updateProduct: {error_msg}", exc_info=True)
+            self.add_to_report("ERROR", f"{error_msg}")
 
     # this function is called to create a new product if the sku is not recognized
     # it will attempt to create the product cell by cell, and skip creating any info that generates errors
