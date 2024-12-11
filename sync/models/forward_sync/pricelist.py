@@ -225,7 +225,7 @@ class sync_pricelist:
                         sheet_value = str(row[column_index]).strip()
                         sheet_value_normalized = self.normalize_bools(odoo_field, sheet_value)
 
-                        # handle special cases for specific fields
+                        # update name fields for both languages
                         if column_name in ["EN-Name", "FR-Name"]:
                             
                             name = sheet_value
@@ -256,6 +256,7 @@ class sync_pricelist:
                                     f"on Product ID {product_id}. Expected: '{name}', Actual: '{updated_name}'."
                                 )
 
+                        # update description fields for both languages
                         elif column_name in ["EN-Description", "FR-Description"]:
                             
                             # extract description and update
@@ -282,9 +283,13 @@ class sync_pricelist:
                                     f"on Product ID {product_id}. Expected: '{description}', Actual: '{updated_description}'."
                                 )
 
+                        # update price fields for both pricelists
                         elif column_name in ["PriceCAD", "PriceUSD"]:
                             pricelist_name = "🇨🇦" if column_name == "PriceCAD" else "🇺🇸"
                             price = float(sheet_value) if sheet_value else 0.0
+
+                            # default product price is set to cad
+                            product.list_price = price if pricelist_name = "🇨🇦"
 
                             # search for the pricelist
                             pricelist = self.database.env["product.pricelist"].search([("name", "=", pricelist_name)], limit=1)
@@ -321,7 +326,7 @@ class sync_pricelist:
                                     )
                             else:
 
-                                # add price if not already existent
+                                # add price if not already existing
                                 _logger.info(
                                     "updateProduct: Creating new price rule for Product ID %s on Pricelist '%s'. Value: '%s'.",
                                     product_id, pricelist_name, price
@@ -332,6 +337,59 @@ class sync_pricelist:
                                     "fixed_price": price,
                                     "applied_on": "0_product_variant",
                                 })
+
+                        # update rental prices for both pricelists
+                        if column_name in ["CAN Rental", "US Rental"]:
+                            pricelist_name = "CAD RENTAL" if column_name == "CAN Rental" else "USD RENTAL"
+                            rental_price = float(sheet_value) if sheet_value else 0.0
+
+                            # search for the pricelist
+                            rental_pricelist = self.database.env["product.pricelist"].search([("name", "=", pricelist_name)], limit=1)
+                            if not rental_pricelist:
+                                _logger.error(
+                                    "updateProduct: Rental pricelist '%s' not found for Product ID %s. Skipping rental price update.",
+                                    pricelist_name, product_id
+                                )
+                                self.add_to_report(
+                                    "ERROR",
+                                    f"Rental pricelist '{pricelist_name}' not found for Product ID {product_id}. Skipping rental price update."
+                                )
+                                continue
+
+                            # search for existing price within pricelist
+                            rental_price_rule = self.database.env["product.pricelist.item"].search([
+                                ("pricelist_id", "=", rental_pricelist.id),
+                                ("product_tmpl_id", "=", product_id)
+                            ], limit=1)
+
+                            if rental_price_rule:
+
+                                # compare and update if necessary
+                                if rental_price_rule.fixed_price != rental_price:
+                                    _logger.info(
+                                        "updateProduct: Updating rental price for Product ID %s on Rental Pricelist '%s'. Old Value: '%s', New Value: '%s'.",
+                                        product_id, pricelist_name, rental_price_rule.fixed_price, rental_price
+                                    )
+                                    rental_price_rule.write({"fixed_price": rental_price})
+                                else:
+                                    _logger.info(
+                                        "updateProduct: Rental price for Product ID %s on Rental Pricelist '%s' is unchanged. Value: '%s'.",
+                                        product_id, pricelist_name, rental_price
+                                    )
+                            else:
+
+                                # add price if not already existing
+                                _logger.info(
+                                    "updateProduct: Creating new rental price rule for Product ID %s on Rental Pricelist '%s'. Value: '%s'.",
+                                    product_id, pricelist_name, rental_price
+                                )
+                                self.database.env["product.pricelist.item"].create({
+                                    "pricelist_id": rental_pricelist.id,
+                                    "product_tmpl_id": product_id,
+                                    "fixed_price": rental_price,
+                                    "applied_on": "0_product_variant",
+                                })
+
 
                 except Exception as e:
                     _logger.error(
