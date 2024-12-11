@@ -226,61 +226,38 @@ class sync_pricelist:
                         sheet_value_normalized = self.normalize_bools(odoo_field, sheet_value)
 
                         # handle special cases for specific fields
-                        if column_name == "EN-Name":
-
-                            name_column_index = sheet_columns.index("EN-Name")
-                            name = str(row[name_column_index]).strip()
+                        if column_name in ["EN-Name", "FR-Name"]:
                             
-                            # find product by sku in odoo
-                            product_sku_column = sheet_columns.index("SKU")
-                            product_sku = str(row[product_sku_column]).strip()
-                            product = self.database.env["product.template"].search(
-                                [("sku", "=", product_sku)], limit=1
+                            name = sheet_value
+                            
+                            # get lang and normalize odoo name
+                            # this is necessary for comparison because odoo adds SKU to beginning of product name
+                            lang = "en_US" if column_name == "EN-Name" else "fr_CA"
+                            odoo_name = product.with_context(lang=lang).name
+                            normalized_odoo_name = (
+                                odoo_name.split(" - ", 1)[-1] if " - " in odoo_name else odoo_name
                             )
 
-                            # stop if not found
-                            if not product:
-                                _logger.warning(
-                                    "updateProduct: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
-                                    row.index(row) + 1, product_code
-                                )
-                                continue
-
-                            # update if found
-                            if product.with_context(lang="en_US").name != name:
+                            # Compare normalized names and update if necessary
+                            if normalized_odoo_name != name:
                                 _logger.info(
-                                    "updateProduct: Field 'name' (English) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
-                                    product_id, product.name if product_id else None, name
+                                    "updateProduct: Field 'name' (%s) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
+                                    "English" if lang == "en_US" else "French", product_id, normalized_odoo_name, name
                                 )
-                                product.with_context(lang="en_US").write({"name": name})
+                                product.with_context(lang=lang).write({"name": name})
 
-                        elif column_name == "FR-Name":
-
-                            name_column_index = sheet_columns.index("FR-Name")
-                            name = str(row[name_column_index]).strip()
+                        elif column_name in ["EN-Description", "FR-Description"]:
                             
-                            # find product by sku in odoo
-                            product_sku_column = sheet_columns.index("SKU")
-                            product_sku = str(row[product_sku_column]).strip()
-                            product = self.database.env["product.template"].search(
-                                [("sku", "=", product_sku)], limit=1
-                            )
-
-                            # stop if not found
-                            if not product:
-                                _logger.warning(
-                                    "updateProduct: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
-                                    row.index(row) + 1, product_code
-                                )
-                                continue
-
-                            # update if found
-                            if product.with_context(lang="fr_CA").name != name:
+                            # Extract description and update
+                            lang = "en_US" if column_name == "EN-Description" else "fr_CA"
+                            description = sheet_value
+                            current_description = product.with_context(lang=lang).description_sale or ""
+                            if current_description != description:
                                 _logger.info(
-                                    "updateProduct: Field 'name' (French) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
-                                    product_id, product.name if product_id else None, name
+                                    "updateProduct: Field 'description_sale' (%s) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
+                                    "English" if lang == "en_US" else "French", product_id, current_description, description
                                 )
-                                product.with_context(lang="fr_CA").write({"name": name})
+                                product.with_context(lang=lang).write({"description_sale": description})
 
                 except Exception as e:
                     _logger.error(
