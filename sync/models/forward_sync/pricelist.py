@@ -177,10 +177,10 @@ class sync_pricelist:
                 existing_product = self.database.env["product.template"].search([("sku", "=", sku)], limit=1)
                 
                 if existing_product:
-                    _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, eidsn)
+                    _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, sku)
                     self.updateProduct(existing_product.id, row, sheet_columns, row_index)
                 else:
-                    _logger.info("syncPricelist: Row %d: SKU '%s' not found in Odoo. Calling createProduct.", row_index, eidsn)
+                    _logger.info("syncPricelist: Row %d: SKU '%s' not found in Odoo. Calling createProduct.", row_index, sku)
                     self.createProduct(sku, row, sheet_columns, row_index)
             
             except Exception as e:
