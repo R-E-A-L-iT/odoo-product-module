@@ -250,7 +250,7 @@ class sync_pricelist:
                             if product.with_context(lang="en_US").name != name:
                                 _logger.info(
                                     "updateProduct: Field 'name' (English) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
-                                    product_id, product_id.name if product_id else None, name
+                                    product_id, product_id.id.name if product_id else None, name
                                 )
                                 product.with_context(lang="en_US").write({"name": name})
 
@@ -278,7 +278,7 @@ class sync_pricelist:
                             if product.with_context(lang="fr_CA").name != name:
                                 _logger.info(
                                     "updateProduct: Field 'name' (French) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
-                                    product_id, product_id.name if product_id else None, name
+                                    product_id, product_id.id.name if product_id else None, name
                                 )
                                 product.with_context(lang="fr_CA").write({"name": name})
 
