@@ -282,6 +282,57 @@ class sync_pricelist:
                                     f"on Product ID {product_id}. Expected: '{description}', Actual: '{updated_description}'."
                                 )
 
+                        elif column_name in ["PriceCAD", "PriceUSD"]:
+                            pricelist_name = "🇨🇦" if column_name == "PriceCAD" else "🇺🇸"
+                            price = float(sheet_value) if sheet_value else 0.0
+
+                            # search for the pricelist
+                            pricelist = self.database.env["product.pricelist"].search([("name", "=", pricelist_name)], limit=1)
+                            if not pricelist:
+                                _logger.error(
+                                    "updateProduct: Pricelist '%s' not found for Product ID %s. Skipping price update.",
+                                    pricelist_name, product_id
+                                )
+                                self.add_to_report(
+                                    "ERROR",
+                                    f"Pricelist '{pricelist_name}' not found for Product ID {product_id}. Skipping price update."
+                                )
+                                continue
+
+                            # search for existing price within pricelist
+                            price_rule = self.database.env["product.pricelist.item"].search([
+                                ("pricelist_id", "=", pricelist.id),
+                                ("product_tmpl_id", "=", product_id)
+                            ], limit=1)
+
+                            if price_rule:
+
+                                # compare and update if necessary
+                                if price_rule.fixed_price != price:
+                                    _logger.info(
+                                        "updateProduct: Updating price for Product ID %s on Pricelist '%s'. Old Value: '%s', New Value: '%s'.",
+                                        product_id, pricelist_name, price_rule.fixed_price, price
+                                    )
+                                    price_rule.write({"fixed_price": price})
+                                else:
+                                    _logger.info(
+                                        "updateProduct: Price for Product ID %s on Pricelist '%s' is unchanged. Value: '%s'.",
+                                        product_id, pricelist_name, price
+                                    )
+                            else:
+
+                                # add price if not already existent
+                                _logger.info(
+                                    "updateProduct: Creating new price rule for Product ID %s on Pricelist '%s'. Value: '%s'.",
+                                    product_id, pricelist_name, price
+                                )
+                                self.database.env["product.pricelist.item"].create({
+                                    "pricelist_id": pricelist.id,
+                                    "product_tmpl_id": product_id,
+                                    "fixed_price": price,
+                                    "applied_on": "0_product_variant",
+                                })
+
                 except Exception as e:
                     _logger.error(
                         "updateProduct: Error while updating field '%s' for Product ID %s: %s",
