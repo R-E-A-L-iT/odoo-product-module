@@ -212,7 +212,7 @@ class sync_pricelist:
                 "Store Image": "image_1920",
                 "PriceCAD": "list_price",
                 "PriceUSD": "list_price",
-                "CAN Rental": "",
+                "Can Rental": "",
                 "US Rental": "",
             }
 
@@ -340,8 +340,8 @@ class sync_pricelist:
                                 })
 
                         # update rental prices for both pricelists
-                        if column_name in ["CAN Rental", "US Rental"]:
-                            pricelist_name = "CAD RENTAL" if column_name == "CAN Rental" else "USD RENTAL"
+                        if column_name in ["Can Rental", "US Rental"]:
+                            pricelist_name = "CAD RENTAL" if column_name == "Can Rental" else "USD RENTAL"
                             rental_price = float(sheet_value) if sheet_value else 0.0
 
                             # search for the pricelist
