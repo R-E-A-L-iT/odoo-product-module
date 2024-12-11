@@ -1789,7 +1789,7 @@ class SaleReport(models.Model):
     # aggregates or computed fields
     nbr = fields.Integer(string="# of Lines", readonly=True)
     currency_id = fields.Many2one(comodel_name='res.currency', compute='_compute_currency_id')
-    footer_field = fields.Selection("")
+    # footer_field = fields.Selection("")
 
     @api.depends_context('allowed_company_ids')
     def _compute_currency_id(self):
