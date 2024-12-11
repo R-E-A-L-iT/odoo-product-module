@@ -75,8 +75,8 @@ class sync_pricelist:
 
 
 
-    # this function will be called to start the synchronization process for ccp.
-    # it delegates the function of actually updating or creating the ccp item to the other two functions
+    # this function will be called to start the synchronization process for pricelists.
+    # it delegates the function of actually updating or creating the product item to the other two functions
     def syncPricelist(self):
         _logger.info("syncPricelist: Starting synchronization process for pricelist")
 
@@ -200,7 +200,7 @@ class sync_pricelist:
         _logger.info("updateProduct: Searching for any changes for product: %s.", product_id)
 
         try:
-            ccp = self.database.env["stock.lot"].browse(ccp_id)
+            product = self.database.env["stock.lot"].browse(product_id)
             
             # map the google sheets cells to odoo fields
             field_mapping = {
@@ -241,7 +241,7 @@ class sync_pricelist:
                             # stop if not found
                             if not product:
                                 _logger.warning(
-                                    "updateCCP: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
+                                    "updateProduct: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
                                     row.index(row) + 1, product_code
                                 )
                                 continue
@@ -269,7 +269,7 @@ class sync_pricelist:
                             # stop if not found
                             if not product:
                                 _logger.warning(
-                                    "updateCCP: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
+                                    "updateProduct: Row %d: Product with SKU '%s' not found. Skipping product_id update.",
                                     row.index(row) + 1, product_code
                                 )
                                 continue
@@ -284,10 +284,10 @@ class sync_pricelist:
 
                 except Exception as e:
                     _logger.error(
-                        "updateCCP: Error while updating field '%s' for CCP ID %s: %s",
-                        odoo_field, ccp_id, str(e), exc_info=True
+                        "updateProduct: Error while updating field '%s' for Product ID %s: %s",
+                        odoo_field, product_id, str(e), exc_info=True
                     )
-                    self.add_to_report("ERROR", f"updateCCP: Error while updating field {odoo_field} for CCP ID {ccp_id}: {str(e)}")
+                    self.add_to_report("ERROR", f"updateProduct: Error while updating field {odoo_field} for Product ID {product_id}: {str(e)}")
             pass
 
         except Exception as e:
