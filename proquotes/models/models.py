@@ -1858,7 +1858,7 @@ class ticket(models.Model):
 class pdf_quote(models.Model):
     _inherit = "sale.report"
 
-    footer_field = fields.Selection("")
+    # footer_field = fields.Selection("")
     # footer_field = fields.Selection(related="order_id.footer")
 
 # class StockMove(models.Model):
