@@ -230,7 +230,7 @@ class sync_pricelist:
                         # get new sheets value
                         column_index = sheet_columns.index(column_name)
                         sheet_value = str(row[column_index]).strip()
-                        sheet_value_normalized = self.normalize_bools(odoo_field, sheet_value)
+                        sheet_value_normalized = self.normalize_bools(sheet_value)
 
                         # update name fields for both languages
                         if column_name in ["EN-Name", "FR-Name"]:
