@@ -1424,9 +1424,15 @@ class order(models.Model):
             
             # set the title for the access button based on the state of the order
             if self.state in ('draft', 'sent'):
-                access_opt['title'] = _("View Quotation")
+                if self.partner_id.lang == 'fr_CA':
+                    access_opt['title'] = _("Voir le devis")
+                else:
+                    access_opt['title'] = _("View Quotation")
             else:
-                access_opt['title'] = _("View Order")
+                if self.partner_id.lang == 'fr_CA':
+                    access_opt['title'] = _("Voir la commande")
+                else:
+                    access_opt['title'] = _("View Order")
             
             # set the portal access URL for the button
             access_opt['url'] = f"{base_url}{portal_url}"
