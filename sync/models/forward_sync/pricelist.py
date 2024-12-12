@@ -448,8 +448,9 @@ class sync_pricelist:
                                     product_id
                                 )
 
-                        # NOT WORKING
                         # update published status
+                        # this appears to update slowly, as it appeared unchanged for me for even half an hour after the sync once.
+                        # idk why, but eventually it synced properly
                         elif column_name in ["Publish_CA", "Publish_USA"]:
 
                             publish = self.normalize_bools(sheet_value.strip())
@@ -463,7 +464,7 @@ class sync_pricelist:
                                 product.is_ca = publish
                                 product.is_published = publish
 
-                                if not product.is_ca == publish or product.is_published == publish:
+                                if product.is_ca != publish or product.is_published != publish:
                                     _logger.error("updateCCP: Product %s failed to update is_ca published values. is_ca: %s, expected: %s", product_id, str(product.is_ca), str(publish))
                                 else:
                                     _logger.info("updateCCP: Product %s published value for Canada has been set to: %s", product_id, str(publish))
