@@ -448,22 +448,34 @@ class sync_pricelist:
                                     product_id
                                 )
 
-
+                        # NOT WORKING
                         # update published status
                         elif column_name in ["Publish_CA", "Publish_USA"]:
 
                             publish = self.normalize_bools(sheet_value.strip())
+
+                            _logger.info(
+                                "updateCCP: Current values for Product %s - is_ca: %s, is_us: %s, is_published: %s",
+                                product_id, product.is_ca, product.is_us, product.is_published
+                            )
                             
                             if column_name == "Publish_CA":
                                 product.is_ca = publish
                                 product.is_published = publish
 
-                                _logger.info("updateCCP: Product %s published value for Canada has been set to: %s", product_id, str(publish))
+                                if not product.is_ca == publish or product.is_published == publish:
+                                    _logger.error("updateCCP: Product %s failed to update is_ca published values. is_ca: %s, expected: %s", product_id, str(product.is_ca), str(publish))
+                                else:
+                                    _logger.info("updateCCP: Product %s published value for Canada has been set to: %s", product_id, str(publish))
 
                             elif column_name == "Publish_USA":
                                 product.is_us = publish
 
-                                _logger.info("updateCCP: Product %s published value for America has been set to: %s", product_id, str(publish))
+                                if not product.is_us == publish:
+                                    _logger.error("updateCCP: Product %s failed to update is_us published values. is_ca: %s, expected: %s", product_id, str(product.is_ca), str(publish))
+                                else:
+                                    _logger.info("updateCCP: Product %s published value for America has been set to: %s", product_id, str(publish))
+
 
 
                 except Exception as e:
