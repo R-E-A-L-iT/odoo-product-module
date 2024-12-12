@@ -453,12 +453,17 @@ class sync_pricelist:
                         elif column_name in ["Publish_CA", "Publish_USA"]:
 
                             publish = self.normalize_bools(sheet_value.strip())
-
+                            
                             if column_name == "Publish_CA":
                                 product.is_ca = publish
                                 product.is_published = publish
+
+                                _logger.info("updateCCP: Product %s published value for Canada has been set to: %s", product_id, str(publish))
+
                             elif column_name == "Publish_USA":
                                 product.is_us = publish
+
+                                _logger.info("updateCCP: Product %s published value for America has been set to: %s", product_id, str(publish))
 
 
                 except Exception as e:
