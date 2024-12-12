@@ -217,6 +217,10 @@ class sync_pricelist:
                 "PriceUSD": "list_price",
                 "Can Rental": "",
                 "US Rental": "",
+                "Publish_CA": "publish_can",
+                "Publish_USA": "publish_usa",
+                "Can_Be_Sold": "can_be_sold",
+                "Can_Be_Rented": "can_be_rented",
             }
 
             for column_name, odoo_field in field_mapping.items():
@@ -343,7 +347,7 @@ class sync_pricelist:
                                 })
 
                         # update rental prices for both pricelists
-                        if column_name in ["Can Rental", "US Rental"]:
+                        elif column_name in ["Can Rental", "US Rental"]:
                             pricelist_name = "CAD RENTAL" if column_name == "Can Rental" else "USD RENTAL"
                             rental_price = float(sheet_value) if sheet_value else 0.0
 
@@ -397,7 +401,7 @@ class sync_pricelist:
 
                         # update store image field
                         # only give a warning when failed because most products do not have images
-                        if column_name == "Store Image":
+                        elif column_name == "Store Image":
                             image_url = sheet_value.strip()
                             if image_url:
                                 try:
@@ -444,6 +448,17 @@ class sync_pricelist:
                                     product_id
                                 )
 
+
+                        # update published status
+                        elif column_name in ["Publish_CA", "Publish_USA"]:
+
+                            publish = self.normalize_bools(sheet_value.strip())
+
+                            if column_name == "Publish_CA":
+                                product.is_ca = publish
+                                product.is_published = publish
+                            elif column_name == "Publish_USA":
+                                product.is_us = publish
 
 
                 except Exception as e:
