@@ -38,12 +38,12 @@ class sync_pricelist:
     # in odoo, booleans are "True" or "False"
     # in sheets, booleans are "TRUE" or "FALSE"
     # this function normalizes those values
-    def normalize_bools(self, field, value):
-        if field in ["publish", "expire"]:
-            if value.strip().upper() in ["TRUE", "1"]:
-                return True
-            elif value.strip().upper() in ["FALSE", "0", ""]:
-                return False
+    def normalize_bools(self, value):
+        if value.strip().upper() in ["TRUE", "1"]:
+            return True
+        elif value.strip().upper() in ["FALSE", "0", ""]:
+            return False
+
         return value.strip()
 
 
