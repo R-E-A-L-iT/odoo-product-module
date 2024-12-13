@@ -477,6 +477,45 @@ class sync_pricelist:
                                 else:
                                     _logger.info("updateCCP: Product %s published value for America has been set to: %s", product_id, str(publish))
 
+                        # update sale and rental status
+                        elif column_name in ["Can_Be_Sold", "Can_Be_Rented"]:
+
+                            # Normalize the boolean value from the sheet
+                            can_be_value = self.normalize_bools(sheet_value.strip())
+
+                            if column_name == "Can_Be_Sold":
+                                # Update the sale status
+                                product.sale_ok = can_be_value
+
+                                # Double-check the update
+                                if product.sale_ok != can_be_value:
+                                    _logger.error(
+                                        "updateProduct: Failed to update 'Can_Be_Sold' for Product ID %s. Expected: %s, Actual: %s.",
+                                        product_id, can_be_value, product.sale_ok
+                                    )
+                                    self.add_to_report(
+                                        "ERROR",
+                                        f"Failed to update 'Can_Be_Sold' for Product ID {product_id}. Expected: {can_be_value}, Actual: {product.sale_ok}."
+                                    )
+                                else:
+                                    _logger.info("updateProduct: 'Can_Be_Sold' for Product ID %s updated to: %s.", product_id, can_be_value)
+
+                            elif column_name == "Can_Be_Rented":
+                                # Update the rental status
+                                product.rent_ok = can_be_value
+
+                                # Double-check the update
+                                if product.rent_ok != can_be_value:
+                                    _logger.error(
+                                        "updateProduct: Failed to update 'Can_Be_Rented' for Product ID %s. Expected: %s, Actual: %s.",
+                                        product_id, can_be_value, product.rent_ok
+                                    )
+                                    self.add_to_report(
+                                        "ERROR",
+                                        f"Failed to update 'Can_Be_Rented' for Product ID {product_id}. Expected: {can_be_value}, Actual: {product.rent_ok}."
+                                    )
+                                else:
+                                    _logger.info("updateProduct: 'Can_Be_Rented' for Product ID %s updated to: %s.", product_id, can_be_value)
 
 
                 except Exception as e:
