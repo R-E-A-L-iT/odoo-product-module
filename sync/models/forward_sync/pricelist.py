@@ -543,7 +543,7 @@ class sync_pricelist:
                 "sku": product_id,
                 "sale_ok": True,
                 "rent_ok": False,
-                "company_id": 1,  # Explicitly set company_id to the desired company
+                "company_id": 1,  # Set to the desired company
             }  # Default values
             translations = {}
             name_set = False
@@ -626,6 +626,11 @@ class sync_pricelist:
             # Use savepoints to handle errors during creation
             try:
                 self.database.env.cr.execute("SAVEPOINT create_product_savepoint")
+                # Explicitly set responsible_id and other fields to align with company_id
+                product_values["responsible_id"] = self.database.env["res.partner"].search(
+                    [("company_id", "=", product_values["company_id"])], limit=1
+                ).id
+
                 product = self.database.env["product.template"].create(product_values)
                 self.database.env.cr.execute("RELEASE SAVEPOINT create_product_savepoint")
                 _logger.info("createProduct: Successfully created Product ID %s with values: %s.", product.id, product_values)
@@ -666,6 +671,4 @@ class sync_pricelist:
             error_msg = f"Row {row_index}: Error creating Product with SKU {product_id}: {str(e)}"
             _logger.error(f"createProduct: {error_msg}", exc_info=True)
             self.add_to_report("ERROR", error_msg)
-
-
 
