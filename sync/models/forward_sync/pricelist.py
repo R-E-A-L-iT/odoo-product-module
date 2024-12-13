@@ -539,7 +539,12 @@ class sync_pricelist:
 
         try:
             # Prepare initial values for product creation
-            product_values = {"sku": product_id, "sale_ok": True, "rent_ok": False}  # Default values
+            product_values = {
+                "sku": product_id,
+                "sale_ok": True,
+                "rent_ok": False,
+                "company_id": 1,  # Explicitly set company_id to the desired company
+            }  # Default values
             translations = {}
             name_set = False
 
@@ -618,15 +623,14 @@ class sync_pricelist:
                     product_id, product_values["name"]
                 )
 
-            # these savepoints are necessary for if there is an error at some point in the process of creating the first product. 
-            # without these, every function executed after the first function will fail as well in a chain reaction.
+            # Use savepoints to handle errors during creation
             try:
                 self.database.env.cr.execute("SAVEPOINT create_product_savepoint")
                 product = self.database.env["product.template"].create(product_values)
                 self.database.env.cr.execute("RELEASE SAVEPOINT create_product_savepoint")
                 _logger.info("createProduct: Successfully created Product ID %s with values: %s.", product.id, product_values)
 
-                # set translations for the product
+                # Set translations for the product
                 for lang, fields in translations.items():
                     try:
                         product.with_context(lang=lang).write(fields)
@@ -644,7 +648,7 @@ class sync_pricelist:
                             f"Error setting translations for Product ID {product_id} in language {lang}: {str(e)}"
                         )
 
-                # add pricelist entries for prices and rentals
+                # Add pricelist entries for prices and rentals
                 self.updatePricelist(product, row, sheet_columns, row_index)
 
             except Exception as e:
@@ -662,5 +666,6 @@ class sync_pricelist:
             error_msg = f"Row {row_index}: Error creating Product with SKU {product_id}: {str(e)}"
             _logger.error(f"createProduct: {error_msg}", exc_info=True)
             self.add_to_report("ERROR", error_msg)
+
 
 
