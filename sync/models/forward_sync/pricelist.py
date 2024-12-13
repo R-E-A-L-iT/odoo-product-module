@@ -401,52 +401,52 @@ class sync_pricelist:
 
                         # update store image field
                         # only give a warning when failed because most products do not have images
-                        elif column_name == "Store Image":
-                            image_url = sheet_value.strip()
-                            if image_url:
-                                try:
+                        # elif column_name == "Store Image":
+                        #     image_url = sheet_value.strip()
+                        #     if image_url:
+                        #         try:
 
-                                    # fetch the image from the URL
-                                    response = requests.get(image_url, timeout=10)
-                                    if response.status_code == 200:
-                                        image_data = base64.b64encode(response.content)
+                        #             # fetch the image from the URL
+                        #             response = requests.get(image_url, timeout=10)
+                        #             if response.status_code == 200:
+                        #                 image_data = base64.b64encode(response.content)
 
-                                        # compare existing image data with the new one
-                                        existing_image = product.image_1920 or b""
-                                        if existing_image != image_data:
-                                            _logger.info(
-                                                "updateProduct: Updating 'image_1920' for Product ID %s from URL '%s'.",
-                                                product_id, image_url
-                                            )
-                                            product.write({"image_1920": image_data})
-                                        else:
-                                            _logger.info(
-                                                "updateProduct: 'image_1920' for Product ID %s is unchanged. Skipping update.",
-                                                product_id
-                                            )
-                                    else:
-                                        _logger.warning(
-                                            "updateProduct: Failed to fetch image for Product ID %s from URL '%s'. Status Code: %s.",
-                                            product_id, image_url, response.status_code
-                                        )
-                                        self.add_to_report(
-                                            "WARNING",
-                                            f"Failed to fetch image for Product ID {product_id} from URL '{image_url}'. Status Code: {response.status_code}."
-                                        )
-                                except requests.exceptions.RequestException as e:
-                                    _logger.error(
-                                        "updateProduct: Error fetching image for Product ID %s from URL '%s': %s",
-                                        product_id, image_url, str(e), exc_info=True
-                                    )
-                                    self.add_to_report(
-                                        "ERROR",
-                                        f"Error fetching image for Product ID {product_id} from URL '{image_url}': {str(e)}"
-                                    )
-                            else:
-                                _logger.info(
-                                    "updateProduct: No image URL provided for Product ID %s. Skipping 'image_1920' update.",
-                                    product_id
-                                )
+                        #                 # compare existing image data with the new one
+                        #                 existing_image = product.image_1920 or b""
+                        #                 if existing_image != image_data:
+                        #                     _logger.info(
+                        #                         "updateProduct: Updating 'image_1920' for Product ID %s from URL '%s'.",
+                        #                         product_id, image_url
+                        #                     )
+                        #                     product.write({"image_1920": image_data})
+                        #                 else:
+                        #                     _logger.info(
+                        #                         "updateProduct: 'image_1920' for Product ID %s is unchanged. Skipping update.",
+                        #                         product_id
+                        #                     )
+                        #             else:
+                        #                 _logger.warning(
+                        #                     "updateProduct: Failed to fetch image for Product ID %s from URL '%s'. Status Code: %s.",
+                        #                     product_id, image_url, response.status_code
+                        #                 )
+                        #                 self.add_to_report(
+                        #                     "WARNING",
+                        #                     f"Failed to fetch image for Product ID {product_id} from URL '{image_url}'. Status Code: {response.status_code}."
+                        #                 )
+                        #         except requests.exceptions.RequestException as e:
+                        #             _logger.error(
+                        #                 "updateProduct: Error fetching image for Product ID %s from URL '%s': %s",
+                        #                 product_id, image_url, str(e), exc_info=True
+                        #             )
+                        #             self.add_to_report(
+                        #                 "ERROR",
+                        #                 f"Error fetching image for Product ID {product_id} from URL '{image_url}': {str(e)}"
+                        #             )
+                        #     else:
+                        #         _logger.info(
+                        #             "updateProduct: No image URL provided for Product ID %s. Skipping 'image_1920' update.",
+                        #             product_id
+                        #         )
 
                         # update published status
                         # this appears to update slowly, as it appeared unchanged for me for even half an hour after the sync once.
