@@ -538,16 +538,23 @@ class sync_pricelist:
         _logger.info("createProduct: Creating new product with SKU: %s.", product_id)
 
         try:
+            # Set company and default responsible user
+            company_id = 1
+            responsible_user = self.database.env["res.users"].search([("company_id", "=", company_id)], limit=1)
+            if not responsible_user:
+                raise ValueError("No valid responsible user found for company ID %s." % company_id)
+
             # Prepare initial values for product creation
             product_values = {
                 "sku": product_id,
                 "sale_ok": True,
                 "rent_ok": False,
-                "company_id": 1,  # Set to the desired company
-            }  # Default values
-            translations = {}
-            name_set = False
+                "company_id": company_id,
+                "responsible_id": responsible_user.id,
+                "name": "Unnamed Product %s" % product_id,  # Fallback name
+            }
 
+            translations = {}
             field_mapping = {
                 "EN-Name": ("name", "en_US"),
                 "FR-Name": ("name", "fr_CA"),
@@ -574,7 +581,6 @@ class sync_pricelist:
                             translations.setdefault(lang, {})[field] = sheet_value
                             if field == "name" and lang == "en_US" and sheet_value:
                                 product_values["name"] = sheet_value
-                                name_set = True
                         elif column_name in ["Publish_CA", "Publish_USA", "Can_Be_Sold", "Can_Be_Rented"]:
                             product_values[field_info] = self.normalize_bools(sheet_value)
                         elif column_name == "PriceCAD":
@@ -589,47 +595,20 @@ class sync_pricelist:
                                         "createProduct: Failed to fetch image from URL '%s' for Product ID %s. Status Code: %s.",
                                         sheet_value, product_id, response.status_code
                                     )
-                                    self.add_to_report(
-                                        "WARNING",
-                                        f"Failed to fetch image from URL '{sheet_value}' for Product ID {product_id}. Status Code: {response.status_code}."
-                                    )
                             except requests.exceptions.RequestException as e:
                                 _logger.error(
                                     "createProduct: Error fetching image for Product ID %s from URL '%s': %s",
                                     product_id, sheet_value, str(e), exc_info=True
                                 )
-                                self.add_to_report(
-                                    "ERROR",
-                                    f"Error fetching image for Product ID {product_id} from URL '{sheet_value}': {str(e)}"
-                                )
-                        else:
-                            product_values[field_info] = sheet_value
-
                 except Exception as e:
                     _logger.error(
                         "createProduct: Error while processing field '%s' for Product ID %s: %s",
                         column_name, product_id, str(e), exc_info=True
                     )
-                    self.add_to_report(
-                        "ERROR",
-                        f"Error while processing field '{column_name}' for Product ID {product_id}: {str(e)}"
-                    )
-
-            # Ensure the name field is set
-            if not name_set:
-                product_values["name"] = f"Unnamed Product {product_id}"
-                _logger.warning(
-                    "createProduct: No English name provided for Product ID %s. Defaulting to '%s'.",
-                    product_id, product_values["name"]
-                )
 
             # Use savepoints to handle errors during creation
             try:
                 self.database.env.cr.execute("SAVEPOINT create_product_savepoint")
-                # Explicitly set responsible_id and other fields to align with company_id
-                product_values["responsible_id"] = self.database.env["res.partner"].search(
-                    [("company_id", "=", product_values["company_id"])], limit=1
-                ).id
 
                 product = self.database.env["product.template"].create(product_values)
                 self.database.env.cr.execute("RELEASE SAVEPOINT create_product_savepoint")
@@ -648,13 +627,6 @@ class sync_pricelist:
                             "createProduct: Error setting translations for Product ID %s in language %s: %s",
                             product.id, lang, str(e), exc_info=True
                         )
-                        self.add_to_report(
-                            "ERROR",
-                            f"Error setting translations for Product ID {product_id} in language {lang}: {str(e)}"
-                        )
-
-                # Add pricelist entries for prices and rentals
-                self.updatePricelist(product, row, sheet_columns, row_index)
 
             except Exception as e:
                 self.database.env.cr.execute("ROLLBACK TO SAVEPOINT create_product_savepoint")
@@ -662,13 +634,8 @@ class sync_pricelist:
                     "createProduct: Error during product creation for Product ID %s: %s",
                     product_id, str(e), exc_info=True
                 )
-                self.add_to_report(
-                    "ERROR",
-                    f"Error during product creation for Product ID {product_id}: {str(e)}"
-                )
 
         except Exception as e:
             error_msg = f"Row {row_index}: Error creating Product with SKU {product_id}: {str(e)}"
             _logger.error(f"createProduct: {error_msg}", exc_info=True)
-            self.add_to_report("ERROR", error_msg)
 
