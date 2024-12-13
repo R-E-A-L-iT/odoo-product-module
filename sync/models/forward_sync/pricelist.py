@@ -456,7 +456,7 @@ class sync_pricelist:
                             publish = self.normalize_bools(sheet_value.strip())
 
                             _logger.info(
-                                "updateCCP: Current values for Product %s - is_ca: %s, is_us: %s, is_published: %s",
+                                "updateProduct: Current values for Product %s - is_ca: %s, is_us: %s, is_published: %s",
                                 product_id, product.is_ca, product.is_us, product.is_published
                             )
                             
@@ -465,17 +465,17 @@ class sync_pricelist:
                                 product.is_published = publish
 
                                 if product.is_ca != publish or product.is_published != publish:
-                                    _logger.error("updateCCP: Product %s failed to update is_ca published values. is_ca: %s, expected: %s", product_id, str(product.is_ca), str(publish))
+                                    _logger.error("updateProduct: Product %s failed to update is_ca published values. is_ca: %s, expected: %s", product_id, str(product.is_ca), str(publish))
                                 else:
-                                    _logger.info("updateCCP: Product %s published value for Canada has been set to: %s", product_id, str(publish))
+                                    _logger.info("updateProduct: Product %s published value for Canada has been set to: %s", product_id, str(publish))
 
                             elif column_name == "Publish_USA":
                                 product.is_us = publish
 
                                 if not product.is_us == publish:
-                                    _logger.error("updateCCP: Product %s failed to update is_us published values. is_ca: %s, expected: %s", product_id, str(product.is_ca), str(publish))
+                                    _logger.error("updateProduct: Product %s failed to update is_us published values. is_ca: %s, expected: %s", product_id, str(product.is_ca), str(publish))
                                 else:
-                                    _logger.info("updateCCP: Product %s published value for America has been set to: %s", product_id, str(publish))
+                                    _logger.info("updateProduct: Product %s published value for America has been set to: %s", product_id, str(publish))
 
                         # update sale and rental status
                         elif column_name in ["Can_Be_Sold", "Can_Be_Rented"]:
@@ -534,404 +534,108 @@ class sync_pricelist:
     # this function is called to create a new product if the sku is not recognized
     # it will attempt to create the product cell by cell, and skip creating any info that generates errors
     # fields that are not updated will be added to a report at the end
-    def createProduct(self, product_id, row, sheet_columns, row_index):
-        _logger.info("createProduct: Creating new product with SKU: %s.", product_id)
+    # this function is called to create a new product if the sku is not recognized
+# it will attempt to create the product cell by cell, and skip creating any info that generates errors
+# fields that are not updated will be added to a report at the end
+def createProduct(self, product_id, row, sheet_columns, row_index):
+    _logger.info("createProduct: Creating new product with SKU: %s.", product_id)
 
-        try:
-            # Gather values for the product
-            product_values = {"sku": product_id}
-            field_mapping = {
-                "EN-Name": "name",
-                "EN-Description": "description_sale",
-                "FR-Name": "name",
-                "FR-Description": "description_sale",
-                "PriceCAD": "list_price",
-                "Store Image": "image_1920",
-                "Publish_CA": "publish_can",
-                "Publish_USA": "publish_usa",
-                "Can_Be_Sold": "sale_ok",
-                "Can_Be_Rented": "rent_ok",
-            }
+    try:
+        # Prepare initial values for product creation
+        product_values = {"sku": product_id, "sale_ok": True, "rent_ok": False}  # Default values
+        translations = {}
 
-            # Loop through fields and set initial values
-            for column_name, odoo_field in field_mapping.items():
-                try:
-                    if column_name in sheet_columns:
-                        column_index = sheet_columns.index(column_name)
-                        sheet_value = str(row[column_index]).strip()
+        field_mapping = {
+            "EN-Name": ("name", "en_US"),
+            "FR-Name": ("name", "fr_CA"),
+            "EN-Description": ("description_sale", "en_US"),
+            "FR-Description": ("description_sale", "fr_CA"),
+            "PriceCAD": "list_price",
+            "Store Image": "image_1920",
+            "Publish_CA": "is_ca",
+            "Publish_USA": "is_us",
+            "Can_Be_Sold": "sale_ok",
+            "Can_Be_Rented": "rent_ok",
+        }
 
-                        # Special handling for booleans
-                        if column_name in ["Publish_CA", "Publish_USA", "Can_Be_Sold", "Can_Be_Rented"]:
-                            product_values[odoo_field] = self.normalize_bools(sheet_value)
+        # Loop through the columns to set product values
+        for column_name, field_info in field_mapping.items():
+            try:
+                if column_name in sheet_columns:
+                    column_index = sheet_columns.index(column_name)
+                    sheet_value = str(row[column_index]).strip()
 
-                        # Special handling for prices
-                        elif column_name in ["PriceCAD"]:
-                            product_values[odoo_field] = float(sheet_value) if sheet_value else 0.0
-
-                        # Handle the product image
-                        elif column_name == "Store Image" and sheet_value:
-                            try:
-                                response = requests.get(sheet_value, timeout=10)
-                                if response.status_code == 200:
-                                    product_values["image_1920"] = base64.b64encode(response.content)
-                                else:
-                                    _logger.warning(
-                                        "createProduct: Failed to fetch image from URL '%s' for Product ID %s. Status Code: %s.",
-                                        sheet_value, product_id, response.status_code
-                                    )
-                                    self.add_to_report(
-                                        "WARNING",
-                                        f"Failed to fetch image from URL '{sheet_value}' for Product ID {product_id}. Status Code: {response.status_code}."
-                                    )
-                            except requests.exceptions.RequestException as e:
-                                _logger.error(
-                                    "createProduct: Error fetching image for Product ID %s from URL '%s': %s",
-                                    product_id, sheet_value, str(e), exc_info=True
+                    # Handle translations separately
+                    if isinstance(field_info, tuple):
+                        field, lang = field_info
+                        translations.setdefault(lang, {})[field] = sheet_value
+                    elif column_name in ["Publish_CA", "Publish_USA", "Can_Be_Sold", "Can_Be_Rented"]:
+                        product_values[field_info] = self.normalize_bools(sheet_value)
+                    elif column_name == "PriceCAD":
+                        product_values[field_info] = float(sheet_value) if sheet_value else 0.0
+                    elif column_name == "Store Image" and sheet_value:
+                        try:
+                            response = requests.get(sheet_value, timeout=10)
+                            if response.status_code == 200:
+                                product_values["image_1920"] = base64.b64encode(response.content)
+                            else:
+                                _logger.warning(
+                                    "createProduct: Failed to fetch image from URL '%s' for Product ID %s. Status Code: %s.",
+                                    sheet_value, product_id, response.status_code
                                 )
                                 self.add_to_report(
-                                    "ERROR",
-                                    f"Error fetching image for Product ID {product_id} from URL '{sheet_value}': {str(e)}"
+                                    "WARNING",
+                                    f"Failed to fetch image from URL '{sheet_value}' for Product ID {product_id}. Status Code: {response.status_code}."
                                 )
+                        except requests.exceptions.RequestException as e:
+                            _logger.error(
+                                "createProduct: Error fetching image for Product ID %s from URL '%s': %s",
+                                product_id, sheet_value, str(e), exc_info=True
+                            )
+                            self.add_to_report(
+                                "ERROR",
+                                f"Error fetching image for Product ID {product_id} from URL '{sheet_value}': {str(e)}"
+                            )
+                    else:
+                        product_values[field_info] = sheet_value
 
-                        # Handle translations (EN and FR names and descriptions)
-                        elif column_name in ["EN-Name", "FR-Name", "EN-Description", "FR-Description"]:
-                            lang = "en_US" if "EN" in column_name else "fr_CA"
-                            value = sheet_value
-                            if column_name.endswith("Name"):
-                                product_values["name"] = value
-                            elif column_name.endswith("Description"):
-                                product_values["description_sale"] = value
-                            product_values[f"translation_{lang}"] = {"name": value} if "Name" in column_name else {"description_sale": value}
+            except Exception as e:
+                _logger.error(
+                    "createProduct: Error while processing field '%s' for Product ID %s: %s",
+                    column_name, product_id, str(e), exc_info=True
+                )
+                self.add_to_report(
+                    "ERROR",
+                    f"Error while processing field '{column_name}' for Product ID {product_id}: {str(e)}"
+                )
 
-                        else:
-                            product_values[odoo_field] = sheet_value
+        # Create the product in Odoo
+        product = self.database.env["product.template"].create(product_values)
+        _logger.info("createProduct: Successfully created Product ID %s with values: %s.", product.id, product_values)
 
-                except Exception as e:
-                    _logger.error(
-                        "createProduct: Error while processing field '%s' for Product ID %s: %s",
-                        column_name, product_id, str(e), exc_info=True
-                    )
-                    self.add_to_report(
-                        "ERROR",
-                        f"Error while processing field '{column_name}' for Product ID {product_id}: {str(e)}"
-                    )
+        # Set translations for the product
+        for lang, fields in translations.items():
+            try:
+                product.with_context(lang=lang).write(fields)
+                _logger.info(
+                    "createProduct: Successfully set translations for Product ID %s in language %s: %s.",
+                    product.id, lang, fields
+                )
+            except Exception as e:
+                _logger.error(
+                    "createProduct: Error setting translations for Product ID %s in language %s: %s",
+                    product.id, lang, str(e), exc_info=True
+                )
+                self.add_to_report(
+                    "ERROR",
+                    f"Error setting translations for Product ID {product_id} in language {lang}: {str(e)}"
+                )
 
-            # Create the product in Odoo
-            product = self.database.env["product.template"].create(product_values)
-            _logger.info("createProduct: Successfully created Product ID %s with values: %s.", product.id, product_values)
+        # Add pricelist entries for prices and rentals
+        self.updatePricelist(product, row, sheet_columns, row_index)
 
-            # Set translations
-            for lang, translation in product_values.items():
-                if lang.startswith("translation_"):
-                    lang_code = lang.split("_")[1]
-                    product.with_context(lang=lang_code).write(translation)
+    except Exception as e:
+        error_msg = f"Row {row_index}: Error creating Product with SKU {product_id}: {str(e)}"
+        _logger.error(f"createProduct: {error_msg}", exc_info=True)
+        self.add_to_report("ERROR", error_msg)
 
-            # Add pricelist entries for both prices and rentals
-            self.updatePricelist(product, row, sheet_columns, row_index)
-
-        except Exception as e:
-            error_msg = f"Row {row_index}: Error creating Product with SKU {product_id}: {str(e)}"
-            _logger.error(f"createProduct: {error_msg}", exc_info=True)
-            self.add_to_report("ERROR", error_msg)
-
-
-
-
-
-
-
-
-
-
-# SKIP_NO_CHANGE = True
-
-
-# class sync_pricelist:
-#     def __init__(self, name, sheet, database):
-#         self.name = name
-#         self.sheet = sheet
-#         self.database = database
-
-
-#     ##################################################
-#     def syncPricelist(self):
-#         # Confirm GS Tab is in the correct Format
-#         sheetWidth = 34
-#         # pricelistHeaderDict["ProductCategory"] = "productCategory"
-#         columns = dict()
-#         columnsMissing = False
-#         msg = ""
-#         i = 1
-        
-#         # Debugging: Starting the header check process
-#         _logger.debug("PRICELIST.PY: Initializing header dictionary for pricelist sync.")
-
-#         # Check if the header match the appropriate format
-#         pricelistHeaderDict = dict()
-#         pricelistHeaderDict["SKU"]              = "sku"         
-#         pricelistHeaderDict["EN-Name"]          = "eName"       
-#         pricelistHeaderDict["EN-Description"]   = "eDisc"           # Optionnal     
-#         pricelistHeaderDict["FR-Name"]          = "fName"       
-#         pricelistHeaderDict["FR-Description"]   = "fDisc"            # Optionnal 
-#         pricelistHeaderDict["isSoftware"]       = "isSoftware"  
-#         pricelistHeaderDict["Type"]             = "type"        
-#         pricelistHeaderDict["ProductCategory"]  = "productCategory"
-#         pricelistHeaderDict["PriceCAD"]         = "cadSale"     
-#         pricelistHeaderDict["PriceUSD"]         = "usdSale"     
-#         pricelistHeaderDict["Can Rental"]       = "cadRental"   
-#         pricelistHeaderDict["US Rental"]        = "usdRental"   
-#         pricelistHeaderDict["Publish_CA"]       = "canPublish"  
-#         pricelistHeaderDict["Publish_USA"]      = "usPublish"   
-#         pricelistHeaderDict["Can_Be_Sold"]      = "canBeSold"   
-#         pricelistHeaderDict["Can_Be_Rented"]    = "canBeRented" 
-#         pricelistHeaderDict["E-Commerce_Website_Code"] = "ecommerceWebsiteCode" # E-Commerce
-#         pricelistHeaderDict["CAN PL ID"]        = "canPLID"         # E-Commerce
-#         pricelistHeaderDict["US PL ID"]         = "usPLID"          # E-Commerce
-#         pricelistHeaderDict["CAN R SEL"]        = "canrPricelist"   # E-Commerce
-#         pricelistHeaderDict["CAN R ID"]         = "canRID"          # E-Commerce
-#         pricelistHeaderDict["US R SEL"]         = "usrPricelist"    # E-Commerce
-#         pricelistHeaderDict["US R ID"]          = "usRID"           # E-Commerce
-#         pricelistHeaderDict["ECOM-FOLDER"]      = "folder"          # E-Commerce
-#         pricelistHeaderDict["ECOM-MEDIA"]       = "media"           # E-Commerce
-#         pricelistHeaderDict["Continue"]         = "continue"
-#         pricelistHeaderDict["Valid"]            = "valid"     
-#         _logger.debug("PRICELIST.PY: Checking sheet header against defined dictionary.")  
-#         columns, msg, columnsMissing = utilities.checkSheetHeader(pricelistHeaderDict, self.sheet, self.name)  
-
-#         if len(self.sheet[i]) != sheetWidth or columnsMissing:
-#             msg = (
-#                 "<h1>Pricelist page Invalid</h1>\n<p>"
-#                 + str(self.name)
-#                 + " width is: "
-#                 + str(len(self.sheet[i]))
-#                 + " Expected "
-#                 + str(sheetWidth)
-#                 + "</p>\n"
-#                 + msg
-#             )
-#             self.database.sendSyncReport(msg)
-#             _logger.warning("PRICELIST.PY: Pricelist sheet validation failed. Report sent.")
-#             return True, msg
-
-#         # loop through all the rows
-#         _logger.debug("PRICELIST.PY: Starting row processing.")
-#         while True:
-#             # check if should continue
-#             if (
-#                 i == len(self.sheet)
-#                 or str(self.sheet[i][columns["continue"]]) != "TRUE"
-#             ):
-#                 _logger.debug(f"PRICELIST.PY: Stopping row processing at index {i}.")
-#                 break
-
-#             # validation checks
-#             if str(self.sheet[i][columns["valid"]]) != "TRUE":
-#                 i = i + 1
-#                 _logger.debug(f"PRICELIST.PY: Row {i} marked invalid. Skipping.")
-#                 continue
-
-#             key = self.sheet[i][columns["sku"]]
-#             if not utilities.check_id(str(key)):
-#                 _logger.warning(f"PRICELIST.PY: Invalid SKU at row {i}: {key}")
-#                 msg = utilities.buildMSG(msg, self.name, key, "Key Error")
-#                 i = i + 1
-#                 continue
-
-#             if not utilities.check_id(str(self.sheet[i][columns["canPLID"]])):
-#                 _logger.warning(f"PRICELIST.PY: Invalid Canada Pricelist ID at row {i}.")
-#                 msg = utilities.buildMSG(
-#                     msg, self.name, key, "Canada Pricelist ID Invalid"
-#                 )
-#                 i = i + 1
-#                 continue
-
-#             if not utilities.check_id(str(self.sheet[i][columns["usPLID"]])):
-#                 _logger.warning(f"PRICELIST.PY: Invalid US Pricelist ID at row {i}.")
-#                 msg = utilities.buildMSG(msg, self.name, key, "US Pricelist ID Invalid")
-#                 i = i + 1
-#                 continue
-
-#             if not utilities.check_price(self.sheet[i][columns["cadSale"]]):
-#                 _logger.warning(f"PRICELIST.PY: Invalid Canada price at row {i}.")
-#                 msg = utilities.buildMSG(msg, self.name, key, "Canada Price Invalid")
-#                 i = i + 1
-#                 continue
-
-#             if not utilities.check_price(self.sheet[i][columns["usdSale"]]):
-#                 _logger.warning(f"PRICELIST.PY: Invalid US price at row {i}.")
-#                 msg = utilities.buildMSG(msg, self.name, key, "US Price Invalid")
-#                 i = i + 1
-#                 continue
-
-#             # if it gets here data should be valid
-#             try:
-#                 # Debugging: Creating or fetching product record
-#                 _logger.debug(f"PRICELIST.PY: Processing SKU {key} at row {i}.")
-#                 product, new = self.pricelistProduct(sheetWidth, i, columns)
-#                 if product.stringRep == str(self.sheet[i][:]) and SKIP_NO_CHANGE:
-#                     _logger.debug(f"PRICELIST.PY: No changes for product {key} at row {i}. Skipping.")
-#                     i = i + 1
-#                     continue
-#                 # Add Prices to the 4 pricelists
-#                 self.pricelist(product, "cadSale", "🇨🇦", i, columns)
-#                 self.pricelist(product, "cadRental", "CAD RENTAL", i, columns)
-#                 self.pricelist(product, "usdSale", "🇺🇸", i, columns)
-#                 self.pricelist(product, "usdRental", "USD RENTAL", i, columns)
-
-#                 if new:
-#                     # _loggerPRICELIST.PY: Setting stringRep for new product {key}.")
-#                     product.stringRep = ""
-#                 else:
-#                     product.stringRep = str(self.sheet[i][:])
-#             except Exception as e:
-#                 _logger.error(f"PRICELIST.PY: Exception at row {i} for SKU {key}: {str(e)}", exc_info=True)
-#                 msg = utilities.buildMSG(msg, self.name, key, str(e))
-#                 return True, msg                   
-
-#             i = i + 1           
-#         _logger.info("PRICELIST.PY: Row processing completed successfully.")
-#         return False, msg
-
-#     def pricelistProduct(self, sheetWidth, i, columns):
-#         # attempts to access existing item (item/row)
-#         external_id = str(self.sheet[i][columns["sku"]])
-#         product_ids = self.database.env["ir.model.data"].search(
-#             [("name", "=", external_id), ("model", "=", "product.template")]
-#         )
-#         if len(product_ids) > 0:
-#             return (
-#                 self.updatePricelistProducts(
-#                     self.database.env["product.template"].browse(product_ids[len(product_ids) - 1].res_id),
-#                     i,
-#                     columns,
-#                 ),
-#                 False,
-#             )
-#         else:
-#             product = self.createPricelistProducts(
-#                 external_id,
-#                 self.sheet[i][columns["eName"]]
-#             )
-#             product = self.updatePricelistProducts(product, i, columns)
-#             return product, True
-
-#     def pricelist(self, product, priceName, pricelistName, i, columns):
-#         # Adds price to given pricelist
-#         price = self.sheet[i][columns[priceName]]
-#         product_sync_common.addProductToPricelist(
-#             self.database, product, pricelistName, price
-#         )
-
-#     def updatePricelistProducts(self, product, i, columns):
-#         # check if any update to item is needed and skips if there is none
-#         if (
-#             product.stringRep == str(self.sheet[i][:])
-#             and product.stringRep != ""
-#             and SKIP_NO_CHANGE
-#         ):
-#             return product
-
-#         # reads values and puts them in appropriate fields
-#         product.name = self.sheet[i][columns["eName"]]
-#         product.description_sale = self.sheet[i][columns["eDisc"]]
-
-#         product.ecom_folder = self.sheet[i][columns["folder"]]
-#         product.ecom_media = self.sheet[i][columns["media"]].upper()
-
-#         if str(self.sheet[i][columns["isSoftware"]]) == "TRUE":
-#             product.is_software = True
-#         else:
-#             product.is_software = False
-
-#         if (
-#             str(self.sheet[i][columns["cadSale"]]) != " "
-#             and str(self.sheet[i][columns["cadSale"]]) != ""
-#         ):
-#             product.list_price = self.sheet[i][columns["cadSale"]]
-#             product.cadVal = self.sheet[i][columns["cadSale"]]
-
-#         if (
-#             str(self.sheet[i][columns["usdSale"]]) != " "
-#             and str(self.sheet[i][columns["usdSale"]]) != ""
-#         ):
-#             product.usdVal = self.sheet[i][columns["usdSale"]]
-
-#         if str(self.sheet[i][columns["canPublish"]]) == "TRUE":
-#             product.is_published = True
-#         else:
-#             product.is_published = False
-            
-#         if str(self.sheet[i][columns["canPublish"]]) == "TRUE":
-#             product.is_ca = True
-#         else:
-#             product.is_ca = False
-
-#         if str(self.sheet[i][columns["usPublish"]]) == "TRUE":
-#             product.is_us = True
-#         else:
-#             product.is_us = False
-
-#         if str(self.sheet[i][columns["canBeSold"]]) == "TRUE":
-#             product.sale_ok = True
-#         else:
-#             product.sale_ok = False
-            
-#         if str(self.sheet[i][columns["canBeRented"]]) == "TRUE":
-#             product.rent_ok = True
-#         else:
-#             product.rent_ok = False
-#         # Product Category
-#         catId = self.getProductCategoryId(str(self.sheet[i][columns["productCategory"]]))
-#         product.categ_id = catId
-
-#         product.active = True
-
-#         product.storeCode = self.sheet[i][columns["ecommerceWebsiteCode"]]
-#         product.type = "product"
-
-#         # Add translations to record
-#         product_sync_common.translatePricelist(
-#             self.database,
-#             product,
-#             self.sheet[i][columns["fName"]],
-#             self.sheet[i][columns["fDisc"]],
-#             "fr_CA",
-#         )
-#         product_sync_common.translatePricelist(
-#             self.database,
-#             product,
-#             self.sheet[i][columns["eName"]],
-#             self.sheet[i][columns["eDisc"]],
-#             "en_US",
-#         )
-#         if str(self.sheet[i][columns["type"]]) == "H":
-#             product.type_selection = "H"
-#         elif str(self.sheet[i][columns["type"]]) == "S":
-#             product.type_selection = "S"
-#         elif str(self.sheet[i][columns["type"]]) == "SS":
-#             product.type_selection = "SS"
-#         elif str(self.sheet[i][columns["type"]]) == "":
-#             product.type_selection = False
-#         return product
-
-#     def getProductCategoryId(self, category):
-#         categoryID = self.database.env["product.category"].search([("name", "=", category)])
-#         if (len(categoryID) == 1):
-#             return categoryID.id
-#         else:
-#             return self.database.env["product.category"].search([("name", "=", "All")]).id
-        
-#     # creates record and updates it
-#     def createPricelistProducts(self, external_id, product_name):
-#         ext = self.database.env["ir.model.data"].create(
-#             {"name": external_id, "model": "product.template"}
-#         )[0]
-        
-#         company_id = self.env.company.id
-        
-#         product = self.database.env["product.template"].create({"name": product_name, "company_id": company_id,})[0]
-#         ext.res_id = product.id
-
-#         product.tracking = "serial"
-
-#         return product
