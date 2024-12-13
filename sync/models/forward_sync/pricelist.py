@@ -541,6 +541,7 @@ class sync_pricelist:
             # Prepare initial values for product creation
             product_values = {"sku": product_id, "sale_ok": True, "rent_ok": False}  # Default values
             translations = {}
+            name_set = False
 
             field_mapping = {
                 "EN-Name": ("name", "en_US"),
@@ -566,6 +567,9 @@ class sync_pricelist:
                         if isinstance(field_info, tuple):
                             field, lang = field_info
                             translations.setdefault(lang, {})[field] = sheet_value
+                            if field == "name" and lang == "en_US" and sheet_value:
+                                product_values["name"] = sheet_value
+                                name_set = True
                         elif column_name in ["Publish_CA", "Publish_USA", "Can_Be_Sold", "Can_Be_Rented"]:
                             product_values[field_info] = self.normalize_bools(sheet_value)
                         elif column_name == "PriceCAD":
@@ -606,33 +610,56 @@ class sync_pricelist:
                         f"Error while processing field '{column_name}' for Product ID {product_id}: {str(e)}"
                     )
 
-            # Create the product in Odoo
-            product = self.database.env["product.template"].create(product_values)
-            _logger.info("createProduct: Successfully created Product ID %s with values: %s.", product.id, product_values)
+            # Ensure the name field is set
+            if not name_set:
+                product_values["name"] = f"Unnamed Product {product_id}"
+                _logger.warning(
+                    "createProduct: No English name provided for Product ID %s. Defaulting to '%s'.",
+                    product_id, product_values["name"]
+                )
 
-            # Set translations for the product
-            for lang, fields in translations.items():
-                try:
-                    product.with_context(lang=lang).write(fields)
-                    _logger.info(
-                        "createProduct: Successfully set translations for Product ID %s in language %s: %s.",
-                        product.id, lang, fields
-                    )
-                except Exception as e:
-                    _logger.error(
-                        "createProduct: Error setting translations for Product ID %s in language %s: %s",
-                        product.id, lang, str(e), exc_info=True
-                    )
-                    self.add_to_report(
-                        "ERROR",
-                        f"Error setting translations for Product ID {product_id} in language {lang}: {str(e)}"
-                    )
+            # Use savepoints to handle errors during creation
+            try:
+                self.database.env.cr.execute("SAVEPOINT create_product_savepoint")
+                product = self.database.env["product.template"].create(product_values)
+                self.database.env.cr.execute("RELEASE SAVEPOINT create_product_savepoint")
+                _logger.info("createProduct: Successfully created Product ID %s with values: %s.", product.id, product_values)
 
-            # Add pricelist entries for prices and rentals
-            self.updatePricelist(product, row, sheet_columns, row_index)
+                # Set translations for the product
+                for lang, fields in translations.items():
+                    try:
+                        product.with_context(lang=lang).write(fields)
+                        _logger.info(
+                            "createProduct: Successfully set translations for Product ID %s in language %s: %s.",
+                            product.id, lang, fields
+                        )
+                    except Exception as e:
+                        _logger.error(
+                            "createProduct: Error setting translations for Product ID %s in language %s: %s",
+                            product.id, lang, str(e), exc_info=True
+                        )
+                        self.add_to_report(
+                            "ERROR",
+                            f"Error setting translations for Product ID {product_id} in language {lang}: {str(e)}"
+                        )
+
+                # Add pricelist entries for prices and rentals
+                self.updatePricelist(product, row, sheet_columns, row_index)
+
+            except Exception as e:
+                self.database.env.cr.execute("ROLLBACK TO SAVEPOINT create_product_savepoint")
+                _logger.error(
+                    "createProduct: Error during product creation for Product ID %s: %s",
+                    product_id, str(e), exc_info=True
+                )
+                self.add_to_report(
+                    "ERROR",
+                    f"Error during product creation for Product ID {product_id}: {str(e)}"
+                )
 
         except Exception as e:
             error_msg = f"Row {row_index}: Error creating Product with SKU {product_id}: {str(e)}"
             _logger.error(f"createProduct: {error_msg}", exc_info=True)
             self.add_to_report("ERROR", error_msg)
+
 
