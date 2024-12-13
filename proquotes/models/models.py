@@ -1956,11 +1956,13 @@ class SOMailComposeMessage(models.TransientModel):
 
     @api.onchange('partner_ids')
     def _onchange_contacts_email_send(self):
-        res_ids_list = ast.literal_eval(self.res_ids)  
+        res_ids_list = ast.literal_eval(self.res_ids)
         sale_ids = self.env['sale.order'].sudo().search([('id', 'in', res_ids_list)])
         if sale_ids:
             for sale in sale_ids:
                 if sale.email_contacts.ids != self.partner_ids.ids:
                     sale.email_contacts = [(6, 0, self.partner_ids.ids)]
-                else:
-                    pass
+                    existing_partner_ids = set(self.partner_ids.ids)
+                    followers_to_remove = sale.message_follower_ids.filtered(lambda follower: follower.partner_id.id not in existing_partner_ids)
+                    followers_to_remove.unlink()
+                    self.update({'partner_ids': list(existing_partner_ids)})
