@@ -618,14 +618,15 @@ class sync_pricelist:
                     product_id, product_values["name"]
                 )
 
-            # Use savepoints to handle errors during creation
+            # these savepoints are necessary for if there is an error at some point in the process of creating the first product. 
+            # without these, every function executed after the first function will fail as well in a chain reaction.
             try:
                 self.database.env.cr.execute("SAVEPOINT create_product_savepoint")
                 product = self.database.env["product.template"].create(product_values)
                 self.database.env.cr.execute("RELEASE SAVEPOINT create_product_savepoint")
                 _logger.info("createProduct: Successfully created Product ID %s with values: %s.", product.id, product_values)
 
-                # Set translations for the product
+                # set translations for the product
                 for lang, fields in translations.items():
                     try:
                         product.with_context(lang=lang).write(fields)
@@ -643,7 +644,7 @@ class sync_pricelist:
                             f"Error setting translations for Product ID {product_id} in language {lang}: {str(e)}"
                         )
 
-                # Add pricelist entries for prices and rentals
+                # add pricelist entries for prices and rentals
                 self.updatePricelist(product, row, sheet_columns, row_index)
 
             except Exception as e:
