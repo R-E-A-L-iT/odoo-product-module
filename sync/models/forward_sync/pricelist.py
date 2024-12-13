@@ -537,6 +537,104 @@ class sync_pricelist:
     def createProduct(self, product_id, row, sheet_columns, row_index):
         _logger.info("createProduct: Creating new product with SKU: %s.", product_id)
 
+        try:
+            # Gather values for the product
+            product_values = {"sku": product_id}
+            field_mapping = {
+                "EN-Name": "name",
+                "EN-Description": "description_sale",
+                "FR-Name": "name",
+                "FR-Description": "description_sale",
+                "PriceCAD": "list_price",
+                "Store Image": "image_1920",
+                "Publish_CA": "publish_can",
+                "Publish_USA": "publish_usa",
+                "Can_Be_Sold": "sale_ok",
+                "Can_Be_Rented": "rent_ok",
+            }
+
+            # Loop through fields and set initial values
+            for column_name, odoo_field in field_mapping.items():
+                try:
+                    if column_name in sheet_columns:
+                        column_index = sheet_columns.index(column_name)
+                        sheet_value = str(row[column_index]).strip()
+
+                        # Special handling for booleans
+                        if column_name in ["Publish_CA", "Publish_USA", "Can_Be_Sold", "Can_Be_Rented"]:
+                            product_values[odoo_field] = self.normalize_bools(sheet_value)
+
+                        # Special handling for prices
+                        elif column_name in ["PriceCAD"]:
+                            product_values[odoo_field] = float(sheet_value) if sheet_value else 0.0
+
+                        # Handle the product image
+                        elif column_name == "Store Image" and sheet_value:
+                            try:
+                                response = requests.get(sheet_value, timeout=10)
+                                if response.status_code == 200:
+                                    product_values["image_1920"] = base64.b64encode(response.content)
+                                else:
+                                    _logger.warning(
+                                        "createProduct: Failed to fetch image from URL '%s' for Product ID %s. Status Code: %s.",
+                                        sheet_value, product_id, response.status_code
+                                    )
+                                    self.add_to_report(
+                                        "WARNING",
+                                        f"Failed to fetch image from URL '{sheet_value}' for Product ID {product_id}. Status Code: {response.status_code}."
+                                    )
+                            except requests.exceptions.RequestException as e:
+                                _logger.error(
+                                    "createProduct: Error fetching image for Product ID %s from URL '%s': %s",
+                                    product_id, sheet_value, str(e), exc_info=True
+                                )
+                                self.add_to_report(
+                                    "ERROR",
+                                    f"Error fetching image for Product ID {product_id} from URL '{sheet_value}': {str(e)}"
+                                )
+
+                        # Handle translations (EN and FR names and descriptions)
+                        elif column_name in ["EN-Name", "FR-Name", "EN-Description", "FR-Description"]:
+                            lang = "en_US" if "EN" in column_name else "fr_CA"
+                            value = sheet_value
+                            if column_name.endswith("Name"):
+                                product_values["name"] = value
+                            elif column_name.endswith("Description"):
+                                product_values["description_sale"] = value
+                            product_values[f"translation_{lang}"] = {"name": value} if "Name" in column_name else {"description_sale": value}
+
+                        else:
+                            product_values[odoo_field] = sheet_value
+
+                except Exception as e:
+                    _logger.error(
+                        "createProduct: Error while processing field '%s' for Product ID %s: %s",
+                        column_name, product_id, str(e), exc_info=True
+                    )
+                    self.add_to_report(
+                        "ERROR",
+                        f"Error while processing field '{column_name}' for Product ID {product_id}: {str(e)}"
+                    )
+
+            # Create the product in Odoo
+            product = self.database.env["product.template"].create(product_values)
+            _logger.info("createProduct: Successfully created Product ID %s with values: %s.", product.id, product_values)
+
+            # Set translations
+            for lang, translation in product_values.items():
+                if lang.startswith("translation_"):
+                    lang_code = lang.split("_")[1]
+                    product.with_context(lang=lang_code).write(translation)
+
+            # Add pricelist entries for both prices and rentals
+            self.updatePricelist(product, row, sheet_columns, row_index)
+
+        except Exception as e:
+            error_msg = f"Row {row_index}: Error creating Product with SKU {product_id}: {str(e)}"
+            _logger.error(f"createProduct: {error_msg}", exc_info=True)
+            self.add_to_report("ERROR", error_msg)
+
+
 
 
 
