@@ -188,7 +188,6 @@ class sync_ccp:
                         )
                         continue
 
-
                     _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
                     self.createCCP(eidsn, row, sheet_columns, row_index)
             
