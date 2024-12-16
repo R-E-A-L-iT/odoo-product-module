@@ -26,8 +26,8 @@
                   decoration-danger="status == 'error'">
                 <field name="name" string="Report Name"/>
                 <field name="status" string="Status"/>
-                <field name="start_datetime" string="Start Date & Time"/>
-                <field name="end_datetime" string="End Date & Time"/>
+                <field name="start_datetime" string="Start Date &amp; Time"/>
+                <field name="end_datetime" string="End Date &amp; Time"/>
                 <field name="sync_duration" string="Sync Duration (minutes)"/>
             </tree>
         </field>
