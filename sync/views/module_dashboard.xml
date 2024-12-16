@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- List View Action -->
+    <!-- action -->
     <record id="action_sync_report_tree" model="ir.actions.act_window">
         <field name="name">Sync Reports</field>
         <field name="res_model">sync.report</field>
         <field name="view_mode">tree,form</field>
     </record>
 
-    <!-- App Dashboard Menu -->
+    <!-- app dashboard menu -->
     <menuitem
         id="menu_sync_reports"
         name="Sync Reports"
@@ -16,7 +16,7 @@
         parent=""
         groups="base.group_no_one" /> <!-- Visible in developer mode only -->
 
-    <!-- List View with Status Decorations -->
+    <!-- report list view -->
     <record id="view_sync_report_tree" model="ir.ui.view">
         <field name="name">sync.report.tree</field>
         <field name="model">sync.report</field>
@@ -30,6 +30,33 @@
                 <field name="end_datetime" string="End Date &amp; Time"/>
                 <field name="sync_duration" string="Sync Duration (minutes)"/>
             </tree>
+        </field>
+    </record>
+
+    <!-- report record view -->
+     <record id="view_sync_report_form" model="ir.ui.view">
+        <field name="name">sync.report.form</field>
+        <field name="model">sync.report</field>
+        <field name="arch" type="xml">
+            <form string="Sync Report">
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="status" />
+                        <field name="start_datetime" />
+                        <field name="end_datetime" />
+                        <field name="sync_duration" />
+                    </group>
+                </sheet>
+                <notebook>
+                    <page string="Error Report">
+                        <field name="error_report" widget="text_area" placeholder="Paste error report here..." />
+                    </page>
+                    <page string="Items Updated">
+                        <field name="items_updated" widget="text_area" placeholder="Paste updated items list here..." />
+                    </page>
+                </notebook>
+            </form>
         </field>
     </record>
 </odoo>
