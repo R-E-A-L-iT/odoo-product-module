@@ -52,6 +52,8 @@ class SyncReport(models.Model):
     start_datetime = fields.Datetime(string="Start Date & Time", required=True, default=fields.Datetime.now)
     end_datetime = fields.Datetime(string="End Date & Time")
     sync_duration = fields.Float(string="Sync Duration (minutes)", compute="_compute_sync_duration", store=True)
+    error_report = fields.Text(string="Error Report")  # New field for Error Report
+    items_updated = fields.Text(string="Items Updated")  # New field for Items Updated
 
     @api.depends('start_datetime', 'end_datetime')
     def _compute_sync_duration(self):
