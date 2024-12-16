@@ -43,4 +43,21 @@ class SyncReport(models.Model):
     _description = 'Sync Report'
 
     name = fields.Char(string="Report Name", required=True)
-    date = fields.Datetime(string="Date", default=fields.Datetime.now)
+    status = fields.Selection(
+        [('success', 'Success'), ('warning', 'Warning'), ('error', 'Error')],
+        string="Status",
+        required=True,
+        default='success'
+    )
+    start_datetime = fields.Datetime(string="Start Date & Time", required=True, default=fields.Datetime.now)
+    end_datetime = fields.Datetime(string="End Date & Time")
+    sync_duration = fields.Float(string="Sync Duration (minutes)", compute="_compute_sync_duration", store=True)
+
+    @api.depends('start_datetime', 'end_datetime')
+    def _compute_sync_duration(self):
+        for record in self:
+            if record.start_datetime and record.end_datetime:
+                delta = record.end_datetime - record.start_datetime
+                record.sync_duration = delta.total_seconds() / 60.0
+            else:
+                record.sync_duration = 0.0

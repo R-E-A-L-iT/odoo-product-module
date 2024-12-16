@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-
     <!-- List View Action -->
     <record id="action_sync_report_tree" model="ir.actions.act_window">
         <field name="name">Sync Reports</field>
@@ -17,14 +16,19 @@
         parent=""
         groups="base.group_no_one" /> <!-- Visible in developer mode only -->
 
-    <!-- Empty List View -->
+    <!-- List View with Status Decorations -->
     <record id="view_sync_report_tree" model="ir.ui.view">
         <field name="name">sync.report.tree</field>
         <field name="model">sync.report</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree decoration-success="status == 'success'" 
+                  decoration-warning="status == 'warning'" 
+                  decoration-danger="status == 'error'">
                 <field name="name" string="Report Name"/>
-                <field name="date" string="Date"/>
+                <field name="status" string="Status"/>
+                <field name="start_datetime" string="Start Date & Time"/>
+                <field name="end_datetime" string="End Date & Time"/>
+                <field name="sync_duration" string="Sync Duration (minutes)"/>
             </tree>
         </field>
     </record>
