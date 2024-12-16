@@ -47,21 +47,21 @@
                         <field name="end_datetime" />
                         <field name="sync_duration" />
                     </group>
+                    <notebook>
+                        <page string="Error Report">
+                            <field name="error_report" 
+                                widget="text_area" 
+                                style="width: 100%; height: 200px;" 
+                                placeholder="No errors yet..." />
+                        </page>
+                        <page string="Items Updated">
+                            <field name="items_updated" 
+                                widget="text_area" 
+                                style="width: 100%; height: 200px;" 
+                                placeholder="No items updated..." />
+                        </page>
+                    </notebook>
                 </sheet>
-                <notebook>
-                    <page string="Error Report">
-                        <field name="error_report" 
-                               widget="text_area" 
-                               style="width: 100%; height: 200px;" 
-                               placeholder="No errors yet..." />
-                    </page>
-                    <page string="Items Updated">
-                        <field name="items_updated" 
-                               widget="text_area" 
-                               style="width: 100%; height: 200px;" 
-                               placeholder="No items updated..." />
-                    </page>
-                </notebook>
             </form>
         </field>
     </record>
