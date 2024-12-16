@@ -29,5 +29,6 @@
         "data/schedule.xml",
         "data/reverse_contact.xml",
         "views/company_backend.xml",
+        "views/module_dashboard.xml",
     ],
 }

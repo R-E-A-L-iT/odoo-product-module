@@ -35,3 +35,12 @@ class pricelist(models.Model):
 class ccp(models.Model):
     _inherit = "stock.lot"
     stringRep = fields.Char(default="")
+
+# app related models
+
+class SyncReport(models.Model):
+    _name = 'sync.report'
+    _description = 'Sync Report'
+
+    name = fields.Char(string="Report Name", required=True)
+    date = fields.Datetime(string="Date", default=fields.Datetime.now)
