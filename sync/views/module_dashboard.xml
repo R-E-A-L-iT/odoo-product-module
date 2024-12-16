@@ -34,7 +34,7 @@
     </record>
 
     <!-- report record view -->
-     <record id="view_sync_report_form" model="ir.ui.view">
+    <record id="view_sync_report_form" model="ir.ui.view">
         <field name="name">sync.report.form</field>
         <field name="model">sync.report</field>
         <field name="arch" type="xml">
@@ -50,10 +50,16 @@
                 </sheet>
                 <notebook>
                     <page string="Error Report">
-                        <field name="error_report" widget="text_area" placeholder="Paste error report here..." />
+                        <field name="error_report" 
+                               widget="text_area" 
+                               style="width: 100%; height: 200px;" 
+                               placeholder="No errors yet..." />
                     </page>
                     <page string="Items Updated">
-                        <field name="items_updated" widget="text_area" placeholder="Paste updated items list here..." />
+                        <field name="items_updated" 
+                               widget="text_area" 
+                               style="width: 100%; height: 200px;" 
+                               placeholder="No items updated..." />
                     </page>
                 </notebook>
             </form>
