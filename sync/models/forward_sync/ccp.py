@@ -177,16 +177,6 @@ class sync_ccp:
                     _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
                     self.updateCCP(existing_ccp.id, row, sheet_columns, row_index)
                 else:
-                    
-                    existing_lot = self.database.env["stock.lot"].search(
-                        [("name", "=", eidsn), ("product_id", "=", new_ccp_values["product_id"])], limit=1
-                    )
-                    if existing_lot:
-                        _logger.error(
-                            "createCCP: Skipping creation. Duplicate found for Product ID: %s, Serial Number: %s",
-                            new_ccp_values["product_id"], eidsn
-                        )
-                        continue
 
                     _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
                     self.createCCP(eidsn, row, sheet_columns, row_index)
@@ -443,6 +433,10 @@ class sync_ccp:
                 
                 try:
                     
+                    product_code_column = sheet_columns.index("Product Code")
+                    product_code = str(row[product_code_column]).strip()
+                    new_ccp_values["sku"] = product_code
+
                     # honestly don't know what this block of queries does.
                     # all i know is that if you have a sku that is terribly wrong and messed up, it crashes the entire process
                     # but if you include these quieres, instead of crashing it magically skips it, generates an error, and continues
