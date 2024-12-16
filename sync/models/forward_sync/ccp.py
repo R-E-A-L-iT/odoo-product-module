@@ -177,6 +177,18 @@ class sync_ccp:
                     _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
                     self.updateCCP(existing_ccp.id, row, sheet_columns, row_index)
                 else:
+                    
+                    existing_lot = self.database.env["stock.lot"].search(
+                        [("name", "=", eidsn), ("product_id", "=", new_ccp_values["product_id"])], limit=1
+                    )
+                    if existing_lot:
+                        _logger.error(
+                            "createCCP: Skipping creation. Duplicate found for Product ID: %s, Serial Number: %s",
+                            new_ccp_values["product_id"], eidsn
+                        )
+                        continue
+
+
                     _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
                     self.createCCP(eidsn, row, sheet_columns, row_index)
             
