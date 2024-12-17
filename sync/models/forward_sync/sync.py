@@ -44,6 +44,7 @@ class sync(models.Model):
     _sync_fail_reason = "<h1>The Following Rows of The Google Sheet Table are invalid and were not Updated to Odoo</h1>"
 
     _odoo_sync_data_index = 0
+    
     cleaningId = fields.Integer(string="cleaningId", required=True, default=0)
     your_field = fields.Char(string="Your Field")
     your_sequence = fields.Integer(string="Your Sequence", readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('your.sequence.code'))
