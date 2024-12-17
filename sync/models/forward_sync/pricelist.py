@@ -197,7 +197,7 @@ class sync_pricelist:
             overall_status = "error"
         elif any("WARNING" in report for report in self.sync_report):
             overall_status = "warning"
-
+        
         return {
             "status": overall_status,
             "sync_report": self.sync_report,

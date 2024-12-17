@@ -244,11 +244,15 @@ class sync(models.Model):
 
         elif syncType == "CCP":
             syncer = sync_ccp(sheetName, sheet, self)
-            quit, msg, sync_result = syncer.syncCCP()  # Expecting new return format
+            sync_result = syncer.syncCCP()  # New return format
+            quit = sync_result.get("status") == "error"
+            msg = sync_result.get("error_report", "")
 
         elif syncType == "Pricelist":
             syncer = sync_pricelist(sheetName, sheet, self)
-            quit, msg, sync_result = syncer.syncPricelist()  # Expecting new return format
+            sync_result = syncer.syncPricelist()  # New return format
+            quit = sync_result.get("status") == "error"
+            msg = sync_result.get("error_report", "")
 
         elif syncType == "WebHTML":
             syncer = syncWeb(sheetName, sheet, self)
