@@ -83,6 +83,10 @@ class sync_pricelist:
     def syncPricelist(self):
         _logger.info("syncPricelist: Starting synchronization process for pricelist")
 
+        # variables for sync report
+        items_updated = []
+        overall_status = "success"
+
         # variables to verify format
         # if you need to add more columns for new sync data, add them here
         expected_width = 24
@@ -124,21 +128,11 @@ class sync_pricelist:
         sync_report = []
         
         # verify that sheet format is as expected
-        if sheet_width != expected_width:
-            error_msg = f"Sheet width mismatch. Expected: {expected_width}, Actual: {sheet_width}."
+        if sheet_width != expected_width or missing_columns or extra_columns:
+            error_msg = f"Sheet validation failed. Missing: {missing_columns}, Extra: {extra_columns}."
             _logger.error(f"syncPricelist: {error_msg}")
-            self.add_to_report("ERROR", f"{error_msg}")
-            return True, error_msg
-        elif missing_columns:
-            error_msg = f"Missing columns: {missing_columns}."
-            _logger.error(f"syncPricelist: {error_msg}")
-            self.add_to_report("ERROR", f"{error_msg}")
-            return True, error_msg
-        elif extra_columns:
-            error_msg = f"Extra columns: {extra_columns}."
-            _logger.error(f"syncPricelist: {error_msg}")
-            self.add_to_report("ERROR", f"{error_msg}")
-            return True, error_msg
+            self.add_to_report("ERROR", error_msg)
+            return {"status": "error", "sync_report": self.sync_report, "items_updated": items_updated}
         
         _logger.info("syncPricelist: Sheet validated. Proceeding with Pricelist synchronization.")
 
@@ -162,6 +156,7 @@ class sync_pricelist:
                 if not valid:
                     warning_msg = f"Row {row_index}: Marked as invalid. Skipping."
                     _logger.info(f"syncPricelist: {warning_msg}")
+                    overall_status = "warning" if overall_status != "error" else overall_status
                     # not sending this to report because intended feature
                     # sync_report.append(f"WARNING: {warning_msg}")
                     continue
@@ -182,19 +177,32 @@ class sync_pricelist:
                 if existing_product:
                     _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, sku)
                     self.updateProduct(existing_product.id, row, sheet_columns, row_index)
+                    items_updated.append(f"Updated Product: {sku}")
                 else:
                     _logger.info("syncPricelist: Row %d: SKU '%s' not found in Odoo. Calling createProduct.", row_index, sku)
                     self.createProduct(sku, row, sheet_columns, row_index)
+                    items_updated.append(f"Created Product: {sku}")
             
             except Exception as e:
                 error_msg = f"Row {row_index}: Error occurred while processing: {str(e)}"
                 _logger.error(f"syncPricelist: {error_msg}", exc_info=True)
                 self.add_to_report("ERROR", f"{error_msg}")
+                overall_status = "error"
                 
-        if self.sync_report:
-            utilities.send_report(self.sync_report, "Pricelist", self.database)
+        # if self.sync_report:
+        #     utilities.send_report(self.sync_report, "Pricelist", self.database)
 
-        return True, "syncPricelist: Pricelist synchronization completed successfully."
+        # check for any errors
+        if any("ERROR" in report for report in self.sync_report):
+            overall_status = "error"
+        elif any("WARNING" in report for report in self.sync_report):
+            overall_status = "warning"
+
+        return {
+            "status": overall_status,
+            "sync_report": self.sync_report,
+            "items_updated": items_updated,
+        }
 
     # this function is called to update a product that already exists
     # it will attempt to update the product cell by cell, and skip updating any info that generates errors
