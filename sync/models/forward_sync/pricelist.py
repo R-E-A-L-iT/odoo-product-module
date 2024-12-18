@@ -335,7 +335,7 @@ class sync_pricelist:
                                         product_id, pricelist_name, price_rule.fixed_price, price
                                     )
                                     price_rule.write({"fixed_price": price})
-                                else:
+                                # else:
                                     # _logger.info(
                                     #     "updateProduct: Price for Product ID %s on Pricelist '%s' is unchanged. Value: '%s'.",
                                     #     product_id, pricelist_name, price
@@ -387,7 +387,7 @@ class sync_pricelist:
                                         product_id, pricelist_name, rental_price_rule.fixed_price, rental_price
                                     )
                                     rental_price_rule.write({"fixed_price": rental_price})
-                                else:
+                                # else:
                                     # _logger.info(
                                     #     "updateProduct: Rental price for Product ID %s on Rental Pricelist '%s' is unchanged. Value: '%s'.",
                                     #     product_id, pricelist_name, rental_price
