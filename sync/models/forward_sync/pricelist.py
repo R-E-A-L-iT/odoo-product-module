@@ -175,11 +175,11 @@ class sync_pricelist:
                 existing_product = self.database.env["product.template"].search([("sku", "=", sku)], limit=1)
                 
                 if existing_product:
-                    _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, sku)
+                    # _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, sku)
                     self.updateProduct(existing_product.id, row, sheet_columns, row_index)
                     items_updated.append(f"Updated Product: {sku}")
                 else:
-                    _logger.info("syncPricelist: Row %d: SKU '%s' not found in Odoo. Calling createProduct.", row_index, sku)
+                    # _logger.info("syncPricelist: Row %d: SKU '%s' not found in Odoo. Calling createProduct.", row_index, sku)
                     self.createProduct(sku, row, sheet_columns, row_index)
                     items_updated.append(f"Created Product: {sku}")
             
@@ -336,10 +336,10 @@ class sync_pricelist:
                                     )
                                     price_rule.write({"fixed_price": price})
                                 else:
-                                    _logger.info(
-                                        "updateProduct: Price for Product ID %s on Pricelist '%s' is unchanged. Value: '%s'.",
-                                        product_id, pricelist_name, price
-                                    )
+                                    # _logger.info(
+                                    #     "updateProduct: Price for Product ID %s on Pricelist '%s' is unchanged. Value: '%s'.",
+                                    #     product_id, pricelist_name, price
+                                    # )
                             else:
 
                                 # add price if not already existing
@@ -388,10 +388,10 @@ class sync_pricelist:
                                     )
                                     rental_price_rule.write({"fixed_price": rental_price})
                                 else:
-                                    _logger.info(
-                                        "updateProduct: Rental price for Product ID %s on Rental Pricelist '%s' is unchanged. Value: '%s'.",
-                                        product_id, pricelist_name, rental_price
-                                    )
+                                    # _logger.info(
+                                    #     "updateProduct: Rental price for Product ID %s on Rental Pricelist '%s' is unchanged. Value: '%s'.",
+                                    #     product_id, pricelist_name, rental_price
+                                    # )
                             else:
 
                                 # add price if not already existing
@@ -406,6 +406,7 @@ class sync_pricelist:
                                     "applied_on": "0_product_variant",
                                 })
 
+                        # works but todo: add column to read if image is valid or not, otherwise wastes a lot of time
 
                         # update store image field
                         # only give a warning when failed because most products do not have images
@@ -463,10 +464,10 @@ class sync_pricelist:
 
                             publish = self.normalize_bools(sheet_value.strip())
 
-                            _logger.info(
-                                "updateProduct: Current values for Product %s - is_ca: %s, is_us: %s, is_published: %s",
-                                product_id, product.is_ca, product.is_us, product.is_published
-                            )
+                            # _logger.info(
+                            #     "updateProduct: Current values for Product %s - is_ca: %s, is_us: %s, is_published: %s",
+                            #     product_id, product.is_ca, product.is_us, product.is_published
+                            # )
                             
                             if column_name == "Publish_CA":
                                 product.is_ca = publish

@@ -170,12 +170,12 @@ class sync_ccp:
                 existing_ccp = self.database.env["stock.lot"].search([("sku", "=", eidsn)], limit=1)
                 
                 if existing_ccp:
-                    _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
+                    # _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
                     self.updateCCP(existing_ccp.id, row, sheet_columns, row_index)
                     items_updated.append(f"Updated CCP: {eidsn}")
                 else:
 
-                    _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
+                    # _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
                     self.createCCP(eidsn, row, sheet_columns, row_index)
                     items_updated.append(f"Created CCP: {eidsn}")
             
