@@ -548,8 +548,8 @@ class sync_pricelist:
 
         try:
             # Set company and default responsible user
-            company_id = 64269
-            responsible_user = self.database.env["res.users"].search([("company_id", "=", company_id)], limit=1)
+            user_id = 2
+            responsible_user = self.database.env["res.users"].search([("id", "=", user_id)], limit=1)
             if not responsible_user:
                 raise ValueError("No valid responsible user found for company ID %s." % company_id)
 
