@@ -159,6 +159,10 @@ class sync_ccp:
                 # get eid/sn and check if it exists in odoo
                 eidsn_column = sheet_columns.index("EID/SN")
                 eidsn = str(row[eidsn_column]).strip()
+
+                # get product sku and check if it exists in odoo
+                sku_column = sheet_columns.index("Product Code")
+                sku = str(row[sku_column]).strip()
                 
                 if not eidsn:
                     warning_msg = f"Row {row_index}: Missing EID/SN. Skipping."
@@ -167,7 +171,7 @@ class sync_ccp:
                     overall_status = "warning" if overall_status != "error" else overall_status
                     continue
                 
-                existing_ccp = self.database.env["stock.lot"].search([("name", "=", eidsn)], limit=1)
+                existing_ccp = self.database.env["stock.lot"].search([("name", "=", eidsn), ("sku" "=", sku)], limit=1)
                 
                 if existing_ccp:
                     # _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
@@ -176,8 +180,9 @@ class sync_ccp:
                 else:
 
                     # _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
-                    self.createCCP(eidsn, row, sheet_columns, row_index)
-                    items_updated.append(f"Created CCP: {eidsn}")
+                    _logger.info("syncCCP: Record not found with matching EID and Product SKU. Skipping creation.")
+                    # self.createCCP(eidsn, row, sheet_columns, row_index)
+                    # items_updated.append(f"Created CCP: {eidsn}")
             
             except Exception as e:
                 error_msg = f"Row {row_index}: Error occurred while processing: {str(e)}"
