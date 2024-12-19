@@ -35,4 +35,5 @@ class opportunity(models.Model):
     )
 
     opportunity_notes = fields.Text(string="Opportunity Notes")
+    linkedin_link = fields.Char('LinkedIn Link')
 
