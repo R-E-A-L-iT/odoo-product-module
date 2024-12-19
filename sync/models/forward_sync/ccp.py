@@ -171,7 +171,7 @@ class sync_ccp:
                     overall_status = "warning" if overall_status != "error" else overall_status
                     continue
                 
-                existing_ccp = self.database.env["stock.lot"].search([("name", "=", eidsn), ("sku" "=", sku)], limit=1)
+                existing_ccp = self.database.env["stock.lot"].search([("name", "=", eidsn), ("sku", "=", sku)], limit=1)
                 
                 if existing_ccp:
                     # _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
