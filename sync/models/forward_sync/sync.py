@@ -63,67 +63,83 @@ class sync(models.Model):
         combined_error_report = []
         combined_items_updated = []
 
-        db_name = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        template_id = sheetsAPI.get_master_database_template_id(db_name)
-        _logger.info("db_name: " + str(db_name))
-        _logger.info("template_id: " + str(template_id))
+        # Add custom log handler
+        log_handler = SyncLogHandler()
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        log_handler.setFormatter(formatter)
+        _logger.addHandler(log_handler)
 
-        line_index = 1
-        msg = ""
+        try:
+            # (Rest of the sync logic...)
+            db_name = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+            template_id = sheetsAPI.get_master_database_template_id(db_name)
+            _logger.info("db_name: " + str(db_name))
+            _logger.info("template_id: " + str(template_id))
 
-        # Checks authentication values
-        if not self.is_psw_format_good(psw):
-            return
+            line_index = 1
+            msg = ""
 
-        # Get the ODOO_SYNC_DATA tab
-        sync_data = self.getMasterDatabaseSheet(template_id, psw, self._odoo_sync_data_index)
-
-        # Loop through entries in the first sheet
-        while True:
-            msg_temp = ""
-            sheetName = str(sync_data[line_index][0])
-            sheetIndex, msg_temp = self.getSheetIndex(sync_data, line_index)
-            msg += msg_temp
-            modelType = str(sync_data[line_index][2])
-            valid = (str(sync_data[line_index][3]).upper() == "TRUE")
-
-            if not valid:
-                _logger.info(f"Valid: {sheetName} is {valid}. Ending sync process!")
-                break
-
-            if sheetIndex < 0:
-                break
-
-            _logger.info(f"Valid: {sheetName} is {valid}.")
-            quit, msgr, sync_result = self.getSyncValues(sheetName, psw, template_id, sheetIndex, modelType)
-            msg += msgr
-            line_index += 1
-
-            if quit:
-                self.syncFail(msg, self._sync_cancel_reason)
+            # Checks authentication values
+            if not self.is_psw_format_good(psw):
                 return
 
-            # Process results for CCP and Pricelist syncs
-            if modelType in ["CCP", "Pricelist"]:
-                status, error_report, items_updated = sync_result.get("status"), sync_result.get("error_report"), sync_result.get("items_updated")
+            # Get the ODOO_SYNC_DATA tab
+            sync_data = self.getMasterDatabaseSheet(template_id, psw, self._odoo_sync_data_index)
 
-                # Combine sync data
-                combined_error_report.append(error_report)
-                combined_items_updated.extend(items_updated)
+            # Loop through entries in the first sheet
+            while True:
+                msg_temp = ""
+                sheetName = str(sync_data[line_index][0])
+                sheetIndex, msg_temp = self.getSheetIndex(sync_data, line_index)
+                msg += msg_temp
+                modelType = str(sync_data[line_index][2])
+                valid = (str(sync_data[line_index][3]).upper() == "TRUE")
 
-                # Update overall status
-                if status == "error":
-                    overall_status = "error"
-                elif status == "warning" and overall_status != "error":
-                    overall_status = "warning"
+                if not valid:
+                    _logger.info(f"Valid: {sheetName} is {valid}. Ending sync process!")
+                    break
+
+                if sheetIndex < 0:
+                    break
+
+                _logger.info(f"Valid: {sheetName} is {valid}.")
+                quit, msgr, sync_result = self.getSyncValues(sheetName, psw, template_id, sheetIndex, modelType)
+                msg += msgr
+                line_index += 1
+
+                if quit:
+                    self.syncFail(msg, self._sync_cancel_reason)
+                    return
+
+                # Process results for CCP and Pricelist syncs
+                if modelType in ["CCP", "Pricelist"]:
+                    status, error_report, items_updated = sync_result.get("status"), sync_result.get("error_report"), sync_result.get("items_updated")
+
+                    # Combine sync data
+                    combined_error_report.append(error_report)
+                    combined_items_updated.extend(items_updated)
+
+                    # Update overall status
+                    if status == "error":
+                        overall_status = "error"
+                    elif status == "warning" and overall_status != "error":
+                        overall_status = "warning"
+
+        finally:
+            # Ensure the custom log handler is removed
+            _logger.removeHandler(log_handler)
+
+        # Add captured logs to the error report
+        log_errors = "\n".join(log_handler.records)
+        if log_errors:
+            combined_error_report.append("Captured Logs:\n" + log_errors)
 
         # End sync
         sync_end_time = fields.Datetime.now()
 
-        # Generate sync report
+        # Create sync report
         self.create_sync_report(sync_start_time, sync_end_time, overall_status, combined_error_report, combined_items_updated)
 
-        # Log ending sync
         _logger.info("Ending Sync")
 
     ###################################################################
@@ -1195,3 +1211,13 @@ class sync(models.Model):
             if ((str(line.selected) == "false") and line.qty_delivered <= 0):
                 line.product_uom_qty = 0
         
+class SyncLogHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+        self.records = []
+
+    def emit(self, record):
+
+        # capture error and warning logs
+        if "ERROR" in record.msg or "WARNING" in record.msg:
+            self.records.append(self.format(record))
