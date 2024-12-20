@@ -175,11 +175,13 @@ class sync_pricelist:
                 existing_product = self.database.env["product.template"].search([("sku", "=", sku)], limit=1)
                 
                 if existing_product:
-                    # _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, sku)
-                    self.updateProduct(existing_product.id, row, sheet_columns, row_index)
-                    items_updated.append(f"Updated Product: {sku}")
+                    _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, sku)
+                    update_report = self.updateProduct(existing_product.id, row, sheet_columns, row_index)
+                    items_updated.append(
+                        f"Updated Product: {sku} - {'Pricelist' if existing_product.is_pricelist else 'CCP'}, Fields Updated: {', '.join(update_report)}"
+                    )
                 else:
-                    # _logger.info("syncPricelist: Row %d: SKU '%s' not found in Odoo. Calling createProduct.", row_index, sku)
+                    _logger.info("syncPricelist: Row %d: SKU '%s' not found in Odoo. Calling createProduct.", row_index, sku)
                     self.createProduct(sku, row, sheet_columns, row_index)
                     items_updated.append(f"Created Product: {sku}")
             
@@ -204,11 +206,13 @@ class sync_pricelist:
             "items_updated": items_updated,
         }
 
+
     # this function is called to update a product that already exists
     # it will attempt to update the product cell by cell, and skip updating any info that generates errors
     # fields that are not updated will be added to a report at the end
     def updateProduct(self, product_id, row, sheet_columns, row_index):
         _logger.info("updateProduct: Searching for any changes for product: %s.", product_id)
+        updated_fields = []
 
         try:
             product = self.database.env["product.template"].browse(product_id)
@@ -257,6 +261,7 @@ class sync_pricelist:
                                     "English" if lang == "en_US" else "French", product_id, odoo_name, name
                                 )
                                 product.with_context(lang=lang).write({"name": name})
+                                updated_fields.append(f"name ({'English' if lang == 'en_US' else 'French'})")
 
                             # double check translation worked
                             updated_name = product.with_context(lang=lang).name
@@ -284,6 +289,7 @@ class sync_pricelist:
                                     "English" if lang == "en_US" else "French", product_id, current_description, description
                                 )
                                 product.with_context(lang=lang).write({"description_sale": description})
+                                updated_fields.append(f"description_sale ({'English' if lang == 'en_US' else 'French'})")
 
                             # double check translation worked
                             updated_description = product.with_context(lang=lang).description_sale or ""
@@ -335,11 +341,7 @@ class sync_pricelist:
                                         product_id, pricelist_name, price_rule.fixed_price, price
                                     )
                                     price_rule.write({"fixed_price": price})
-                                # else:
-                                    # _logger.info(
-                                    #     "updateProduct: Price for Product ID %s on Pricelist '%s' is unchanged. Value: '%s'.",
-                                    #     product_id, pricelist_name, price
-                                    # )
+                                    updated_fields.append(f"price ({pricelist_name})")
                             else:
 
                                 # add price if not already existing
@@ -353,6 +355,7 @@ class sync_pricelist:
                                     "fixed_price": price,
                                     "applied_on": "0_product_variant",
                                 })
+                                updated_fields.append(f"new price rule ({pricelist_name})")
 
                         # update rental prices for both pricelists
                         elif column_name in ["Can Rental", "US Rental"]:
@@ -387,11 +390,7 @@ class sync_pricelist:
                                         product_id, pricelist_name, rental_price_rule.fixed_price, rental_price
                                     )
                                     rental_price_rule.write({"fixed_price": rental_price})
-                                # else:
-                                    # _logger.info(
-                                    #     "updateProduct: Rental price for Product ID %s on Rental Pricelist '%s' is unchanged. Value: '%s'.",
-                                    #     product_id, pricelist_name, rental_price
-                                    # )
+                                    updated_fields.append(f"rental price ({pricelist_name})")
                             else:
 
                                 # add price if not already existing
@@ -405,126 +404,41 @@ class sync_pricelist:
                                     "fixed_price": rental_price,
                                     "applied_on": "0_product_variant",
                                 })
-
-                        # works but todo: add column to read if image is valid or not, otherwise wastes a lot of time
-
-                        # update store image field
-                        # only give a warning when failed because most products do not have images
-                        # elif column_name == "Store Image":
-                        #     image_url = sheet_value.strip()
-                        #     if image_url:
-                        #         try:
-
-                        #             # fetch the image from the URL
-                        #             response = requests.get(image_url, timeout=10)
-                        #             if response.status_code == 200:
-                        #                 image_data = base64.b64encode(response.content)
-
-                        #                 # compare existing image data with the new one
-                        #                 existing_image = product.image_1920 or b""
-                        #                 if existing_image != image_data:
-                        #                     _logger.info(
-                        #                         "updateProduct: Updating 'image_1920' for Product ID %s from URL '%s'.",
-                        #                         product_id, image_url
-                        #                     )
-                        #                     product.write({"image_1920": image_data})
-                        #                 else:
-                        #                     _logger.info(
-                        #                         "updateProduct: 'image_1920' for Product ID %s is unchanged. Skipping update.",
-                        #                         product_id
-                        #                     )
-                        #             else:
-                        #                 _logger.warning(
-                        #                     "updateProduct: Failed to fetch image for Product ID %s from URL '%s'. Status Code: %s.",
-                        #                     product_id, image_url, response.status_code
-                        #                 )
-                        #                 self.add_to_report(
-                        #                     "WARNING",
-                        #                     f"Failed to fetch image for Product ID {product_id} from URL '{image_url}'. Status Code: {response.status_code}."
-                        #                 )
-                        #         except requests.exceptions.RequestException as e:
-                        #             _logger.error(
-                        #                 "updateProduct: Error fetching image for Product ID %s from URL '%s': %s",
-                        #                 product_id, image_url, str(e), exc_info=True
-                        #             )
-                        #             self.add_to_report(
-                        #                 "ERROR",
-                        #                 f"Error fetching image for Product ID {product_id} from URL '{image_url}': {str(e)}"
-                        #             )
-                        #     else:
-                        #         _logger.info(
-                        #             "updateProduct: No image URL provided for Product ID %s. Skipping 'image_1920' update.",
-                        #             product_id
-                        #         )
+                                updated_fields.append(f"new rental price rule ({pricelist_name})")
 
                         # update published status
-                        # this appears to update slowly, as it appeared unchanged for me for even half an hour after the sync once.
-                        # idk why, but eventually it synced properly
                         elif column_name in ["Publish_CA", "Publish_USA"]:
 
                             publish = self.normalize_bools(sheet_value.strip())
-
-                            # _logger.info(
-                            #     "updateProduct: Current values for Product %s - is_ca: %s, is_us: %s, is_published: %s",
-                            #     product_id, product.is_ca, product.is_us, product.is_published
-                            # )
                             
                             if column_name == "Publish_CA":
                                 product.is_ca = publish
                                 product.is_published = publish
 
-                                if product.is_ca != publish or product.is_published != publish:
-                                    _logger.error("updateProduct: Product %s failed to update is_ca published values. is_ca: %s, expected: %s", product_id, str(product.is_ca), str(publish))
-                                else:
-                                    _logger.info("updateProduct: Product %s published value for Canada has been set to: %s", product_id, str(publish))
+                                if product.is_ca == publish:
+                                    updated_fields.append("is_ca")
+                                if product.is_published == publish:
+                                    updated_fields.append("is_published")
 
                             elif column_name == "Publish_USA":
                                 product.is_us = publish
 
-                                if not product.is_us == publish:
-                                    _logger.error("updateProduct: Product %s failed to update is_us published values. is_ca: %s, expected: %s", product_id, str(product.is_ca), str(publish))
-                                else:
-                                    _logger.info("updateProduct: Product %s published value for America has been set to: %s", product_id, str(publish))
+                                if product.is_us == publish:
+                                    updated_fields.append("is_us")
 
                         # update sale and rental status
                         elif column_name in ["Can_Be_Sold", "Can_Be_Rented"]:
-
-                            # Normalize the boolean value from the sheet
                             can_be_value = self.normalize_bools(sheet_value.strip())
 
                             if column_name == "Can_Be_Sold":
-                                # Update the sale status
                                 product.sale_ok = can_be_value
-
-                                # Double-check the update
-                                if product.sale_ok != can_be_value:
-                                    _logger.error(
-                                        "updateProduct: Failed to update 'Can_Be_Sold' for Product ID %s. Expected: %s, Actual: %s.",
-                                        product_id, can_be_value, product.sale_ok
-                                    )
-                                    self.add_to_report(
-                                        "ERROR",
-                                        f"Failed to update 'Can_Be_Sold' for Product ID {product_id}. Expected: {can_be_value}, Actual: {product.sale_ok}."
-                                    )
-                                else:
-                                    _logger.info("updateProduct: 'Can_Be_Sold' for Product ID %s updated to: %s.", product_id, can_be_value)
+                                if product.sale_ok == can_be_value:
+                                    updated_fields.append("sale_ok")
 
                             elif column_name == "Can_Be_Rented":
-                                # Update the rental status
                                 product.rent_ok = can_be_value
-
-                                # Double-check the update
-                                if product.rent_ok != can_be_value:
-                                    _logger.error(
-                                        "updateProduct: Failed to update 'Can_Be_Rented' for Product ID %s. Expected: %s, Actual: %s.",
-                                        product_id, can_be_value, product.rent_ok
-                                    )
-                                    self.add_to_report(
-                                        "ERROR",
-                                        f"Failed to update 'Can_Be_Rented' for Product ID {product_id}. Expected: {can_be_value}, Actual: {product.rent_ok}."
-                                    )
-                                else:
-                                    _logger.info("updateProduct: 'Can_Be_Rented' for Product ID %s updated to: %s.", product_id, can_be_value)
+                                if product.rent_ok == can_be_value:
+                                    updated_fields.append("rent_ok")
 
 
                 except Exception as e:
@@ -533,12 +447,21 @@ class sync_pricelist:
                         odoo_field, product_id, str(e), exc_info=True
                     )
                     self.add_to_report("ERROR", f"updateProduct: Error while updating field {odoo_field} for Product ID {product_id}: {str(e)}")
-            pass
+
+            # Log updated fields
+            if updated_fields:
+                _logger.info(
+                    "updateProduct: Updated fields for Product ID %s: %s.", product_id, ", ".join(updated_fields)
+                )
+                self.sync_report.append(
+                    f"Pricelist: Updated Product SKU: {product.sku} - Fields Updated: {', '.join(updated_fields)}"
+                )
 
         except Exception as e:
             error_msg = f"Row {row_index}: Error updating Product with SKU {product_id}: {str(e)}"
             _logger.error(f"updateProduct: {error_msg}", exc_info=True)
             self.add_to_report("ERROR", f"{error_msg}")
+
 
     # this function is called to create a new product if the sku is not recognized
     # it will attempt to create the product cell by cell, and skip creating any info that generates errors
