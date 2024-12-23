@@ -60,6 +60,8 @@ class productInstance(models.Model):
     formated_label = fields.Char(compute="_label")
     publish = fields.Boolean(string="publish", default="True")
 
+    firmware_version = fields.Text(string='Firmware Version', help='Firmware version associated with this lot.')
+
     # Automate formated_label
     def _label(self):
         for i in self:
@@ -160,3 +162,4 @@ class PurchaseOrder(models.Model):
                     "domain_force": "[('move_type', 'in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')), ('partner_id','child_of',[user.partner_id.id])]"
                 }
             )
+
