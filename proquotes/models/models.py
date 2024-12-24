@@ -806,6 +806,25 @@ class order(models.Model):
 
     @api.onchange('email_contacts')
     def _onchange_email_contacts(self):
+        current_follower_ids = self.message_follower_ids.mapped('partner_id.id')
+        new_partner_ids = []
+        for contact in self.email_contacts:
+            if isinstance(contact._origin.id, int):  # Real database ID
+                new_partner_ids.append(contact._origin.id)
+            else:
+                _logger.warning("Skipping unsaved contact with NewId: %s", contact._origin.id)
+        to_add = list(set(new_partner_ids) - set(current_follower_ids))
+        if to_add:
+            _logger.info('Adding new followers: %s', to_add)
+            self.message_subscribe(partner_ids=to_add)
+        to_remove = list(set(current_follower_ids) - set(new_partner_ids))
+        if to_remove:
+            _logger.info('Removing followers: %s', to_remove)
+            self.message_unsubscribe(partner_ids=to_remove)
+
+        if not to_add and not to_remove:
+            _logger.info('No changes in followers.')
+
         for contact in self.email_contacts:
             try:
                 if self.partner_ids:
