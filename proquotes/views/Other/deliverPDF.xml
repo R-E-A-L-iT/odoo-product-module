@@ -1,6 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <odoo>
+
+	<template id="stock_report_delivery_has_serial_move_line_inherit"
+              inherit_id="stock.stock_report_delivery_has_serial_move_line">
+        <xpath expr="//td[1]" position="replace">
+            <td>
+                <span t-field="move_line.product_id"/>
+                <!-- this is an annoying workaround for the multiple types of descriptions (often auto-filled) that we do not want to print -->
+                <!-- this makes it so we can pre-filter the descriptions in inherited templates since we cannot extend the standard "if" condition -->
+                <!-- let's agree that pre-filtered descriptions will be set to "" -->
+                <!--                <t t-if="not description and description != ''">-->
+                <!--                    <t t-set="description" t-value="move_line.move_id.description_picking"/>-->
+                <!--                </t>-->
+                <!--                <p t-if="description !='' and description != move_line.product_id.name">-->
+                <!--                    <span t-esc="description"/>-->
+                <!--                </p>-->
+                <span class="description-root" t-raw="move_line.product_id.description_sale"
+                      t-if="move_line.product_id.description_sale" style="color: #777;"/>
+            </td>
+        </xpath>
+    </template>
+    <template id="report_picking_inherit" inherit_id="stock.report_picking">
+        <xpath expr="//table[@class='table table-sm']/tbody/tr/td[1]" position="replace">
+            <td>
+                <span t-field="ml.product_id.display_name"/><br/>
+                <span t-field="ml.product_id.description_picking"/><br/>
+                <span class="description-root" t-raw="ml.product_id.description_sale" t-if="ml.product_id.description_sale" style="color: #777;"/>
+            </td>
+        </xpath>
+    </template>
+	
 	<template id="deliver" name="Proquotes Deliver" inherit_id="stock.report_delivery_document" priority="17">
 
 		<!-- Translate Info Labels -->
