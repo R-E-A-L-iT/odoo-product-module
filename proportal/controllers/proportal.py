@@ -104,25 +104,19 @@ class WebsiteLivechat(LivechatController):
             channel_info['guest_token'] = guest._format_auth_cookie()
 
         if channel_vals:
-            livechat_channel_id = request.env["im_livechat.channel"].sudo().browse(
-                int(channel_vals.get('livechat_channel_id')))
-            _logger.info('________________ livechat_channel_id: %s', livechat_channel_id)
+            livechat_channel_id = request.env["im_livechat.channel"].sudo().browse(int(channel_vals.get('livechat_channel_id')))
             for user in livechat_channel_id.user_ids:
                 if user.login:  # Ensure the user has an email address
-                    email_body = f"""
-                        Hello,
-
-                        A new live chat session has started in the channel: {livechat_channel_id.name}.
-
-                        Please join the session to assist the customer.
-
-                        Thank you.
-                    """
-                    mail_values = {
-                        'subject': "New Live Chat Session",
-                        'body_html': email_body,
-                        'email_to': user.login,
-                        'email_from': "sales@r-e-a-l.it",
-                    }
-                    request.env['mail.mail'].create(mail_values).send()
+                    email_template = request.env.ref('proportal.live_chet_session_started_email',raise_if_not_found=False)
+                    if email_template:
+                        mail_body = email_template.body_html
+                        subject = email_template.subject
+                        mail_body = mail_body.replace('channel_name', livechat_channel_id.name)
+                        template_values = {
+                            'subject': subject,
+                            'email_from':  "sales@r-e-a-l.it",
+                            'email_to': user.login,
+                            'body_html': mail_body,
+                        }
+                        email_template.send_mail(livechat_channel_id.id, email_values=template_values, force_send=True)
         return channel_info
