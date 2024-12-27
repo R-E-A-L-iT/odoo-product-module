@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="live_chet_session_started_email" model="mail.template">
+            <field name="name">LiveChat: Session Started</field>
+            <field name="model_id" ref="im_livechat.model_im_livechat_channel"/>
+            <field name="subject">{{ object.company_id.name }} {{ object.state in ('draft', 'sent') and
+                (ctx.get('proforma') and 'Proforma' or 'Quotation') or 'Order' }} (Ref {{ object.name or 'n/a' }})
+            </field>
+            <field name="email_from">{{ (object.user_id.email_formatted or object.company_id.email_formatted or
+                user.email_formatted) }}
+            </field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        <t t-set="doc_name" t-value="'quotation' if object.state in ('draft', 'sent') else 'order'"/>
+                        Hello,
+
+                        <br/>
+                    </p>
+                </div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

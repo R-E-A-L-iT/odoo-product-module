@@ -40,6 +40,7 @@
     # always loaded
     "data": [
         # 'security/ir.model.access.csv',
+        "data/live_session_started_email_temp.xml",
         "views/web_base.xml",
         "views/partnerView.xml",
         # 'views/portalAccess.xml',
