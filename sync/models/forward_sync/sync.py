@@ -40,6 +40,15 @@ class ProductTemplate(models.Model):
     # sku is readonly for some reason?! needs to not be readonly so we can write to the field when we create a product.
     sku = fields.Char(string="SKU", readonly=False, index=True, help="Stock Keeping Unit")
 
+    # debugging
+    @api.multi
+    def write(self, vals):
+        if "sku" in vals:
+            _logger.warning("Attempting to update SKU: %s", vals["sku"])
+        result = super().write(vals)
+        _logger.warning("Post-write SKU value: %s", self.sku)
+        return result
+
 
 class sync(models.Model):
     _name = "sync.sync"
