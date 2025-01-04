@@ -49,6 +49,26 @@ class sync(models.Model):
     your_field = fields.Char(string="Your Field")
     your_sequence = fields.Integer(string="Your Sequence", readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('your.sequence.code'))
 
+    def get_logged_messages(self):
+        try:
+            # Get the start and end of the current day
+            today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            today_end = today_start + timedelta(days=1)
+
+            # Query the mail.message model for today's messages
+            messages = self.env["mail.message"].search([
+                ("create_date", ">=", today_start),
+                ("create_date", "<", today_end)
+            ])
+
+            # Format messages for display
+            return "\n".join(
+                [f"[{msg.create_date}] {msg.subject or '(No Subject)'}: {msg.body or '(No Body)'}" for msg in messages]
+            ) or "No logs available for today."
+        except Exception as e:
+            _logger.error("Failed to retrieve today's logs: %s", str(e), exc_info=True)
+            return "Couldn't retrieve logs."
+
     ###################################################################
     # STARTING POINT
     def start_sync(self, psw=None):
@@ -129,18 +149,22 @@ class sync(models.Model):
             # Ensure the custom log handler is removed
             _logger.removeHandler(log_handler)
 
-        # Add captured logs to the error report
-        log_errors = "\n".join(log_handler.records)
-        if log_errors:
-            combined_error_report.append("Captured Logs:\n" + log_errors)
+            # Add today's logs to the error report
+            log_errors = self.get_today_logged_messages()
+            combined_error_report.append(f"Today's Logs:\n{log_errors}")
 
-        # End sync
-        sync_end_time = fields.Datetime.now()
+            # Add captured logs to the error report
+            captured_logs = "\n".join(log_handler.records)
+            if captured_logs:
+                combined_error_report.append(f"Captured Logs:\n{captured_logs}")
 
-        # Create sync report
-        self.create_sync_report(sync_start_time, sync_end_time, overall_status, combined_error_report, combined_items_updated)
+            # End sync
+            sync_end_time = fields.Datetime.now()
 
-        _logger.info("Ending Sync")
+            # Create sync report
+            self.create_sync_report(sync_start_time, sync_end_time, overall_status, combined_error_report, combined_items_updated)
+
+            _logger.info("Ending Sync")
 
     ###################################################################
     # Create Sync Report
