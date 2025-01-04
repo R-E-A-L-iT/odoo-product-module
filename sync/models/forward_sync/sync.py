@@ -41,7 +41,6 @@ class ProductTemplate(models.Model):
     sku = fields.Char(string="SKU", readonly=False, index=True, help="Stock Keeping Unit")
 
     # debugging
-    @api.multi
     def write(self, vals):
         if "sku" in vals:
             _logger.warning("Attempting to update SKU: %s", vals["sku"])
