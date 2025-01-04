@@ -162,6 +162,13 @@ class sync_products:
         # Set company_id explicitly
         company_id = self.database.env.company.id
 
+        # Ensure the responsible user belongs to the correct company
+        responsible_user = self.database.env["res.users"].search(
+            [("company_id", "=", company_id)], limit=1
+        )
+        if not responsible_user:
+            raise ValueError(f"No responsible user found for company ID {company_id}.")
+
         ext = self.database.env["ir.model.data"].create(
             {"name": external_id, "model": "product.template"}
         )[0]
@@ -169,6 +176,7 @@ class sync_products:
         product = self.database.env["product.template"].create({
             "name": product_name,
             "company_id": company_id,  # Ensure the product belongs to the current company
+            "responsible_id": responsible_user.id,
         })[0]
 
         product.tracking = "serial"
