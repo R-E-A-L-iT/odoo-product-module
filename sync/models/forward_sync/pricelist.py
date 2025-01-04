@@ -469,6 +469,9 @@ class sync_pricelist:
     def createProduct(self, product_id, row, sheet_columns, row_index):
         _logger.info("createProduct: Creating new product with SKU: %s.", product_id)
 
+
+        # todo: add price rules creation for this function instead of having to run sync twice
+
         try:
             # Set company and default responsible user
             company_id = 1 # R-E-A-L.iT in the system
@@ -486,6 +489,7 @@ class sync_pricelist:
                 "responsible_id": responsible_user.id,
                 "name": "Unnamed Product %s" % product_id,  # Fallback name
             }
+            _logger.error("[product_id] SKU: " + product_id)
 
             translations = {}
             field_mapping = {
@@ -515,7 +519,7 @@ class sync_pricelist:
                             if field == "name" and lang == "en_US" and sheet_value:
                                 product_values["name"] = sheet_value
                         elif column_name == "SKU":
-                            product_values["sku"] = sheet_value
+                            _logger.error("[sheet_value] SKU: " + sheet_value)
                         elif column_name in ["Publish_CA", "Publish_USA", "Can_Be_Sold", "Can_Be_Rented"]:
                             product_values[field_info] = self.normalize_bools(sheet_value)
                         elif column_name == "PriceCAD":
