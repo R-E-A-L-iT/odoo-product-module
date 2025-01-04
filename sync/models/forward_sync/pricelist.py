@@ -576,6 +576,7 @@ class sync_pricelist:
                     self.add_to_report(
                         "ERROR",
                         f"SKU mismatch for Product ID {product.id}. Expected: {product_id}, Actual: {product.sku}.")
+                    product.sku = product_id
 
             except Exception as e:
                 self.database.env.cr.execute("ROLLBACK TO SAVEPOINT create_product_savepoint")
