@@ -150,7 +150,7 @@ class sync(models.Model):
             _logger.removeHandler(log_handler)
 
             # Add today's logs to the error report
-            log_errors = self.get_today_logged_messages()
+            log_errors = self.get_logged_messages()
             combined_error_report.append(f"Today's Logs:\n{log_errors}")
 
             # Add captured logs to the error report
