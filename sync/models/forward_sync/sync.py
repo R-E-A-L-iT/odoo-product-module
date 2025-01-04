@@ -34,6 +34,13 @@ from .contact import sync_contacts
 _logger = logging.getLogger(__name__)
 
 
+class ProductTemplate(models.Model):
+    _inherit = "product.template"
+
+    # sku is readonly for some reason?! needs to not be readonly so we can write to the field when we create a product.
+    sku = fields.Char(string="SKU", readonly=False, index=True, help="Stock Keeping Unit")
+
+
 class sync(models.Model):
     _name = "sync.sync"
     _inherit = "sync.sheets"
