@@ -329,7 +329,7 @@ class sync_pricelist:
                             # search for existing price within pricelist
                             price_rule = self.database.env["product.pricelist.item"].search([
                                 ("pricelist_id", "=", pricelist.id),
-                                ("product_id", "=", product.product_variant_ids[0].id)
+                                ("product_tmpl_id", "=", product.id)
                             ], limit=1)
 
                             if price_rule:
@@ -351,7 +351,7 @@ class sync_pricelist:
                                 )
                                 self.database.env["product.pricelist.item"].sudo().create({
                                     "pricelist_id": pricelist.id,
-                                    "product_id": product.product_variant_ids[0].id,
+                                    "product_tmpl_id": product.id,
                                     "fixed_price": price,
                                     "applied_on": "0_product_variant",
                                 })
