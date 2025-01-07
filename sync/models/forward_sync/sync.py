@@ -34,6 +34,21 @@ from .contact import sync_contacts
 _logger = logging.getLogger(__name__)
 
 
+class ProductTemplate(models.Model):
+    _inherit = "product.template"
+
+    # sku is readonly for some reason?! needs to not be readonly so we can write to the field when we create a product.
+    sku = fields.Char(string="SKU", readonly=False, index=True, help="Stock Keeping Unit")
+
+    # debugging
+    def write(self, vals):
+        if "sku" in vals:
+            _logger.warning("Attempting to update SKU: %s", vals["sku"])
+        result = super().write(vals)
+        _logger.warning("Post-write SKU value: %s", self.sku)
+        return result
+
+
 class sync(models.Model):
     _name = "sync.sync"
     _inherit = "sync.sheets"
@@ -49,67 +64,145 @@ class sync(models.Model):
     your_field = fields.Char(string="Your Field")
     your_sequence = fields.Integer(string="Your Sequence", readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('your.sequence.code'))
 
+    def get_logged_messages(self):
+        try:
+            # Get the start and end of the current day
+            today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            today_end = today_start + timedelta(days=1)
+
+            # Query the mail.message model for today's messages
+            messages = self.env["mail.message"].search([
+                ("create_date", ">=", today_start),
+                ("create_date", "<", today_end)
+            ])
+
+            # Format messages for display
+            return "\n".join(
+                [f"[{msg.create_date}] {msg.subject or '(No Subject)'}: {msg.body or '(No Body)'}" for msg in messages]
+            ) or "No logs available for today."
+        except Exception as e:
+            _logger.error("Failed to retrieve today's logs: %s", str(e), exc_info=True)
+            return "Couldn't retrieve logs."
+
     ###################################################################
     # STARTING POINT
     def start_sync(self, psw=None):
         _logger.info("Starting Sync")
-        db_name = self.env['ir.config_parameter'].sudo(
-        ).get_param('web.base.url')
-        template_id = sheetsAPI.get_master_database_template_id(db_name)
-        _logger.info("db_name: " + str(db_name))
-        _logger.info("template_id: " + str(template_id))
 
-        sheetName = ""
-        sheetIndex = -1
-        modelType = ""
-        valid = False
+        # Track sync start and end times
+        sync_start_time = fields.Datetime.now()
+        sync_end_time = None
 
-        line_index = 1
-        msg = ""
+        # Initialize sync report details
+        overall_status = "success"
+        combined_error_report = []
+        combined_items_updated = []
 
-        # Checks authentication values
-        if (not self.is_psw_format_good(psw)):
-            return
+        # Add custom log handler
+        log_handler = SyncLogHandler()
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        log_handler.setFormatter(formatter)
+        _logger.addHandler(log_handler)
 
-        # Get the ODOO_SYNC_DATA tab
-        sync_data = self.getMasterDatabaseSheet(
-            template_id, psw, self._odoo_sync_data_index)
+        try:
+            # (Rest of the sync logic...)
+            db_name = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+            template_id = sheetsAPI.get_master_database_template_id(db_name)
+            _logger.info("db_name: " + str(db_name))
+            _logger.info("template_id: " + str(template_id))
 
-        # loop through entries in first sheet
-        while (True):
-            msg_temp = ""
-            sheetName = str(sync_data[line_index][0])
-            sheetIndex, msg_temp = self.getSheetIndex(sync_data, line_index)
-            msg += msg_temp
-            modelType = str(sync_data[line_index][2])
-            valid = (str(sync_data[line_index][3]).upper() == "TRUE")
+            line_index = 1
+            msg = ""
 
-            if (not valid):
-                _logger.info("Valid: " + sheetName + " is " + str(valid) + " because the str was : " +
-                             str(sync_data[line_index][3]) + ".  Ending sync process!")
-                break
-
-            if (sheetIndex < 0):
-                break
-
-            _logger.info("Valid: " + sheetName + " is " + str(valid) + ".")
-            quit, msgr = self.getSyncValues(sheetName,
-                                            psw,
-                                            template_id,
-                                            sheetIndex,
-                                            modelType)
-            msg = msg + msgr
-            line_index += 1
-
-            if (quit):
-                self.syncFail(msg, self._sync_cancel_reason)
+            # Checks authentication values
+            if not self.is_psw_format_good(psw):
                 return
 
-        # error
-        if (msg != ""):
-            self.syncFail(msg, self._sync_fail_reason)
+            # Get the ODOO_SYNC_DATA tab
+            sync_data = self.getMasterDatabaseSheet(template_id, psw, self._odoo_sync_data_index)
 
-        _logger.info("Ending Sync")
+            # Loop through entries in the first sheet
+            while True:
+                msg_temp = ""
+                sheetName = str(sync_data[line_index][0])
+                sheetIndex, msg_temp = self.getSheetIndex(sync_data, line_index)
+                msg += msg_temp
+                modelType = str(sync_data[line_index][2])
+                valid = (str(sync_data[line_index][3]).upper() == "TRUE")
+
+                if not valid:
+                    _logger.info(f"Valid: {sheetName} is {valid}. Ending sync process!")
+                    break
+
+                if sheetIndex < 0:
+                    break
+
+                _logger.info(f"Valid: {sheetName} is {valid}.")
+                quit, msgr, sync_result = self.getSyncValues(sheetName, psw, template_id, sheetIndex, modelType)
+                msg += msgr
+                line_index += 1
+
+                if quit:
+                    self.syncFail(msg, self._sync_cancel_reason)
+                    return
+
+                # Process results for CCP and Pricelist syncs
+                if modelType in ["CCP", "Pricelist"]:
+                    status, error_report, items_updated = sync_result.get("status"), sync_result.get("error_report"), sync_result.get("items_updated")
+
+                    # Combine sync data
+                    combined_error_report.append(error_report)
+                    combined_items_updated.extend(items_updated)
+
+                    # Update overall status
+                    if status == "error":
+                        overall_status = "error"
+                    elif status == "warning" and overall_status != "error":
+                        overall_status = "warning"
+
+        finally:
+            # Ensure the custom log handler is removed
+            _logger.removeHandler(log_handler)
+
+            # Add today's logs to the error report
+            log_errors = self.get_logged_messages()
+            combined_error_report.append(f"Today's Logs:\n{log_errors}")
+
+            # Add captured logs to the error report
+            captured_logs = "\n".join(log_handler.records)
+            if captured_logs:
+                combined_error_report.append(f"Captured Logs:\n{captured_logs}")
+
+            # End sync
+            sync_end_time = fields.Datetime.now()
+
+            # Create sync report
+            self.create_sync_report(sync_start_time, sync_end_time, overall_status, combined_error_report, combined_items_updated)
+
+            _logger.info("Ending Sync")
+
+    ###################################################################
+    # Create Sync Report
+    def create_sync_report(self, start_time, end_time, status, error_reports, items_updated):
+        # Combine error reports into a single string
+        combined_error_report = "\n".join([report for report in error_reports if report])
+
+        # Generate name for the sync report
+        report_name = f"Report for {start_time.strftime('%H:%M')} sync on {start_time.strftime('%d/%m/%Y')}"
+
+        # Calculate sync duration in minutes
+        sync_duration = (end_time - start_time).total_seconds() / 60.0
+
+        # Create the sync report record
+        self.env['sync.report'].create({
+            'name': report_name,
+            'status': status,
+            'start_datetime': start_time,
+            'end_datetime': end_time,
+            'sync_duration': sync_duration,
+            'error_report': combined_error_report or "No errors yet...",
+            'items_updated': "\n".join(items_updated) or "No items updated..."
+        })
 
     ###################################################################
     # Check the password format
@@ -184,37 +277,39 @@ class sync(models.Model):
         return sheetIndex, msg
 
     ###################################################################
+    # Get Sync Values
     def getSyncValues(self, sheetName, psw, template_id, sheetIndex, syncType):
-
         sheet = self.getMasterDatabaseSheet(template_id, psw, sheetIndex)
+        sync_result = {"status": "success", "error_report": "", "items_updated": []}
 
         _logger.info("Sync Type is: " + syncType)
-        # identify the type of sheet
-        if (syncType == "Companies"):
+
+        # Identify the type of sheet
+        if syncType == "Companies":
             syncer = sync_companies(sheetName, sheet, self)
             quit, msg = syncer.syncCompanies()
 
-        elif (syncType == "Contacts"):
+        elif syncType == "Contacts":
             syncer = sync_contacts(sheetName, sheet, self)
             quit, msg = syncer.syncContacts()
 
-        elif (syncType == "Products"):
+        elif syncType == "Products":
             syncer = sync_products(sheetName, sheet, self)
             quit, msg = syncer.syncProducts(sheet)
 
-        elif (syncType == "CCP"):
+        elif syncType == "CCP":
             syncer = sync_ccp(sheetName, sheet, self)
-            quit, msg = syncer.syncCCP()
+            sync_result = syncer.syncCCP()  # New return format
+            quit = sync_result.get("status") == "error"
+            msg = sync_result.get("error_report", "")
 
-        elif (syncType == "Pricelist"):
-            # syncer = sync_pricelist.connect(sheetName, sheet, self)
+        elif syncType == "Pricelist":
             syncer = sync_pricelist(sheetName, sheet, self)
-            quit, msg = syncer.syncPricelist()
-            quit = False
-            msg = ""
-            # quit, msg = self.syncPricelist(sheet)
+            sync_result = syncer.syncPricelist()  # New return format
+            quit = sync_result.get("status") == "error"
+            msg = sync_result.get("error_report", "")
 
-        elif (syncType == "WebHTML"):
+        elif syncType == "WebHTML":
             syncer = syncWeb(sheetName, sheet, self)
             quit, msg = syncer.syncWebCode(sheet)
             if msg != "":
@@ -222,11 +317,7 @@ class sync(models.Model):
 
         _logger.info("Done with " + syncType)
 
-        if (quit):
-            _logger.info("quit: " + str(quit) + "\n")
-            _logger.info("msg:  " + str(msg))
-
-        return quit, msg
+        return quit, msg, sync_result
 
     ###################################################################
     # Build the message when a sync fail occurs.  Once builded, it will display the message
@@ -1159,3 +1250,13 @@ class sync(models.Model):
             if ((str(line.selected) == "false") and line.qty_delivered <= 0):
                 line.product_uom_qty = 0
         
+class SyncLogHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+        self.records = []
+
+    def emit(self, record):
+
+        # capture error and warning logs
+        if "ERROR" in record.msg or "WARNING" in record.msg:
+            self.records.append(self.format(record))

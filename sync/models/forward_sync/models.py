@@ -35,3 +35,31 @@ class pricelist(models.Model):
 class ccp(models.Model):
     _inherit = "stock.lot"
     stringRep = fields.Char(default="")
+
+# app related models
+
+class SyncReport(models.Model):
+    _name = 'sync.report'
+    _description = 'Sync Report'
+
+    name = fields.Char(string="Report Name", required=True)
+    status = fields.Selection(
+        [('success', 'Success'), ('warning', 'Warning'), ('error', 'Error')],
+        string="Status",
+        required=True,
+        default='success'
+    )
+    start_datetime = fields.Datetime(string="Start Date & Time", required=True, default=fields.Datetime.now)
+    end_datetime = fields.Datetime(string="End Date & Time")
+    sync_duration = fields.Float(string="Sync Duration (minutes)", compute="_compute_sync_duration", store=True)
+    error_report = fields.Text(string="Error Report")  # New field for Error Report
+    items_updated = fields.Text(string="Items Updated")  # New field for Items Updated
+
+    @api.depends('start_datetime', 'end_datetime')
+    def _compute_sync_duration(self):
+        for record in self:
+            if record.start_datetime and record.end_datetime:
+                delta = record.end_datetime - record.start_datetime
+                record.sync_duration = delta.total_seconds() / 60.0
+            else:
+                record.sync_duration = 0.0
