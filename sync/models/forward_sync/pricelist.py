@@ -488,9 +488,8 @@ class sync_pricelist:
                 "company_id": company_id,
                 "responsible_id": responsible_user.id,
                 "name": "Unnamed Product %s" % product_id,  # Fallback name
-                "applied_on": "0_product_variant",
             }
-            _logger.error("[product_id] SKU: " + product_id)
+            # _logger.error("[product_id] SKU: " + product_id)
 
             translations = {}
             field_mapping = {
@@ -519,8 +518,8 @@ class sync_pricelist:
                             translations.setdefault(lang, {})[field] = sheet_value
                             if field == "name" and lang == "en_US" and sheet_value:
                                 product_values["name"] = sheet_value
-                        elif column_name == "SKU":
-                            _logger.error("[sheet_value] SKU: " + sheet_value)
+                        # elif column_name == "SKU":
+                            # _logger.error("[sheet_value] SKU: " + sheet_value)
                         elif column_name in ["Publish_CA", "Publish_USA", "Can_Be_Sold", "Can_Be_Rented"]:
                             product_values[field_info] = self.normalize_bools(sheet_value)
                         elif column_name == "PriceCAD":
