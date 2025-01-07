@@ -488,6 +488,7 @@ class sync_pricelist:
                 "company_id": company_id,
                 "responsible_id": responsible_user.id,
                 "name": "Unnamed Product %s" % product_id,  # Fallback name
+                "detailed_type": "Storable Product",
             }
             # _logger.error("[product_id] SKU: " + product_id)
 
