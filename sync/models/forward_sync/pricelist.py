@@ -260,7 +260,7 @@ class sync_pricelist:
                                     "updateProduct: Field 'name' (%s) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
                                     "English" if lang == "en_US" else "French", product_id, odoo_name, name
                                 )
-                                product.with_context(lang=lang).write({"name": name})
+                                product.with_context(lang=lang).sudo().write({"name": name})
                                 updated_fields.append(f"name ({'English' if lang == 'en_US' else 'French'})")
 
                             # double check translation worked
@@ -288,7 +288,7 @@ class sync_pricelist:
                                     "updateProduct: Field 'description_sale' (%s) changed for Product ID %s. Old Value: '%s', New Value: '%s'.",
                                     "English" if lang == "en_US" else "French", product_id, current_description, description
                                 )
-                                product.with_context(lang=lang).write({"description_sale": description})
+                                product.with_context(lang=lang).sudo().write({"description_sale": description})
                                 updated_fields.append(f"description_sale ({'English' if lang == 'en_US' else 'French'})")
 
                             # double check translation worked
@@ -557,7 +557,7 @@ class sync_pricelist:
                 # Set translations for the product
                 for lang, fields in translations.items():
                     try:
-                        product.with_context(lang=lang).write(fields)
+                        product.with_context(lang=lang).sudo().write(fields)
                         _logger.info(
                             "createProduct: Successfully set translations for Product ID %s in language %s: %s.",
                             product.id, lang, fields
