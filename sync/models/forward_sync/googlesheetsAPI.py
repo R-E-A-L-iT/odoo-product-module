@@ -56,7 +56,7 @@ class sheetsAPI(models.Model):
             return _master_database_template_id_dev_bc
         elif dev_josh in _db_name:
             _logger.info("Dev Josh")
-            return _master_database_template_id_dev_bc
+            return _master_database_template_id_dev_josh
         else:
             _logger.info("Default Dev GS")
             return _master_database_template_id_prod
