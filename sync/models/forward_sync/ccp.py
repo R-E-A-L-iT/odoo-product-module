@@ -90,6 +90,10 @@ class sync_ccp:
     def syncCCP(self):
         _logger.info("syncCCP: Starting synchronization process for ccp")
         
+        # variables for sync report
+        items_updated = []
+        overall_status = "success"
+
         # variables to verify format
         # if you need to add more columns for new sync data, add them here
         expected_width = 11
@@ -118,21 +122,11 @@ class sync_ccp:
         sync_report = []
         
         # verify that sheet format is as expected
-        if sheet_width != expected_width:
-            error_msg = f"Sheet width mismatch. Expected: {expected_width}, Actual: {sheet_width}."
+        if sheet_width != expected_width or missing_columns or extra_columns:
+            error_msg = f"Sheet validation failed. Missing: {missing_columns}, Extra: {extra_columns}."
             _logger.error(f"syncCCP: {error_msg}")
-            self.add_to_report("ERROR", f"{error_msg}")
-            return True, error_msg
-        elif missing_columns:
-            error_msg = f"Missing columns: {missing_columns}."
-            _logger.error(f"syncCCP: {error_msg}")
-            self.add_to_report("ERROR", f"{error_msg}")
-            return True, error_msg
-        elif extra_columns:
-            error_msg = f"Extra columns: {extra_columns}."
-            _logger.error(f"syncCCP: {error_msg}")
-            self.add_to_report("ERROR", f"{error_msg}")
-            return True, error_msg
+            self.add_to_report("ERROR", error_msg)
+            return {"status": "error", "sync_report": self.sync_report, "items_updated": items_updated}
         
         _logger.info("syncCCP: Sheet validated. Proceeding with CCP synchronization.")
         
@@ -156,6 +150,7 @@ class sync_ccp:
                 if not valid:
                     warning_msg = f"Row {row_index}: Marked as invalid. Skipping."
                     _logger.info(f"syncCCP: {warning_msg}")
+                    overall_status = "warning" if overall_status != "error" else overall_status
                     # not sending this to report because intended feature
                     # sync_report.append(f"WARNING: {warning_msg}")
                     continue
@@ -164,31 +159,45 @@ class sync_ccp:
                 # get eid/sn and check if it exists in odoo
                 eidsn_column = sheet_columns.index("EID/SN")
                 eidsn = str(row[eidsn_column]).strip()
+
+                # get product sku and check if it exists in odoo
+                sku_column = sheet_columns.index("Product Code")
+                sku = str(row[sku_column]).strip()
                 
                 if not eidsn:
                     warning_msg = f"Row {row_index}: Missing EID/SN. Skipping."
                     _logger.warning(f"syncCCP: {warning_msg}")
                     self.add_to_report("WARNING", f"{warning_msg}")
+                    overall_status = "warning" if overall_status != "error" else overall_status
                     continue
                 
-                existing_ccp = self.database.env["stock.lot"].search([("name", "=", eidsn)], limit=1)
+                existing_ccp = self.database.env["stock.lot"].search([("name", "=", eidsn), ("sku", "=", sku)], limit=1)
                 
                 if existing_ccp:
-                    _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
+                    # _logger.info("syncCCP: Row %d: EID/SN '%s' found in Odoo. Calling updateCCP.", row_index, eidsn)
                     self.updateCCP(existing_ccp.id, row, sheet_columns, row_index)
+                    items_updated.append(f"Updated CCP: {eidsn}")
                 else:
-                    _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
-                    self.createCCP(eidsn, row, sheet_columns, row_index)
+
+                    # _logger.info("syncCCP: Row %d: EID/SN '%s' not found in Odoo. Calling createCCP.", row_index, eidsn)
+                    _logger.warning("syncCCP: Record not found with matching EID and Product SKU. Skipping creation.")
+                    # self.createCCP(eidsn, row, sheet_columns, row_index)
+                    # items_updated.append(f"Created CCP: {eidsn}")
             
             except Exception as e:
                 error_msg = f"Row {row_index}: Error occurred while processing: {str(e)}"
                 _logger.error(f"syncCCP: {error_msg}", exc_info=True)
                 self.add_to_report("ERROR", f"{error_msg}")
+                overall_status = "error"
                 
         if self.sync_report:
             utilities.send_report(self.sync_report, "CCP", self.database)
         
-        return False, "syncCCP: CCP synchronization completed successfully."
+        return {
+            "status": overall_status,
+            "sync_report": self.sync_report,
+            "items_updated": items_updated,
+        }
     
     
     
@@ -432,6 +441,10 @@ class sync_ccp:
                 
                 try:
                     
+                    product_code_column = sheet_columns.index("Product Code")
+                    product_code = str(row[product_code_column]).strip()
+                    new_ccp_values["sku"] = product_code
+
                     # honestly don't know what this block of queries does.
                     # all i know is that if you have a sku that is terribly wrong and messed up, it crashes the entire process
                     # but if you include these quieres, instead of crashing it magically skips it, generates an error, and continues
