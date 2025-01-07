@@ -349,7 +349,7 @@ class sync_pricelist:
                                     "updateProduct: Creating new price rule for Product ID %s on Pricelist '%s'. Value: '%s'.",
                                     product_id, pricelist_name, price
                                 )
-                                self.database.env["product.pricelist.item"].create({
+                                self.database.env["product.pricelist.item"].sudo().create({
                                     "pricelist_id": pricelist.id,
                                     "product_id": product.product_variant_ids[0].id,
                                     "fixed_price": price,
@@ -398,7 +398,7 @@ class sync_pricelist:
                                     "updateProduct: Creating new rental price rule for Product ID %s on Rental Pricelist '%s'. Value: '%s'.",
                                     product_id, pricelist_name, rental_price
                                 )
-                                self.database.env["product.pricelist.item"].create({
+                                self.database.env["product.pricelist.item"].sudo().create({
                                     "pricelist_id": rental_pricelist.id,
                                     "product_tmpl_id": product_id,
                                     "fixed_price": rental_price,
@@ -550,7 +550,7 @@ class sync_pricelist:
             try:
                 self.database.env.cr.execute("SAVEPOINT create_product_savepoint")
 
-                product = self.database.env["product.template"].create(product_values)
+                product = self.database.env["product.template"].sudo().create(product_values)
                 self.database.env.cr.execute("RELEASE SAVEPOINT create_product_savepoint")
                 _logger.info("createProduct: Successfully created Product ID %s with values: %s.", product.id, product_values)
 
