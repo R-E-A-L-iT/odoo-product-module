@@ -24,10 +24,35 @@ _logger = logging.getLogger(__name__)
 class productType(models.Model):
     _inherit = "product.template"
     skuhidden = fields.One2many("ir.model.data", "res_id", readonly=True)
-    sku = fields.Char(related="skuhidden.name", string="SKU", readonly=True)
+    sku = fields.Char(related="skuhidden.name", string="SKU")
     storeCode = fields.Text(string="E-Commerce Store Code", default="")
     ecom_folder = fields.Char(string="folder", required=True, default="")
     ecom_media = fields.Char(string="Img Count", required=True, default="")
+
+    @api.model
+    def create(self, vals):
+        record = super(productType, self).create(vals)
+        if "sku" in vals:
+            self._update_skuhidden(record.id, vals["sku"], record.name)
+        return record
+
+    def write(self, vals):
+        result = super(productType, self).write(vals)
+        if "sku" in vals:
+            for record in self:
+                self._update_skuhidden(record.id, vals["sku"], record.name)
+        return result
+
+    def _update_skuhidden(self, record_id, sku_value, record_name):
+        IrModelData = self.env["ir.model.data"]
+        data = IrModelData.search([("res_id", "=", record_id), ("model", "=", "product.template")], limit=1)
+        if data:
+            data.write({"name": sku_value, "display_name": record_name})
+        else:
+            IrModelData.create({"name": sku_value, "module": "",
+                                "model": "product.template", "res_id": record_id,
+                                "display_name": record_name,
+                                })
 
 
 class person(models.Model):
