@@ -42,10 +42,10 @@ class ProductTemplate(models.Model):
 
     # debugging
     def write(self, vals):
-        if "sku" in vals:
-            _logger.warning("Attempting to update SKU: %s", vals["sku"])
+        # if "sku" in vals:
+            # _logger.warning("Attempting to update SKU: %s", vals["sku"])
         result = super().write(vals)
-        _logger.warning("Post-write SKU value: %s", self.sku)
+        # _logger.warning("Post-write SKU value: %s", self.sku)
         return result
 
 
