@@ -712,6 +712,11 @@ class order(models.Model):
         required=True
     )
 
+    special = fields.Selection(invisible=True)
+    applied_name = fields.Char(invisible=True)
+    sectionSelected = fields.Selection(invisible=True)
+    hiddenSection = fields.Selection(invisible=True)
+
     # partner_ids = fields.Many2many("res.partner", "display_name", string="Contacts")
     email_contacts = fields.Many2many("res.partner", "display_name", string="Email Contacts")
 
