@@ -828,20 +828,6 @@ class order(models.Model):
             if rental_pricelist:
                 self.pricelist_id = rental_pricelist.id
         
-        domain = [('name', 'not ilike', 'default')]  # Exclude pricelists with "Default" in their name
-        if self.partner_id and not self.is_rental:
-            # Add non-rental-specific domain conditions
-            domain.append(('name', 'not ilike', 'rental'))
-        elif self.partner_id and self.is_rental:
-            # Add rental-specific domain conditions
-            domain.append(('name', 'ilike', 'rental'))
-        
-        return {
-            'domain': {
-                'pricelist_id': domain
-            }
-        }
-
         # else:
         #     # Reset pricelist if not rental
         #     self.pricelist_id = False
@@ -1656,6 +1642,13 @@ class MailComposeMessage(models.TransientModel):
             else:
                 record.email_contacts = False
     
+    @api.model
+    def default_get(self, fields_list):
+        defaults = super(Order, self).default_get(fields_list)
+        defaults['pricelist_id_domain'] = [('name', 'not ilike', 'default')]
+        return defaults
+
+
     # @api.model
     # def default_get(self, fields_list):
     #     res = super(MailComposeMessage, self).default_get(fields_list)
