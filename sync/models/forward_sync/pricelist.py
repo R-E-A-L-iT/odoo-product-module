@@ -122,8 +122,8 @@ class sync_pricelist:
             "DEALER DISCOUNT",
         ]
 
-        sheet_width = len(self.sheet[1]) if len(self.sheet) > 1 else 0
         sheet_columns = self.sheet[0] if len(self.sheet) > 0 else []
+        sheet_width = len(sheet_columns)
         
         # variables that will contain a list of any missing or extra columns in the sheet
         missing_columns = [header for header in expected_columns.keys() if header not in sheet_columns]
@@ -133,12 +133,12 @@ class sync_pricelist:
         sync_report = []
         
         # verify that sheet format is as expected
-        if sheet_width != expected_width or missing_columns or extra_columns:
+        iif sheet_width < expected_width or missing_columns or extra_columns:
             error_msg = f"Sheet validation failed. Missing: {missing_columns}, Extra: {extra_columns}."
             _logger.error(f"syncPricelist: {error_msg}")
             self.add_to_report("ERROR", error_msg)
             return {"status": "error", "sync_report": self.sync_report, "items_updated": items_updated}
-        
+
         _logger.info("syncPricelist: Sheet validated. Proceeding with Pricelist synchronization.")
 
         # start processing rows beginning at second row
@@ -148,7 +148,7 @@ class sync_pricelist:
                 # only proceed if the value for continue is marked as true
                 continue_column = sheet_columns.index("Continue")
                 should_continue = str(row[continue_column]).strip().lower() == "true"
-                
+
                 if not should_continue:
                     _logger.info("syncPricelist: Row %d: Continue is set to false. Stopping the sync here.", row_index)
                     break
@@ -157,24 +157,18 @@ class sync_pricelist:
                 # only proceed if the row is marked as valid
                 valid_column = sheet_columns.index("Valid")
                 valid = str(row[valid_column]).strip().lower() == "true"
-                
+
                 if not valid:
-                    warning_msg = f"Row {row_index}: Marked as invalid. Skipping."
-                    _logger.info(f"syncPricelist: {warning_msg}")
-                    overall_status = "warning" if overall_status != "error" else overall_status
-                    # not sending this to report because intended feature
-                    # sync_report.append(f"WARNING: {warning_msg}")
+                    _logger.info("syncPricelist: Row %d: Marked as invalid. Skipping.", row_index)
                     continue
     
                 
                 # get eid/sn and check if it exists in odoo
                 sku_column = sheet_columns.index("SKU")
                 sku = str(row[sku_column]).strip()
-                
+
                 if not sku:
-                    warning_msg = f"Row {row_index}: Missing SKU. Skipping."
-                    _logger.warning(f"syncPricelist: {warning_msg}")
-                    self.add_to_report("WARNING", f"{warning_msg}")
+                    self.add_to_report("WARNING", f"Row {row_index}: Missing SKU. Skipping.")
                     continue
                 
                 existing_product = self.database.env["product.template"].search([("sku", "=", sku)], limit=1)
