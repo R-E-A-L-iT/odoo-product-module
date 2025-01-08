@@ -708,7 +708,7 @@ class order(models.Model):
     pricelist_id = fields.Many2one(
         'product.pricelist',
         string='Pricelist',
-        domain="[('name', 'not ilike', 'default')]",
+        domain="[('name', 'not ilike', 'Default')]",
         required=True
     )
 
