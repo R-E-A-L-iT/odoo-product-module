@@ -133,7 +133,7 @@ class sync_pricelist:
         sync_report = []
         
         # verify that sheet format is as expected
-        iif sheet_width < expected_width or missing_columns or extra_columns:
+        if sheet_width < expected_width or missing_columns or extra_columns:
             error_msg = f"Sheet validation failed. Missing: {missing_columns}, Extra: {extra_columns}."
             _logger.error(f"syncPricelist: {error_msg}")
             self.add_to_report("ERROR", error_msg)
