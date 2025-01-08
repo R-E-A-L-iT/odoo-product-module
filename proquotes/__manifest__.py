@@ -80,6 +80,7 @@
         "views/Quote/quoteMailWizard.xml",
         "views/Other/mail.xml",
         "views/Other/deliverPDF.xml",
+        "views/Other/project_task.xml",
         "views/Other/pdf_boxed.xml",
         "views/Other/section_name.xml",
         "views/Other/internal_company_backend.xml",
