@@ -34,23 +34,23 @@ class product(models.Model):
 
     @api.onchange('dealer_discount', 'list_price')
     def _onchange_dealer_discount(self):
-        for product in self:
-            if product.list_price > 0 and product.dealer_discount >= 0:
-                product.standard_price = product.list_price * (1 - product.dealer_discount)
+        for item in self:
+            if item.list_price > 0 and item.dealer_discount >= 0:
+                item.standard_price = item.list_price * (1 - item.dealer_discount)
 
     @api.model
     def write(self, vals):
-        result = super(ProductTemplate, self).write(vals)
+        result = super(product, self).write(vals)
         vendor_name = "Leica Geosystems Ltd."
         vendor = self.env['res.partner'].search([('name', '=', vendor_name)], limit=1)
         if vendor:
-            for product in self:
+            for item in self:
                 # Calculate cost price based on dealer discount
-                cost_price = product.list_price * (1 - product.dealer_discount)
+                cost_price = item.list_price * (1 - item.dealer_discount)
 
                 # Search for existing supplier info
                 supplierinfo = self.env['product.supplierinfo'].search([
-                    ('product_tmpl_id', '=', product.id),
+                    ('product_tmpl_id', '=', item.id),
                     ('name', '=', vendor.id)
                 ], limit=1)
 
@@ -60,9 +60,9 @@ class product(models.Model):
                     # Create a new supplier info entry if it doesn't exist
                     self.env['product.supplierinfo'].create({
                         'name': vendor.id,
-                        'product_tmpl_id': product.id,
+                        'product_tmpl_id': item.id,
                         'price': cost_price,
-                        'currency_id': product.currency_id.id,  # Use the product's currency
+                        'currency_id': item.currency_id.id,  # Use the product's currency
                     })
 
         return result
