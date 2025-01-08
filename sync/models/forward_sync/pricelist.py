@@ -445,13 +445,13 @@ class sync_pricelist:
                                 discount_percentage = float(sheet_value.strip().rstrip('%')) / 100 if '%' in sheet_value else float(sheet_value.strip())
 
                                 # Update the product's margin percentage field
-                                if product.margin_percentage != discount_percentage:
+                                if product.margin_percent != discount_percentage:
                                     _logger.info(
                                         "updateProduct: Updating margin percentage for Product ID %s. Old Value: '%s', New Value: '%s'.",
-                                        product_id, product.margin_percentage, discount_percentage
+                                        product_id, product.margin_percent, discount_percentage
                                     )
-                                    product.sudo().write({"margin_percentage": discount_percentage})
-                                    updated_fields.append("margin_percentage")
+                                    product.sudo().write({"margin_percent": discount_percentage})
+                                    updated_fields.append("margin_percent")
                             except ValueError as e:
                                 _logger.error(
                                     "updateProduct: Invalid DEALER DISCOUNT value '%s' for Product ID %s: %s",
