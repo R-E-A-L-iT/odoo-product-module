@@ -51,7 +51,7 @@ class product(models.Model):
                 # Search for existing supplier info
                 supplierinfo = self.env['product.supplierinfo'].search([
                     ('product_tmpl_id', '=', item.id),
-                    ('name', '=', vendor.id)
+                    ('partner_id', '=', vendor.id)
                 ], limit=1)
 
                 if supplierinfo:
@@ -59,7 +59,7 @@ class product(models.Model):
                 else:
                     # Create a new supplier info entry if it doesn't exist
                     self.env['product.supplierinfo'].create({
-                        'name': vendor.id,
+                        'partner_id': vendor.id,
                         'product_tmpl_id': item.id,
                         'price': cost_price,
                         'currency_id': item.currency_id.id,  # Use the product's currency

@@ -477,13 +477,13 @@ class sync_pricelist:
                         if vendor:
                             supplierinfo = self.database.env["product.supplierinfo"].search([
                                 ('product_tmpl_id', '=', product.id),
-                                ('name', '=', vendor.id)
+                                ('partner_id', '=', vendor.id)
                             ], limit=1)
                             if supplierinfo:
                                 supplierinfo.write({'price': new_cost_price})
                             else:
                                 self.database.env["product.supplierinfo"].sudo().create({
-                                    'name': vendor.id,
+                                    'partner_id': vendor.id,
                                     'product_tmpl_id': product.id,
                                     'price': new_cost_price,
                                     'currency_id': product.currency_id.id,  # Use product's currency
