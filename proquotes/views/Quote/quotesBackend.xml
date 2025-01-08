@@ -137,4 +137,15 @@
             <xpath expr="//page[@name=&quot;optional_products&quot;]" position="replace"></xpath>
         </field>
     </record>
+
+    <record id="view_order_form_inherit" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form" />
+        <field name="arch" type="xml">
+            <field name="pricelist_id" position="attributes">
+                <attribute name="domain">[('name', 'not ilike', 'default')]</attribute>
+            </field>
+        </field>
+    </record>
 </odoo>
