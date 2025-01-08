@@ -438,33 +438,7 @@ class sync_pricelist:
                                 product.rent_ok = can_be_value
                                 if product.rent_ok == can_be_value:
                                     updated_fields.append("rent_ok")
-
-                        elif "DEALER DISCOUNT" in column_name:
-                            try:
-                                # Get the discount percentage from the sheet value
-                                discount_percentage = float(sheet_value.strip().rstrip('%')) / 100 if '%' in sheet_value else float(sheet_value.strip())
-
-                                # Update the product's margin percentage field
-                                if product.margin_percent != discount_percentage:
-                                    _logger.info(
-                                        "updateProduct: Updating margin percentage for Product ID %s. Old Value: '%s', New Value: '%s'.",
-                                        product_id, product.margin_percent, discount_percentage
-                                    )
-                                    product.sudo().write({"margin_percent": discount_percentage})
-                                    updated_fields.append("margin_percent")
-                            except ValueError as e:
-                                _logger.error(
-                                    "updateProduct: Invalid DEALER DISCOUNT value '%s' for Product ID %s: %s",
-                                    sheet_value, product_id, str(e)
-                                )
-                                self.add_to_report("ERROR", f"Invalid DEALER DISCOUNT value '{sheet_value}' for Product ID {product_id}: {str(e)}")
-                            except Exception as e:
-                                _logger.error(
-                                    "updateProduct: Error while updating margin percentage for Product ID %s: %s",
-                                    product_id, str(e), exc_info=True
-                                )
-                                self.add_to_report("ERROR", f"Error while updating margin percentage for Product ID {product_id}: {str(e)}")
-
+                            
                 except Exception as e:
                     _logger.error(
                         "updateProduct: Error while updating field '%s' for Product ID %s: %s",
@@ -472,7 +446,39 @@ class sync_pricelist:
                     )
                     self.add_to_report("ERROR", f"updateProduct: Error while updating field {odoo_field} for Product ID {product_id}: {str(e)}")
 
-            # Log updated fields
+            # special handling of margins (not available for all products/pricelists)
+            if "DEALER DISCOUNT" in sheet_columns:
+                try:
+                    # Get column index and value
+                    column_index = sheet_columns.index("DEALER DISCOUNT")
+                    sheet_value = str(row[column_index]).strip()
+
+                    # Parse discount value
+                    discount_percentage = float(sheet_value.rstrip('%')) / 100 if '%' in sheet_value else float(sheet_value)
+
+                    # Update margin percentage if different
+                    if product.margin_percent != discount_percentage:
+                        _logger.info(
+                            "updateProduct: Updating margin percentage for Product ID %s. Old Value: '%s', New Value: '%s'.",
+                            product_id, product.margin_percent, discount_percentage
+                        )
+                        product.sudo().write({"margin_percent": discount_percentage})
+                        updated_fields.append("margin_percent")
+                except ValueError as e:
+                    _logger.error(
+                        "updateProduct: Invalid DEALER DISCOUNT value '%s' for Product ID %s: %s",
+                        sheet_value, product_id, str(e)
+                    )
+                    self.add_to_report("ERROR", f"Invalid DEALER DISCOUNT value '{sheet_value}' for Product ID {product_id}: {str(e)}")
+                except Exception as e:
+                    _logger.error(
+                        "updateProduct: Error while updating margin percentage for Product ID %s: %s",
+                        product_id, str(e), exc_info=True
+                    )
+                    self.add_to_report("ERROR", f"Error while updating margin percentage for Product ID {product_id}: {str(e)}")
+
+
+            # log updated fields
             if updated_fields:
                 _logger.info(
                     "updateProduct: Updated fields for Product ID %s: %s.", product_id, ", ".join(updated_fields)
