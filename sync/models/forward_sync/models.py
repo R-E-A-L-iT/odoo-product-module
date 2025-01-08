@@ -56,16 +56,25 @@ class product(models.Model):
 
                 if supplierinfo:
                     supplierinfo.write({'price': cost_price})
+                    _logger.info(
+                        "write: Updated vendor price for Product ID %s and Vendor '%s'. New Price: '%s'.",
+                        item.id, vendor.name, cost_price
+                    )
                 else:
                     # Create a new supplier info entry if it doesn't exist
-                    self.env['product.supplierinfo'].create({
+                    self.env['product.supplierinfo'].sudo().create({
                         'partner_id': vendor.id,
                         'product_tmpl_id': item.id,
                         'price': cost_price,
                         'currency_id': item.currency_id.id,  # Use the product's currency
                     })
+                    _logger.info(
+                        "write: Created new vendor price for Product ID %s and Vendor '%s'. Price: '%s'.",
+                        item.id, vendor.name, cost_price
+                    )
 
         return result
+
 
 
 class pricelist(models.Model):

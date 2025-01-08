@@ -479,15 +479,25 @@ class sync_pricelist:
                                 ('product_tmpl_id', '=', product.id),
                                 ('partner_id', '=', vendor.id)
                             ], limit=1)
+
                             if supplierinfo:
                                 supplierinfo.write({'price': new_cost_price})
+                                _logger.info(
+                                    "updateProduct: Updated vendor price for Product ID %s and Vendor '%s'. New Price: '%s'.",
+                                    product_id, vendor.name, new_cost_price
+                                )
                             else:
+                                # Create new supplier info if it doesn't exist
                                 self.database.env["product.supplierinfo"].sudo().create({
                                     'partner_id': vendor.id,
                                     'product_tmpl_id': product.id,
                                     'price': new_cost_price,
                                     'currency_id': product.currency_id.id,  # Use product's currency
                                 })
+                                _logger.info(
+                                    "updateProduct: Created new vendor price for Product ID %s and Vendor '%s'. Price: '%s'.",
+                                    product_id, vendor.name, new_cost_price
+                                )
 
                         # Log the cost price update
                         _logger.info(
@@ -513,20 +523,6 @@ class sync_pricelist:
                     )
                     self.add_to_report("ERROR", f"Error while processing dealer discount for Product ID {product_id}: {str(e)}")
 
-
-            # log updated fields
-            if updated_fields:
-                _logger.info(
-                    "updateProduct: Updated fields for Product ID %s: %s.", product_id, ", ".join(updated_fields)
-                )
-                self.sync_report.append(
-                    f"Pricelist: Updated Product SKU: {product.sku} - Fields Updated: {', '.join(updated_fields)}"
-                )
-
-        except Exception as e:
-            error_msg = f"Row {row_index}: Error updating Product with SKU {product_id}: {str(e)}"
-            _logger.error(f"updateProduct: {error_msg}", exc_info=True)
-            self.add_to_report("ERROR", f"{error_msg}")
 
 
     # this function is called to create a new product if the sku is not recognized
