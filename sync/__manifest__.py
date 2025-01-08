@@ -17,7 +17,6 @@
     "depends": [
         "base",
         "proportal",
-
         "product",
         "google_account",
         "proquotes",
@@ -30,6 +29,6 @@
         "data/reverse_contact.xml",
         "views/company_backend.xml",
         "views/module_dashboard.xml",
-        "views/product_template_views.xml",
+        # "views/product_template_views.xml",
     ],
 }
