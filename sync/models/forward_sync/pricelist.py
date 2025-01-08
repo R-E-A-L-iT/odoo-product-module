@@ -508,7 +508,7 @@ class sync_pricelist:
                         # Add updated fields to the report
                         updated_fields.append("dealer_discount")
                         updated_fields.append("standard_price")
-
+                        
                 except ValueError as e:
                     _logger.error(
                         "updateProduct: Invalid DEALER DISCOUNT value '%s' for Product ID %s: %s",
@@ -522,6 +522,13 @@ class sync_pricelist:
                         product_id, str(e), exc_info=True
                     )
                     self.add_to_report("ERROR", f"Error while processing dealer discount for Product ID {product_id}: {str(e)}")
+        
+        except Exception as e:
+            _logger.error(
+                "updateProduct: Error while updating product ID %s: %s",
+                product_id, str(e), exc_info=True
+            )
+            self.add_to_report("ERROR", f"Error while updating product ID {product_id}: {str(e)}")
 
 
 
