@@ -89,7 +89,6 @@ class sync_pricelist:
 
         # variables to verify format
         # if you need to add more columns for new sync data, add them here
-        expected_width = 24
         expected_columns = {
             "SKU": "sku",
             "EN-Name": "name_en",
@@ -116,6 +115,7 @@ class sync_pricelist:
             "Valid": "valid",
             "Continue": "continue",
         }
+        expected_width = len(expected_columns)
 
         # columns that will not trigger sync validation failure regardless of whether they are present or not
         ignored_columns = [
