@@ -705,33 +705,6 @@ class invoice(models.Model):
 class order(models.Model):
     _inherit = "sale.order"
 
-    pricelist_id = fields.Many2one(
-        'product.pricelist',
-        string='Pricelist',
-        domain="[('name', 'not ilike', 'Default')]",
-        required=True
-    )
-
-    special = fields.Selection(
-        selection=[],  # An empty selection disables the dropdown
-        string="Special",
-        invisible=True
-    )
-    applied_name = fields.Char(
-        string="Applied Name",
-        invisible=True
-    )
-    sectionSelected = fields.Selection(
-        selection=[],  # An empty selection disables the dropdown
-        string="Section Selected",
-        invisible=True
-    )
-    hiddenSection = fields.Selection(
-        selection=[],  # An empty selection disables the dropdown
-        string="Hidden Section",
-        invisible=True
-    )
-
     # partner_ids = fields.Many2many("res.partner", "display_name", string="Contacts")
     email_contacts = fields.Many2many("res.partner", "display_name", string="Email Contacts")
 
