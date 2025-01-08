@@ -456,26 +456,62 @@ class sync_pricelist:
                     # Parse discount value
                     discount_percentage = float(sheet_value.rstrip('%')) / 100 if '%' in sheet_value else float(sheet_value)
 
-                    # Update margin percentage if different
-                    if product.margin_percent != discount_percentage:
+                    # Check if the dealer discount needs updating
+                    if product.dealer_discount != discount_percentage:
+                        # Log the update
                         _logger.info(
-                            "updateProduct: Updating margin percentage for Product ID %s. Old Value: '%s', New Value: '%s'.",
-                            product_id, product.margin_percent, discount_percentage
+                            "updateProduct: Updating dealer discount for Product ID %s. Old Value: '%s', New Value: '%s'.",
+                            product_id, product.dealer_discount, discount_percentage
                         )
-                        product.sudo().write({"margin_percent": discount_percentage})
-                        updated_fields.append("margin_percent")
+
+                        # Update dealer discount
+                        product.sudo().write({"dealer_discount": discount_percentage})
+
+                        # Update the cost price based on the new dealer discount
+                        new_cost_price = product.list_price * (1 - discount_percentage)
+                        product.sudo().write({"standard_price": new_cost_price})
+
+                        # Update vendor price
+                        vendor_name = "Leica Geosystems Ltd."
+                        vendor = self.database.env['res.partner'].search([('name', '=', vendor_name)], limit=1)
+                        if vendor:
+                            supplierinfo = self.database.env["product.supplierinfo"].search([
+                                ('product_tmpl_id', '=', product.id),
+                                ('name', '=', vendor.id)
+                            ], limit=1)
+                            if supplierinfo:
+                                supplierinfo.write({'price': new_cost_price})
+                            else:
+                                self.database.env["product.supplierinfo"].sudo().create({
+                                    'name': vendor.id,
+                                    'product_tmpl_id': product.id,
+                                    'price': new_cost_price,
+                                    'currency_id': product.currency_id.id,  # Use product's currency
+                                })
+
+                        # Log the cost price update
+                        _logger.info(
+                            "updateProduct: Updated cost price for Product ID %s. New Cost Price: '%s'.",
+                            product_id, new_cost_price
+                        )
+
+                        # Add updated fields to the report
+                        updated_fields.append("dealer_discount")
+                        updated_fields.append("standard_price")
+
                 except ValueError as e:
                     _logger.error(
                         "updateProduct: Invalid DEALER DISCOUNT value '%s' for Product ID %s: %s",
                         sheet_value, product_id, str(e)
                     )
                     self.add_to_report("ERROR", f"Invalid DEALER DISCOUNT value '{sheet_value}' for Product ID {product_id}: {str(e)}")
+
                 except Exception as e:
                     _logger.error(
-                        "updateProduct: Error while updating margin percentage for Product ID %s: %s",
+                        "updateProduct: Error while processing dealer discount for Product ID %s: %s",
                         product_id, str(e), exc_info=True
                     )
-                    self.add_to_report("ERROR", f"Error while updating margin percentage for Product ID {product_id}: {str(e)}")
+                    self.add_to_report("ERROR", f"Error while processing dealer discount for Product ID {product_id}: {str(e)}")
 
 
             # log updated fields
