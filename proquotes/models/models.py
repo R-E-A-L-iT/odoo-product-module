@@ -712,10 +712,31 @@ class order(models.Model):
         required=True
     )
 
-    special = fields.Selection(invisible=True)
-    applied_name = fields.Char(invisible=True)
-    sectionSelected = fields.Selection(invisible=True)
-    hiddenSection = fields.Selection(invisible=True)
+    from odoo import models, fields
+
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    special = fields.Selection(
+        selection=[],  # An empty selection disables the dropdown
+        string="Special",
+        invisible=True
+    )
+    applied_name = fields.Char(
+        string="Applied Name",
+        invisible=True
+    )
+    sectionSelected = fields.Selection(
+        selection=[],  # An empty selection disables the dropdown
+        string="Section Selected",
+        invisible=True
+    )
+    hiddenSection = fields.Selection(
+        selection=[],  # An empty selection disables the dropdown
+        string="Hidden Section",
+        invisible=True
+    )
+
 
     # partner_ids = fields.Many2many("res.partner", "display_name", string="Contacts")
     email_contacts = fields.Many2many("res.partner", "display_name", string="Email Contacts")
