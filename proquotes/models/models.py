@@ -705,6 +705,13 @@ class invoice(models.Model):
 class order(models.Model):
     _inherit = "sale.order"
 
+    pricelist_id = fields.Many2one(
+        'product.pricelist',
+        string='Pricelist',
+        domain="[('name', 'not ilike', 'Default')]",
+        required=True
+    )
+
     # partner_ids = fields.Many2many("res.partner", "display_name", string="Contacts")
     email_contacts = fields.Many2many("res.partner", "display_name", string="Email Contacts")
 
