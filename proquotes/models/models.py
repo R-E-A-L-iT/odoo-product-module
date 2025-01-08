@@ -1400,7 +1400,8 @@ class order(models.Model):
                 [x._convert_to_tax_base_line_dict() for x in order_lines],
                 order.currency_id or order.company_id.currency_id,
             )
-            _logger.info('>>>>>>>>>>>>>>>>. order.tax_totals: %s,', order.tax_totals)
+            # _logger.info('>>>>>>>>>>>>>>>>. order.tax_totals: %s,', order.tax_totals)
+            order.sudo().update({'amount_total': float(order.tax_totals['amount_total'])})
 
     def _notify_get_recipients_groups(self, message, model_description, msg_vals=None):
         """ Give access button to all users and portal customers to view the quote in the portal. """

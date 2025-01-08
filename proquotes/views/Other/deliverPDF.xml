@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <odoo>
+	<template id="stock_report_delivery_has_serial_move_line_inherit"
+              inherit_id="stock.stock_report_delivery_has_serial_move_line">
+        <xpath expr="//td[1]" position="replace">
+            <td>
+                <span t-field="move_line.product_id"/>
+                <span class="description-root" t-raw="move_line.product_id.description_sale"
+                      t-if="move_line.product_id.description_sale" style="color: #777;"/>
+            </td>
+        </xpath>
+    </template>
+    <template id="report_picking_inherit" inherit_id="stock.report_picking">
+        <xpath expr="//table[@class='table table-sm']/tbody/tr/td[1]" position="replace">
+            <td>
+                <span t-field="ml.product_id.display_name"/><br/>
+                <span t-field="ml.product_id.description_picking"/><br/>
+                <span class="description-root" t-raw="ml.product_id.description_sale" t-if="ml.product_id.description_sale" style="color: #777;"/>
+            </td>
+        </xpath>
+    </template>
+    
 	<template id="deliver" name="Proquotes Deliver" inherit_id="stock.report_delivery_document" priority="17">
 
 		<!-- Translate Info Labels -->
