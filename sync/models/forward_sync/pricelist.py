@@ -117,12 +117,17 @@ class sync_pricelist:
             "Continue": "continue",
         }
 
+        # columns that will not trigger sync validation failure regardless of whether they are present or not
+        ignored_columns = [
+            "DEALER DISCOUNT",
+        ]
+
         sheet_width = len(self.sheet[1]) if len(self.sheet) > 1 else 0
         sheet_columns = self.sheet[0] if len(self.sheet) > 0 else []
         
         # variables that will contain a list of any missing or extra columns in the sheet
         missing_columns = [header for header in expected_columns.keys() if header not in sheet_columns]
-        extra_columns = [header for header in sheet_columns if header not in expected_columns]
+        extra_columns = [header for header in sheet_columns if header not in expected_columns and header not in ignored_columns]
         
         # initialize list of warnings/errors for report
         sync_report = []
@@ -440,6 +445,31 @@ class sync_pricelist:
                                 if product.rent_ok == can_be_value:
                                     updated_fields.append("rent_ok")
 
+                        elif "DEALER DISCOUNT" in column_name:
+                            try:
+                                # Get the discount percentage from the sheet value
+                                discount_percentage = float(sheet_value.strip().rstrip('%')) / 100 if '%' in sheet_value else float(sheet_value.strip())
+
+                                # Update the product's margin percentage field
+                                if product.margin_percentage != discount_percentage:
+                                    _logger.info(
+                                        "updateProduct: Updating margin percentage for Product ID %s. Old Value: '%s', New Value: '%s'.",
+                                        product_id, product.margin_percentage, discount_percentage
+                                    )
+                                    product.sudo().write({"margin_percentage": discount_percentage})
+                                    updated_fields.append("margin_percentage")
+                            except ValueError as e:
+                                _logger.error(
+                                    "updateProduct: Invalid DEALER DISCOUNT value '%s' for Product ID %s: %s",
+                                    sheet_value, product_id, str(e)
+                                )
+                                self.add_to_report("ERROR", f"Invalid DEALER DISCOUNT value '{sheet_value}' for Product ID {product_id}: {str(e)}")
+                            except Exception as e:
+                                _logger.error(
+                                    "updateProduct: Error while updating margin percentage for Product ID %s: %s",
+                                    product_id, str(e), exc_info=True
+                                )
+                                self.add_to_report("ERROR", f"Error while updating margin percentage for Product ID {product_id}: {str(e)}")
 
                 except Exception as e:
                     _logger.error(
