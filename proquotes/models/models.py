@@ -712,11 +712,6 @@ class order(models.Model):
         required=True
     )
 
-    from odoo import models, fields
-
-class SaleOrderLine(models.Model):
-    _inherit = 'sale.order.line'
-
     special = fields.Selection(
         selection=[],  # An empty selection disables the dropdown
         string="Special",
@@ -736,7 +731,6 @@ class SaleOrderLine(models.Model):
         string="Hidden Section",
         invisible=True
     )
-
 
     # partner_ids = fields.Many2many("res.partner", "display_name", string="Contacts")
     email_contacts = fields.Many2many("res.partner", "display_name", string="Email Contacts")
