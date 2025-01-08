@@ -767,6 +767,8 @@ class order(models.Model):
         if immediate_payment_term:
             defaults['payment_term_id'] = immediate_payment_term.id
 
+        defaults['pricelist_id_domain'] = [('name', 'not ilike', 'default')]
+
         return defaults
 
     def action_quotation_send(self):
@@ -1641,12 +1643,6 @@ class MailComposeMessage(models.TransientModel):
                     record.email_contacts = False
             else:
                 record.email_contacts = False
-    
-    @api.model
-    def default_get(self, fields_list):
-        defaults = super(Order, self).default_get(fields_list)
-        defaults['pricelist_id_domain'] = [('name', 'not ilike', 'default')]
-        return defaults
 
 
     # @api.model
