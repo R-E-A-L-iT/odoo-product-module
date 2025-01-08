@@ -705,6 +705,13 @@ class invoice(models.Model):
 class order(models.Model):
     _inherit = "sale.order"
 
+    pricelist_id = fields.Many2one(
+        'product.pricelist',
+        string='Pricelist',
+        domain="[('name', 'not ilike', 'default')]",
+        required=True
+    )
+
     # partner_ids = fields.Many2many("res.partner", "display_name", string="Contacts")
     email_contacts = fields.Many2many("res.partner", "display_name", string="Email Contacts")
 
@@ -766,8 +773,6 @@ class order(models.Model):
         # If found, set it as the default payment term
         if immediate_payment_term:
             defaults['payment_term_id'] = immediate_payment_term.id
-
-        defaults['pricelist_id_domain'] = [('name', 'not ilike', 'default')]
 
         return defaults
 
