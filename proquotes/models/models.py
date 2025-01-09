@@ -1567,6 +1567,20 @@ class orderLineProquotes(models.Model):
         help="Field to Lock Quantity on Products",
     )
 
+    is_optional = fields.Boolean(
+        required=True, string="Optional",
+        help="Field to Mark Product as Optional",
+    )
+    is_selected = fields.Boolean(
+        required=True, string="Selected",
+        help="Field to Mark Wether Customer has Selected Product",
+    )
+    is_quantityLocked = fields.Boolean(
+        string="Lock Quantity",
+        required=True,
+        help="Field to Lock Quantity on Products",
+    )
+    
     def get_applied_name(self):
         return True
         # n = name_translation(self)
