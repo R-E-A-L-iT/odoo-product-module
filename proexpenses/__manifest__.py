@@ -6,6 +6,7 @@
     'author': 'Ezekiel J. deBlois',
     'depends': ['base', 'account'],
     'data': [
+        'security/ir.model.access.csv',
         'views/bank_statement_views.xml',
     ],
     'application': False,
