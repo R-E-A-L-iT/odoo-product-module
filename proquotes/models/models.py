@@ -780,6 +780,8 @@ class order(models.Model):
                 self.is_rental = True
             else:
                 self.is_rental = False
+            for line in self.order_line:
+                line.tax_id = [(5, 0, 0)]
 
     # @api.onchange('sale_order_template_id')
     # def _onchange_sale_order_template_id(self):
@@ -1580,7 +1582,7 @@ class orderLineProquotes(models.Model):
         required=True,
         help="Field to Lock Quantity on Products",
     )
-    
+
     def get_applied_name(self):
         return True
         # n = name_translation(self)
