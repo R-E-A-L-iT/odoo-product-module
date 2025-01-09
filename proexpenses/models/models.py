@@ -51,7 +51,7 @@ class AccountBankStatementLine(models.Model):
             'invoice_line_ids': [(0, 0, {
                 'name': 'Inter-Company Expense',
                 'account_id': self.env['account.account'].search(
-                    [('user_type_id.name', '=', 'Expenses')], limit=1
+                    [('account_type', '=', 'expense')], limit=1
                 ).id,
                 'price_unit': abs(self.amount),
             })],
@@ -64,7 +64,7 @@ class AccountBankStatementLine(models.Model):
             'invoice_line_ids': [(0, 0, {
                 'name': 'Inter-Company Expense',
                 'account_id': self.env['account.account'].search(
-                    [('user_type_id.name', '=', 'Expenses')], limit=1
+                    [('account_type', '=', 'expense')], limit=1
                 ).id,
                 'price_unit': abs(self.amount),
             })],
