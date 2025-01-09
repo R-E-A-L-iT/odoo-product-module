@@ -25,14 +25,15 @@ class ExpenseTransferWizard(models.TransientModel):
 class AccountBankStatementLine(models.Model):
     _inherit = 'account.bank.statement.line'
 
-    def action_transfer_expense(self, company_id=None):
-        self.ensure_one()
+    # transfer occurs between two companies
+    # company 1 and company 2
+    # expense transfer is triggered in company 1
+    # create an invoice in company 1 addressed to company 2 for expense
+    # create bill in company 2 matching the invoice from company 1
 
-        # transfer occurs between two companies
-        # company 1 and company 2
-        # expense transfer is triggered in company 1
-        # create an invoice in company 1 addressed to company 2 for expense
-        # create bill in company 2 matching the invoice from company 1
+    self.ensure_one()
+
+    def action_transfer_expense(self, company_id=None):
 
         if not company_id:
             return {
@@ -43,48 +44,58 @@ class AccountBankStatementLine(models.Model):
                 'context': {'active_id': self.id},
             }
 
-        # Get the partner by ID
-        partner = company_id.partner_id
-        if not partner.exists():
-            raise ValueError(_("The partner with ID 54508 (R-E-A-L.iT U.S. Inc) does not exist."))
-
-        # Get or create the "Inter-Company Expenses" account
-        inter_company_account = self.env['account.account'].search([
-            ('name', '=', 'Inter-Company Expenses'),
-            ('company_id', '=', self.company_id.id)
-        ], limit=1)
-        if not inter_company_account:
-            inter_company_account = self.env['account.account'].create({
-                'name': 'Inter-Company Expenses',
-                'code': '99999',
-                'account_type': 'expense',
-                'company_id': self.company_id.id,
-            })
-
-        # create the customer invoice
+        # create invoice
         invoice = self.env['account.move'].create({
-            'partner_id': partner.id,
+            'partner_id': company_id.partner_id.id,
             'move_type': 'out_invoice',
-            'company_id': self.company_id.id,
-            'invoice_date': fields.Date.context_today(self),
+            'invoice_line_ids': [(0, 0, {
+                'name': 'Inter-Company Expense',
+                'account_id': self.env.ref('account.data_account_type_expenses').id,
+                'price_unit': abs(self.amount),
+            })],
         })
 
-        # create order line on customer invoice
-        self.env['account.move.line'].create({
-            'move_id': invoice.id,
-            'account_id': inter_company_account.id,
-            'name': 'Inter-Company Expense',
-            'quantity': 1.0,
-            'price_unit': abs(self.amount),
+        # create bill
+        bill = self.env['account.move'].create({
+            'partner_id': company_id.partner_id.id,
+            'move_type': 'in_invoice',
+            'invoice_line_ids': [(0, 0, {
+                'name': 'Inter-Company Expense',
+                'account_id': self.env.ref('account.data_account_type_expenses').id,
+                'price_unit': abs(self.amount),
+            })],
         })
 
-        # confirm the invoice
-        invoice.action_post()
-
-        # Update the note field (narration) on the bank statement line
-        self.narration = _("Invoice created: %s") % (invoice.name or _("Unknown Invoice"))
-
-        # send notification to user that transfer has been created succesfully
-        # add button to view bill or view invoice
-
-        return True
+        # push notification
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Transfer Complete',
+                'message': 'The expense transfer has been completed successfully.',
+                'type': 'success',
+                'sticky': False,
+                'buttons': [
+                    {
+                        'name': 'View Invoice',
+                        'type': 'action',
+                        'action': {
+                            'type': 'ir.actions.act_window',
+                            'res_model': 'account.move',
+                            'view_mode': 'form',
+                            'res_id': invoice.id,
+                        },
+                    },
+                    {
+                        'name': 'View Bill',
+                        'type': 'action',
+                        'action': {
+                            'type': 'ir.actions.act_window',
+                            'res_model': 'account.move',
+                            'view_mode': 'form',
+                            'res_id': bill.id,
+                        },
+                    },
+                ],
+            },
+        }
