@@ -1,9 +1,31 @@
-from odoo import models, fields, _
+from odoo import models, fields, api, _
+
+
+class ExpenseTransferWizard(models.TransientModel):
+    _name = 'expense.transfer.wizard'
+    _description = 'Expense Transfer Wizard'
+
+    # select comany excluding current company
+    company_id = fields.Many2one(
+        'res.company', 
+        string='Select Company', 
+        required=True,
+        domain=[('id', '!=', lambda self: self.env.company.id)]
+    )
+
+    def action_confirm_transfer(self):
+
+        active_id = self.env.context.get('active_id')
+        bank_statement_line = self.env['account.bank.statement.line'].browse(active_id)
+
+        if bank_statement_line:
+            bank_statement_line.action_transfer_expense(company_id=self.company_id)
+
 
 class AccountBankStatementLine(models.Model):
     _inherit = 'account.bank.statement.line'
 
-    def action_transfer_expense(self):
+    def action_transfer_expense(self, company_id=None):
         self.ensure_one()
 
         # transfer occurs between two companies
@@ -12,8 +34,17 @@ class AccountBankStatementLine(models.Model):
         # create an invoice in company 1 addressed to company 2 for expense
         # create bill in company 2 matching the invoice from company 1
 
+        if not company_id:
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'expense.transfer.wizard',
+                'view_mode': 'form',
+                'target': 'new',
+                'context': {'active_id': self.id},
+            }
+
         # Get the partner by ID
-        partner = self.env['res.partner'].browse(54508)
+        partner = company_id.partner_id
         if not partner.exists():
             raise ValueError(_("The partner with ID 54508 (R-E-A-L.iT U.S. Inc) does not exist."))
 
