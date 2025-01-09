@@ -31,9 +31,9 @@ class AccountBankStatementLine(models.Model):
     # create an invoice in company 1 addressed to company 2 for expense
     # create bill in company 2 matching the invoice from company 1
 
-    self.ensure_one()
-
     def action_transfer_expense(self, company_id=None):
+        
+        self.ensure_one()
 
         if not company_id:
             return {
