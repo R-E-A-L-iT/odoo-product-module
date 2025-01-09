@@ -50,7 +50,9 @@ class AccountBankStatementLine(models.Model):
             'move_type': 'out_invoice',
             'invoice_line_ids': [(0, 0, {
                 'name': 'Inter-Company Expense',
-                'account_id': self.env.ref('account.data_account_type_expenses').id,
+                'account_id': self.env['account.account'].search(
+                    [('user_type_id.name', '=', 'Expenses')], limit=1
+                ).id,
                 'price_unit': abs(self.amount),
             })],
         })
@@ -61,7 +63,9 @@ class AccountBankStatementLine(models.Model):
             'move_type': 'in_invoice',
             'invoice_line_ids': [(0, 0, {
                 'name': 'Inter-Company Expense',
-                'account_id': self.env.ref('account.data_account_type_expenses').id,
+                'account_id': self.env['account.account'].search(
+                    [('user_type_id.name', '=', 'Expenses')], limit=1
+                ).id,
                 'price_unit': abs(self.amount),
             })],
         })
