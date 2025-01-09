@@ -10,7 +10,7 @@ class ExpenseTransferWizard(models.TransientModel):
         'res.company', 
         string='Select Company', 
         required=True,
-        domain=[('id', '!=', lambda self: self.env.company.id)]
+        domain=lambda self: [('id', '!=', self.env.company.id)]  # Correctly referencing the current company
     )
 
     def action_confirm_transfer(self):
