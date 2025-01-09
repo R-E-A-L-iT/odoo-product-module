@@ -782,6 +782,11 @@ class order(models.Model):
                 self.is_rental = False
             for line in self.order_line:
                 line.tax_id = [(5, 0, 0)]
+            self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {
+                'type': 'danger',
+                'title': _("Warning"),
+                'message': _('Taxes have been removed. Please set them manually for this order..'),
+            })
 
     # @api.onchange('sale_order_template_id')
     # def _onchange_sale_order_template_id(self):
