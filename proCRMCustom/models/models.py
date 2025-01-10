@@ -36,14 +36,13 @@ class opportunity(models.Model):
 
     opportunity_notes = fields.Text(string="Opportunity Notes")
     linkedin_link = fields.Char('LinkedIn Link')
+    quotation_amount = fields.Float(compute="_compute_total_quotation_amount")
 
     def _compute_total_quotation_amount(self):
         for lead in self:
             sale_orders = lead.order_ids.filtered_domain(self._get_action_view_sale_quotation_domain())
             total_amount = sum(order.amount_total for order in sale_orders)
-            lead.quotation_amount = total_amount
             if total_amount:
-                self.expected_revenue = self.quot_amount
-            else:
-                pass
+                lead.quotation_amount = total_amount
+                self.expected_revenue = total_amount
 
