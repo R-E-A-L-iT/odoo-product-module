@@ -63,6 +63,9 @@
                 <field name="special" invisible="1"/>
             </xpath>
 
+            <xpath expr="//field[@name='order_line']/tree/field[@name='special']" position="attributes">
+                  <attribute name="optional">hide</attribute>
+             </xpath>
 
             <xpath expr="//field[@name=&quot;product_uom_qty&quot;][@decoration-info=&quot;(not display_type and invoice_status == 'to invoice')&quot;]"
                    position="before">
