@@ -868,7 +868,11 @@ class order(models.Model):
         self.ensure_one()
         self.order_line._validate_analytic_distribution()
         lang = self.env.context.get('lang')
-        mail_template = self._find_mail_template()
+        template = self.env['mail.template'].sudo().search([('name', '=', 'General Sales')], limit=1)
+        if template:
+            mail_template = template
+        else:
+            mail_template = self._find_mail_template()
         if mail_template and mail_template.lang:
             lang = mail_template._render_lang(self.ids)[self.id]
         ctx = {
