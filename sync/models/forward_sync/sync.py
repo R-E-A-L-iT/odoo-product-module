@@ -34,6 +34,23 @@ from .contact import sync_contacts
 _logger = logging.getLogger(__name__)
 
 
+# 
+# SYNC MODULE IDEAL ROADMAP:
+#
+# utilities.py > all data normalization functions
+# sync.py > start sync, end sync, create sync records
+#
+# v - sync types - v
+#
+# stock_lot.py > stock.lot model sync records (GS: CCP_ODOO, LEICA_ODOO (kind of))
+# product_template.py > product.template model sync records (GS: LEICA_ODOO, CCP CSV_ODOO, SECO_ODOO, BRICSCAD_ODOO, DEALS_ODOO, MISC_ODOO)
+# res_partner.py > contacts
+#
+# Column names should match name of odoo field they need to go into, then automatically be normalized and synced if they aren't a specially handled field
+# 
+
+
+
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 

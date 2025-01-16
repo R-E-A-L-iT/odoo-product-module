@@ -43,15 +43,19 @@ class product(models.Model):
 
     @api.model
     def write(self, vals):
+        # Only run logic if specific fields are being updated
+        fields_to_check = {'list_price', 'dealer_discount'}
+        if not fields_to_check.intersection(vals.keys()):
+            return super(product, self).write(vals)
+
         result = super(product, self).write(vals)
+
         vendor_name = "Leica Geosystems Ltd."
         vendor = self.env['res.partner'].search([('name', '=', vendor_name)], limit=1)
         if vendor:
             for item in self:
-                # Calculate cost price based on dealer discount
                 cost_price = item.list_price * (1 - item.dealer_discount)
 
-                # Search for existing supplier info
                 supplierinfo = self.env['product.supplierinfo'].search([
                     ('product_tmpl_id', '=', item.id),
                     ('partner_id', '=', vendor.id)
@@ -64,12 +68,11 @@ class product(models.Model):
                         item.id, vendor.name, cost_price
                     )
                 else:
-                    # Create a new supplier info entry if it doesn't exist
                     self.env['product.supplierinfo'].sudo().create({
                         'partner_id': vendor.id,
                         'product_tmpl_id': item.id,
                         'price': cost_price,
-                        'currency_id': item.currency_id.id,  # Use the product's currency
+                        'currency_id': item.currency_id.id,
                     })
                     _logger.info(
                         "write: Created new vendor price for Product ID %s and Vendor '%s'. Price: '%s'.",
@@ -77,6 +80,7 @@ class product(models.Model):
                     )
 
         return result
+
 
 
 
