@@ -159,7 +159,7 @@ class sync_pricelist:
                 valid = str(row[valid_column]).strip().lower() == "true"
 
                 if not valid:
-                    _logger.info("syncPricelist: Row %d: Marked as invalid. Skipping.", row_index)
+                    # _logger.info("syncPricelist: Row %d: Marked as invalid. Skipping.", row_index)
                     continue
     
                 
@@ -210,7 +210,7 @@ class sync_pricelist:
     # it will attempt to update the product cell by cell, and skip updating any info that generates errors
     # fields that are not updated will be added to a report at the end
     def updateProduct(self, product_id, row, sheet_columns, row_index):
-        _logger.info("updateProduct: Searching for any changes for product: %s.", product_id)
+        # _logger.info("updateProduct: Searching for any changes for product: %s.", product_id)
         updated_fields = []
 
         try:
