@@ -196,7 +196,7 @@ class sync(models.Model):
                             break
 
                         _logger.info("Valid: " + sheetName + " is " + str(valid) + ".")
-                        quit, msgr = self.getSyncValues(sheetName,
+                        quit, msgr, sync_result = self.getSyncValues(sheetName,
                                                         psw,
                                                         template_id,
                                                         sheetIndex,
