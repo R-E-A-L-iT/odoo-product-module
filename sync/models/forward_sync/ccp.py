@@ -148,8 +148,8 @@ class sync_ccp:
                 valid = str(row[valid_column]).strip().lower() == "true"
                 
                 if not valid:
-                    # warning_msg = f"Row {row_index}: Marked as invalid. Skipping."
-                    _logger.info(f"syncCCP: {warning_msg}")
+                    warning_msg = f"Row {row_index}: Marked as invalid. Skipping."
+                    # _logger.info(f"syncCCP: {warning_msg}")
                     overall_status = "warning" if overall_status != "error" else overall_status
                     # not sending this to report because intended feature
                     # sync_report.append(f"WARNING: {warning_msg}")
