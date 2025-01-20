@@ -132,4 +132,3 @@ class utilities:
                 o_columnsMissing = True
 
         return o_columns, o_msg, o_columnsMissing
-

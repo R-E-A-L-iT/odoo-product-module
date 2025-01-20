@@ -149,7 +149,7 @@ class sync_ccp:
                 
                 if not valid:
                     warning_msg = f"Row {row_index}: Marked as invalid. Skipping."
-                    _logger.info(f"syncCCP: {warning_msg}")
+                    # _logger.info(f"syncCCP: {warning_msg}")
                     overall_status = "warning" if overall_status != "error" else overall_status
                     # not sending this to report because intended feature
                     # sync_report.append(f"WARNING: {warning_msg}")
@@ -206,7 +206,7 @@ class sync_ccp:
     # fields that are not updated will be added to a report at the end
     # note that if the expiration date is "false" or blank, it will not be added to the report, as this is a very common bug and intended to be overlooked
     def updateCCP(self, ccp_id, row, sheet_columns, row_index):
-        _logger.info("updateCCP: Searching for any changes for CCP item: %s.", ccp_id)
+        # _logger.info("updateCCP: Searching for any changes for CCP item: %s.", ccp_id)
 
         try:
             ccp = self.database.env["stock.lot"].browse(ccp_id)

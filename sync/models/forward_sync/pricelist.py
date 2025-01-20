@@ -89,7 +89,6 @@ class sync_pricelist:
 
         # variables to verify format
         # if you need to add more columns for new sync data, add them here
-        expected_width = 24
         expected_columns = {
             "SKU": "sku",
             "EN-Name": "name_en",
@@ -116,24 +115,30 @@ class sync_pricelist:
             "Valid": "valid",
             "Continue": "continue",
         }
+        expected_width = len(expected_columns)
 
-        sheet_width = len(self.sheet[1]) if len(self.sheet) > 1 else 0
+        # columns that will not trigger sync validation failure regardless of whether they are present or not
+        ignored_columns = [
+            "DEALER DISCOUNT",
+        ]
+
         sheet_columns = self.sheet[0] if len(self.sheet) > 0 else []
+        sheet_width = len(sheet_columns)
         
         # variables that will contain a list of any missing or extra columns in the sheet
         missing_columns = [header for header in expected_columns.keys() if header not in sheet_columns]
-        extra_columns = [header for header in sheet_columns if header not in expected_columns]
+        extra_columns = [header for header in sheet_columns if header not in expected_columns and header not in ignored_columns]
         
         # initialize list of warnings/errors for report
         sync_report = []
         
         # verify that sheet format is as expected
-        if sheet_width != expected_width or missing_columns or extra_columns:
+        if sheet_width < expected_width or missing_columns or extra_columns:
             error_msg = f"Sheet validation failed. Missing: {missing_columns}, Extra: {extra_columns}."
             _logger.error(f"syncPricelist: {error_msg}")
             self.add_to_report("ERROR", error_msg)
             return {"status": "error", "sync_report": self.sync_report, "items_updated": items_updated}
-        
+
         _logger.info("syncPricelist: Sheet validated. Proceeding with Pricelist synchronization.")
 
         # start processing rows beginning at second row
@@ -143,7 +148,7 @@ class sync_pricelist:
                 # only proceed if the value for continue is marked as true
                 continue_column = sheet_columns.index("Continue")
                 should_continue = str(row[continue_column]).strip().lower() == "true"
-                
+
                 if not should_continue:
                     _logger.info("syncPricelist: Row %d: Continue is set to false. Stopping the sync here.", row_index)
                     break
@@ -152,36 +157,30 @@ class sync_pricelist:
                 # only proceed if the row is marked as valid
                 valid_column = sheet_columns.index("Valid")
                 valid = str(row[valid_column]).strip().lower() == "true"
-                
+
                 if not valid:
-                    warning_msg = f"Row {row_index}: Marked as invalid. Skipping."
-                    _logger.info(f"syncPricelist: {warning_msg}")
-                    overall_status = "warning" if overall_status != "error" else overall_status
-                    # not sending this to report because intended feature
-                    # sync_report.append(f"WARNING: {warning_msg}")
+                    # _logger.info("syncPricelist: Row %d: Marked as invalid. Skipping.", row_index)
                     continue
     
                 
                 # get eid/sn and check if it exists in odoo
                 sku_column = sheet_columns.index("SKU")
                 sku = str(row[sku_column]).strip()
-                
+
                 if not sku:
-                    warning_msg = f"Row {row_index}: Missing SKU. Skipping."
-                    _logger.warning(f"syncPricelist: {warning_msg}")
-                    self.add_to_report("WARNING", f"{warning_msg}")
+                    self.add_to_report("WARNING", f"Row {row_index}: Missing SKU. Skipping.")
                     continue
                 
                 existing_product = self.database.env["product.template"].search([("sku", "=", sku)], limit=1)
                 
                 if existing_product:
-                    _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, sku)
+                    # _logger.info("syncPricelist: Row %d: SKU '%s' found in Odoo. Calling updateProduct.", row_index, sku)
                     update_report = self.updateProduct(existing_product.id, row, sheet_columns, row_index)
                     items_updated.append(
                         f"Updated Product: {sku}, Fields Updated: {', '.join(update_report or [])}"
                     )
                 else:
-                    _logger.info("syncPricelist: Row %d: SKU '%s' not found in Odoo. Calling createProduct.", row_index, sku)
+                    # _logger.info("syncPricelist: Row %d: SKU '%s' not found in Odoo. Calling createProduct.", row_index, sku)
                     self.createProduct(sku, row, sheet_columns, row_index)
                     items_updated.append(f"Created Product: {sku}")
             
@@ -211,7 +210,7 @@ class sync_pricelist:
     # it will attempt to update the product cell by cell, and skip updating any info that generates errors
     # fields that are not updated will be added to a report at the end
     def updateProduct(self, product_id, row, sheet_columns, row_index):
-        _logger.info("updateProduct: Searching for any changes for product: %s.", product_id)
+        # _logger.info("updateProduct: Searching for any changes for product: %s.", product_id)
         updated_fields = []
 
         try:
@@ -439,8 +438,7 @@ class sync_pricelist:
                                 product.rent_ok = can_be_value
                                 if product.rent_ok == can_be_value:
                                     updated_fields.append("rent_ok")
-
-
+                            
                 except Exception as e:
                     _logger.error(
                         "updateProduct: Error while updating field '%s' for Product ID %s: %s",
@@ -448,19 +446,90 @@ class sync_pricelist:
                     )
                     self.add_to_report("ERROR", f"updateProduct: Error while updating field {odoo_field} for Product ID {product_id}: {str(e)}")
 
-            # Log updated fields
-            if updated_fields:
-                _logger.info(
-                    "updateProduct: Updated fields for Product ID %s: %s.", product_id, ", ".join(updated_fields)
-                )
-                self.sync_report.append(
-                    f"Pricelist: Updated Product SKU: {product.sku} - Fields Updated: {', '.join(updated_fields)}"
-                )
+            # special handling of margins (not available for all products/pricelists)
+            if "DEALER DISCOUNT" in sheet_columns:
+                try:
+                    # Get column index and value
+                    column_index = sheet_columns.index("DEALER DISCOUNT")
+                    sheet_value = str(row[column_index]).strip()
 
+                    # Parse discount value
+                    discount_percentage = float(sheet_value.rstrip('%')) / 100 if '%' in sheet_value else float(sheet_value)
+
+                    # Check if the dealer discount needs updating
+                    if product.dealer_discount != discount_percentage:
+                        # Log the update
+                        _logger.info(
+                            "updateProduct: Updating dealer discount for Product ID %s. Old Value: '%s', New Value: '%s'.",
+                            product_id, product.dealer_discount, discount_percentage
+                        )
+
+                        # Update dealer discount
+                        product.sudo().write({"dealer_discount": discount_percentage})
+
+                        # Update the cost price based on the new dealer discount
+                        new_cost_price = product.list_price * (1 - discount_percentage)
+                        product.sudo().write({"standard_price": new_cost_price})
+
+                        # Update vendor price
+                        vendor_name = "Leica Geosystems Ltd."
+                        vendor = self.database.env['res.partner'].search([('name', '=', vendor_name)], limit=1)
+                        if vendor:
+                            supplierinfo = self.database.env["product.supplierinfo"].search([
+                                ('product_tmpl_id', '=', product.id),
+                                ('partner_id', '=', vendor.id)
+                            ], limit=1)
+
+                            if supplierinfo:
+                                supplierinfo.write({'price': new_cost_price})
+                                _logger.info(
+                                    "updateProduct: Updated vendor price for Product ID %s and Vendor '%s'. New Price: '%s'.",
+                                    product_id, vendor.name, new_cost_price
+                                )
+                            else:
+                                # Create new supplier info if it doesn't exist
+                                self.database.env["product.supplierinfo"].sudo().create({
+                                    'partner_id': vendor.id,
+                                    'product_tmpl_id': product.id,
+                                    'price': new_cost_price,
+                                    'currency_id': product.currency_id.id,  # Use product's currency
+                                })
+                                _logger.info(
+                                    "updateProduct: Created new vendor price for Product ID %s and Vendor '%s'. Price: '%s'.",
+                                    product_id, vendor.name, new_cost_price
+                                )
+
+                        # Log the cost price update
+                        _logger.info(
+                            "updateProduct: Updated cost price for Product ID %s. New Cost Price: '%s'.",
+                            product_id, new_cost_price
+                        )
+
+                        # Add updated fields to the report
+                        updated_fields.append("dealer_discount")
+                        updated_fields.append("standard_price")
+                        
+                except ValueError as e:
+                    _logger.error(
+                        "updateProduct: Invalid DEALER DISCOUNT value '%s' for Product ID %s: %s",
+                        sheet_value, product_id, str(e)
+                    )
+                    self.add_to_report("ERROR", f"Invalid DEALER DISCOUNT value '{sheet_value}' for Product ID {product_id}: {str(e)}")
+
+                except Exception as e:
+                    _logger.error(
+                        "updateProduct: Error while processing dealer discount for Product ID %s: %s",
+                        product_id, str(e), exc_info=True
+                    )
+                    self.add_to_report("ERROR", f"Error while processing dealer discount for Product ID {product_id}: {str(e)}")
+        
         except Exception as e:
-            error_msg = f"Row {row_index}: Error updating Product with SKU {product_id}: {str(e)}"
-            _logger.error(f"updateProduct: {error_msg}", exc_info=True)
-            self.add_to_report("ERROR", f"{error_msg}")
+            _logger.error(
+                "updateProduct: Error while updating product ID %s: %s",
+                product_id, str(e), exc_info=True
+            )
+            self.add_to_report("ERROR", f"Error while updating product ID {product_id}: {str(e)}")
+
 
 
     # this function is called to create a new product if the sku is not recognized
@@ -591,4 +660,3 @@ class sync_pricelist:
         except Exception as e:
             error_msg = f"Row {row_index}: Error creating Product with SKU {product_id}: {str(e)}"
             _logger.error(f"createProduct: {error_msg}", exc_info=True)
-

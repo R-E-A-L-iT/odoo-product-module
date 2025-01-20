@@ -203,7 +203,7 @@ class sync_products:
     ):
         _logger.debug(f"PRODUCT.PY: Checking if update is needed for product {product.name}.")
         if product.stringRep == product_stringRep and SKIP_NO_CHANGE:
-            _logger.info(f"PRODUCT.PY: No changes detected for product {product.name}. Skipping update.")
+            # _logger.info(f"PRODUCT.PY: No changes detected for product {product.name}. Skipping update.")
             return
 
         _logger.info(f"PRODUCT.PY: Updating product {product.name}.")
