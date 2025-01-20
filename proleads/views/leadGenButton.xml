@@ -13,10 +13,11 @@
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
-                <button name="%(action_log_lead_with_leica)d" type="action" 
+                <button name="%(action_log_lead_with_leica)d"
+                        type="action" 
                         string="Log Lead with Leica" 
                         class="oe_highlight" 
-                        attrs="{'invisible': [('is_lead_logged_with_leica', '=', True)]}"/>
+                        visibility="is_lead_logged_with_leica == False"/>
             </xpath>
         </field>
     </record>
