@@ -9,6 +9,7 @@
     'depends': ['base', 'crm'],
     "data": [
         "views/leadsBackend.xml"
+        "views/leadGenButton.xml"
     ],
     'installable': True,
     'application': True,
