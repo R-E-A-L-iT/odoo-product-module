@@ -782,6 +782,11 @@ class order(models.Model):
         self.order_line._validate_analytic_distribution()
         lang = self.env.context.get('lang')
         mail_template = self._find_mail_template()
+        template = self.env['mail.template'].sudo().search([('name', '=', 'General Sales')], limit=1)
+        if template:
+            mail_template = template
+        else:
+            mail_template = self._find_mail_template()
         if mail_template and mail_template.lang:
             lang = mail_template._render_lang(self.ids)[self.id]
         ctx = {
@@ -814,6 +819,9 @@ class order(models.Model):
                 self.is_rental = True
             else:
                 self.is_rental = False
+            for line in self.order_line:
+                line.tax_id = [(5, 0, 0)]
+
 
     # @api.onchange('sale_order_template_id')
     # def _onchange_sale_order_template_id(self):
