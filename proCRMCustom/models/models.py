@@ -40,9 +40,12 @@ class opportunity(models.Model):
 
     def _compute_total_quotation_amount(self):
         for lead in self:
-            sale_orders = lead.order_ids.filtered_domain(self._get_action_view_sale_quotation_domain())
+            sale_orders = lead.order_ids.filtered_domain(lead._get_action_view_sale_quotation_domain())
             total_amount = sum(order.amount_total for order in sale_orders)
             if total_amount:
                 lead.quotation_amount = total_amount
-                self.expected_revenue = total_amount
+                lead.expected_revenue = total_amount
+            else:
+                lead.quotation_amount = 0.00
+                lead.expected_revenue = 0.00
 
