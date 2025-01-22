@@ -145,6 +145,11 @@
                                     <t t-if="not line.display_type">
                                         <!-- <td name="td_name"><span t-field="line.name">Bacon Burger</span></td> -->
                                         <td name="td_name">
+                                            <t t-if="line.product_id.image_1920">
+                                                <img t-att-src="'data:image/png;base64,' + line.product_id.image_1920.decode('utf-8') if line.product_id.image_1920 else ''"
+                                                     alt="Product Image"
+                                                     style="width: 30px; height: 30px; margin-right: 10px; vertical-align: middle;"/>
+                                            </t>
                                             <span t-raw="line.product_id.name" />
                                             <!-- <span t-raw="line.name"/> -->
                                             <!-- <span dangerouslySetInnerHTML={{ __html: line.name }} /> -->

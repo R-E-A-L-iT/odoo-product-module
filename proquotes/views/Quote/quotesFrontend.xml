@@ -615,7 +615,9 @@
                 <!--Line Id For User Selection-->
                 <div class="flex">
                     <span class="line_id" t-attf-id="{{line}}"/>
-
+                    <t t-if="line.product_id.image_1920">
+                         <img t-att-src="'data:image/png;base64,' + line.product_id.image_1920.decode('utf-8') if line.product_id.image_1920 else ''" alt="Product Image" style="width: 30px; height: 30px; margin-right: 10px; vertical-align: middle;"/>
+                    </t>
                     <span t-attf-class="optional{{line.optional}}" t-field="line.product_id.name"/>
 
                     <label t-attf-for="productFold{{line}}{{line_index}}" style="float: right;">
