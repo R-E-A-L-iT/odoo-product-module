@@ -19,6 +19,15 @@ from odoo import models, fields, api
 
 _logger = logging.getLogger(__name__)
 
+class visitor(models.Model):
+    _inherit = 'website.visitor'
+
+    ip_address = fields.Char(string="IP Address", help="The IP address of the visitor")
+
+    def set_ip_address_from_request(self):
+        request = self.env.context.get('request')
+        if request:
+            self.ip_address = request.httprequest.remote_addr
 
 
 class productType(models.Model):
