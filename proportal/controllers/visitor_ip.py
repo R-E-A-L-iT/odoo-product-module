@@ -14,11 +14,11 @@ class WebsiteVisitorIPController(http.Controller):
 
         if not visitor:
             # Generate a valid 32-character access_token using UUID
-            access_token = uuid.uuid4().hex  # Generates a 32-character hexadecimal string
-            visitor = request.env['website.visitor'].sudo().create({
-                'name': request.session.sid,
-                'access_token': access_token,
-            })
+            # access_token = uuid.uuid4().hex  # Generates a 32-character hexadecimal string
+            # visitor = request.env['website.visitor'].sudo().create({
+            #     'name': request.session.sid,
+            #     'access_token': access_token,
+            # })
 
         # Log the IP address
         if visitor and not visitor.ip_address:
