@@ -1,0 +1,15 @@
+<odoo>
+    <template id="log_visitor_ip_in_menu_links" inherit_id="custom.menu-links" name="Inject Log Visitor IP in Menu Links">
+        <xpath expr="//div[@id='Menu-Links']" position="before">
+            <script type="text/javascript">
+                (function() {
+                    // Make an asynchronous request to log the visitor's IP
+                    fetch('/log_visitor_ip', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                })();
+            </script>
+        </xpath>
+    </template>
+</odoo>

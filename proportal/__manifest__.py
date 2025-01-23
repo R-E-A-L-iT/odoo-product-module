@@ -58,7 +58,9 @@
         "views/notification_email.xml",
         "views/storePage.xml",
         "views/portalAppointment.xml",
-        "views/productInstance.xml"
+        "views/productInstance.xml",
+        "views/frontend_assets.xml",
+        "views/website_visitor.xml"
     ],
     # only loaded in demonstration mode
     "demo": [
