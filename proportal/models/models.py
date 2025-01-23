@@ -19,6 +19,23 @@ from odoo import models, fields, api
 
 _logger = logging.getLogger(__name__)
 
+class lead(models.Model):
+    _inherit = 'crm.lead'
+
+    @api.model
+    def create(self, vals):
+
+        lead = super(lead, self).create(vals)
+
+        if lead.ip_address:
+            visitors = self.env['website.visitor'].sudo().search([
+                ('ip_address', '=', lead.ip_address)
+            ])
+            for visitor in visitors:
+                visitor.write({'lead_ids': [(4, lead.id)]})
+
+        return lead
+
 class visitor(models.Model):
     _inherit = 'website.visitor'
 
