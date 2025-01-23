@@ -1,3 +1,4 @@
+import uuid
 from odoo import http
 from odoo.http import request
 
@@ -12,10 +13,11 @@ class WebsiteVisitorIPController(http.Controller):
         ], limit=1)
 
         if not visitor:
-            # Create a new visitor record if none exists
+            # Generate a valid 32-character access_token using UUID
+            access_token = uuid.uuid4().hex  # Generates a 32-character hexadecimal string
             visitor = request.env['website.visitor'].sudo().create({
                 'name': request.session.sid,
-                'access_token': request.session.sid,
+                'access_token': access_token,
             })
 
         # Log the IP address
