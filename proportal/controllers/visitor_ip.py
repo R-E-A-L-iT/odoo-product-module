@@ -13,7 +13,7 @@ class WebsiteVisitorIPController(http.Controller):
         ], limit=1)
 
         if not visitor:
-            Generate a valid 32-character access_token using UUID
+            # Generate a valid 32-character access_token using UUID
             access_token = uuid.uuid4().hex  # Generates a 32-character hexadecimal string
             visitor = request.env['website.visitor'].sudo().create({
                 'name': request.session.sid,
