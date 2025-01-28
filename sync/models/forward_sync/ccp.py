@@ -259,11 +259,11 @@ class sync_ccp:
                         elif odoo_field == "owner":
                             
                             owner_column_index = sheet_columns.index("Owner ID")
-                            owner_nickname = str(row[owner_column_index]).strip()
+                            owner_nickname = str(row[owner_column_index]).strip().upper()
                             
                             # find company owner in odoo
                             owner = self.database.env["res.partner"].search(
-                                [("company_nickname", "=", owner_nickname)], limit=1
+                                [("company_nickname", "ilike", owner_nickname)], limit=1
                             )
                             
                             # stop if not found
