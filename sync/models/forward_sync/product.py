@@ -94,14 +94,21 @@ class sync_products:
                     [("name", "=", external_id), ("model", "=", "product.template")]
                 )
 
-                if len(product_ids) > 0:
+                if product_ids:
+                    
+                    if len(product_ids) > 1:
+                        _logger.warning(
+                            f"PRODUCT.PY: Multiple product IDs found for SKU {key}: {product_ids.ids}. "
+                            "Using the first product found."
+                        )
+                    
                     product = self.database.env["product.template"].browse(
-                        product_ids[-1].res_id
-                    )
-
-                    if len(product) != 1:
+                        product_ids[0].res_id
+                    ).filtered(lambda p: p.active)
+                    
+                    if not product:
                         raise ValueError(
-                            f"Product ID recognized, but product count is invalid for SKU {key}."
+                            f"Product ID recognized, but no active product found for SKU {key}."
                         )
 
                     self.updateProducts(
@@ -117,6 +124,7 @@ class sync_products:
                         "product",
                         sheet[i][columns["can_be_sold"]],
                     )  # product_type
+                    
                 else:
                     self.createAndUpdateProducts(
                         external_id,
