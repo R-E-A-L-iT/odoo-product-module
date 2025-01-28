@@ -33,51 +33,6 @@ class sync_pricelist:
         self.sync_report.append(entry)
 
 
-
-    # utility function
-    # in odoo, booleans are "True" or "False"
-    # in sheets, booleans are "TRUE" or "FALSE"
-    # this function normalizes those values
-    def normalize_bools(self, value):
-        if value.strip().upper() in ["TRUE", "1"]:
-            return True
-        elif value.strip().upper() in ["FALSE", "0", ""]:
-            return False
-
-        return value.strip()
-
-
-
-    # utility function
-    # in odoo, dates are in this format: 2024-01-01
-    # in sheets, dates are in this format: 2024-1-1
-    # this function normalizes those values
-    # also handles dates being blank or "FALSE"
-    def normalize_date(self, value):
-        try:
-            
-            # handle none or false values
-            if not value or (isinstance(value, str) and value.strip().upper() == "FALSE"):
-                return ""
-
-            # convert datetime object to string
-            if isinstance(value, (datetime, date)):
-                return value.strftime("%Y-%m-%d")
-
-            # normalize string date values
-            if isinstance(value, str):
-                return datetime.strptime(value.strip(), "%Y-%m-%d").strftime("%Y-%m-%d")
-
-            # fallback
-            _logger.warning("normalize_date: Unexpected type for value '%s'. Returning as-is.", value)
-            return str(value)
-
-        except ValueError:
-            _logger.warning("normalize_date: Invalid date value '%s'. Returning as-is.", value)
-            return str(value)
-
-
-
     # this function will be called to start the synchronization process for pricelists.
     # it delegates the function of actually updating or creating the product item to the other two functions
     def syncPricelist(self):
@@ -256,7 +211,7 @@ class sync_pricelist:
                         # get new sheets value
                         column_index = sheet_columns.index(column_name)
                         sheet_value = str(row[column_index]).strip()
-                        sheet_value_normalized = self.normalize_bools(sheet_value)
+                        sheet_value_normalized = utilities.normalize_bools(sheet_value)
 
                         # update name fields for both languages
                         if column_name in ["EN-Name", "FR-Name"]:
@@ -423,7 +378,7 @@ class sync_pricelist:
                         # update published status
                         elif column_name in ["Publish_CA", "Publish_USA"]:
 
-                            publish = self.normalize_bools(sheet_value.strip())
+                            publish = utilities.normalize_bools(sheet_value.strip())
                             
                             if column_name == "Publish_CA":
                                 product.is_ca = publish
@@ -442,7 +397,7 @@ class sync_pricelist:
 
                         # update sale and rental status
                         elif column_name in ["Can_Be_Sold", "Can_Be_Rented"]:
-                            can_be_value = self.normalize_bools(sheet_value.strip())
+                            can_be_value = utilities.normalize_bools(sheet_value.strip())
 
                             if column_name == "Can_Be_Sold":
                                 product.sale_ok = can_be_value
@@ -644,7 +599,7 @@ class sync_pricelist:
                         # elif column_name == "SKU":
                             # _logger.error("[sheet_value] SKU: " + sheet_value)
                         elif column_name in ["Publish_CA", "Publish_USA", "Can_Be_Sold", "Can_Be_Rented"]:
-                            product_values[field_info] = self.normalize_bools(sheet_value)
+                            product_values[field_info] = utilities.normalize_bools(sheet_value)
                         elif column_name == "PriceCAD":
                             product_values[field_info] = float(sheet_value) if sheet_value else 0.0
                         elif column_name == "Store Image" and sheet_value:
