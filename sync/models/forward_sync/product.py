@@ -124,7 +124,7 @@ class sync_products:
                         "product",
                         sheet[i][columns["can_be_sold"]],
                     )  # product_type
-                    
+
                 else:
                     self.createAndUpdateProducts(
                         external_id,
@@ -168,7 +168,8 @@ class sync_products:
         _logger.debug(f"PRODUCT.PY: Creating product with external ID {external_id}.")
 
         # Set company_id explicitly
-        company_id = self.database.env.company.id
+        # self.database.env.company.id
+        company_id = 1
 
         # Ensure the responsible user belongs to the correct company
         responsible_user = self.database.env["res.users"].search(
