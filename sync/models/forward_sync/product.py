@@ -73,6 +73,16 @@ class sync_products:
                 _logger.debug(f"PRODUCT.PY: Stopping processing at row {i}.")
                 break
 
+            if str(sheet[i][columns["valid"]]).upper() == "FALSE":
+                _logger.debug(f"PRODUCT.PY: Skipping row {i} because 'Valid' is FALSE.")
+                skipped_items.append({
+                    "row": i,
+                    "sku": sheet[i][columns["sku"]],
+                    "error": "Row marked as invalid ('Valid' = FALSE)."
+                })
+                i += 1
+                continue
+
             # Validation checks
             key = str(sheet[i][columns["sku"]])
             try:
