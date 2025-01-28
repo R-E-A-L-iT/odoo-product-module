@@ -214,7 +214,22 @@ class sync_pricelist:
         updated_fields = []
 
         try:
+            
+            # Check for glitched external identifier
+            ext_id = self.database.env["ir.model.data"].search(
+                [("model", "=", "product.template"), ("res_id", "=", product_id)], limit=1
+            )
+            if ext_id and ext_id.res_id == 0:
+                _logger.warning(
+                    "updateProduct: External ID '%s' is glitched (Record ID: %s). Deleting and fixing.",
+                    ext_id.name, ext_id.res_id
+                )
+                ext_id.unlink()
+
             product = self.database.env["product.template"].browse(product_id)
+
+            if not product.exists():
+                raise ValueError(f"Product with ID {product_id} does not exist.")
             
             # map the google sheets cells to odoo fields
             field_mapping = {
@@ -548,6 +563,44 @@ class sync_pricelist:
             responsible_user = self.database.env["res.users"].search([("id", "=", user_id)], limit=1)
             if not responsible_user:
                 raise ValueError("No valid responsible user found for company ID %s." % company_id)
+
+            # Check for existing external ID in ir.model.data
+            existing_ext_id = self.database.env["ir.model.data"].search(
+                [("model", "=", "product.template"), ("name", "=", product_id)], limit=1
+            )
+
+            if existing_ext_id:
+                # Check if the external ID is valid
+                product = self.database.env["product.template"].browse(existing_ext_id.res_id)
+
+                if not product.exists() or existing_ext_id.res_id == 0:
+                    # External ID is glitched; clean it up
+                    _logger.warning(
+                        "createProduct: External ID '%s' is glitched (Record ID: %s). Deleting and fixing.",
+                        product_id, existing_ext_id.res_id
+                    )
+                    existing_ext_id.unlink()
+                else:
+                    _logger.info(
+                        "createProduct: External ID '%s' is valid and linked to Product ID %s. Skipping creation.",
+                        product_id, existing_ext_id.res_id
+                    )
+                    return  # Skip creation if the external ID is valid and linked to an existing product
+
+            # Check if the product already exists by name or SKU
+            product = self.database.env["product.template"].search([("sku", "=", product_id)], limit=1)
+            if product:
+                _logger.info(
+                    "createProduct: Product with SKU '%s' already exists as Product ID %s. Creating external ID.",
+                    product_id, product.id
+                )
+                # Create a new external ID for the existing product
+                self.database.env["ir.model.data"].sudo().create({
+                    "name": product_id,
+                    "model": "product.template",
+                    "res_id": product.id,
+                })
+                return product
 
             # Prepare initial values for product creation
             product_values = {
