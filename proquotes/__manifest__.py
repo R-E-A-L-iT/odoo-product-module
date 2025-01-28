@@ -95,7 +95,7 @@
         "views/Other/quoteEmailFooter.xml",
         "views/Other/helpdeskTicket.xml",
         "views/Other/header_footer_values.xml",
-        "views/Other/translated_terms.xml",
+        # "views/Other/translated_terms.xml",
         # "views/Invoice/invoicePayment.xml",
         # "views/Other/product_backend.xml",
         #         'models/quoteNotify.py'
