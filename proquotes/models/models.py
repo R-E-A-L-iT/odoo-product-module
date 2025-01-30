@@ -1044,13 +1044,13 @@ class order(models.Model):
             if self.env.context.get('lang') == 'fr_CA':
                 month_name = expiry_date_obj.strftime('%B').capitalize()
                 months_fr = {
-                    'January': 'Janvier', 'February': 'Février', 'March': 'Mars',
-                    'April': 'Avril', 'May': 'Mai', 'June': 'Juin',
-                    'July': 'Juillet', 'August': 'Août', 'September': 'Septembre',
-                    'October': 'Octobre', 'November': 'Novembre', 'December': 'Décembre'
+                    'January': 'janvier', 'February': 'février', 'March': 'mars',
+                    'April': 'avril', 'May': 'mai', 'June': 'juin',
+                    'July': 'juillet', 'August': 'août', 'September': 'septembre',
+                    'October': 'octobre', 'November': 'novembre', 'December': 'décembre'
                 }
                 month_name = months_fr.get(month_name, month_name)
-                formatted_date = f"{expiry_date_obj.day} {month_name}, {expiry_date_obj.year}"
+                formatted_date = f"{expiry_date_obj.day} {month_name} {expiry_date_obj.year}"
             else:
                 formatted_date = expiry_date_obj.strftime('%d %B, %Y')
 
