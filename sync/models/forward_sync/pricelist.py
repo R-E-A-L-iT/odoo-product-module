@@ -211,7 +211,7 @@ class sync_pricelist:
                         # get new sheets value
                         column_index = sheet_columns.index(column_name)
                         sheet_value = str(row[column_index]).strip()
-                        sheet_value_normalized = utilities.normalize_bools(sheet_value)
+                        sheet_value_normalized = utilities.normalize_bools(self, sheet_value)
 
                         # update name fields for both languages
                         if column_name in ["EN-Name", "FR-Name"]:
@@ -378,7 +378,7 @@ class sync_pricelist:
                         # update published status
                         elif column_name in ["Publish_CA", "Publish_USA"]:
 
-                            publish = utilities.normalize_bools(sheet_value.strip())
+                            publish = utilities.normalize_bools(self, sheet_value.strip())
                             
                             if column_name == "Publish_CA":
                                 product.is_ca = publish
@@ -397,7 +397,7 @@ class sync_pricelist:
 
                         # update sale and rental status
                         elif column_name in ["Can_Be_Sold", "Can_Be_Rented"]:
-                            can_be_value = utilities.normalize_bools(sheet_value.strip())
+                            can_be_value = utilities.normalize_bools(self, sheet_value.strip())
 
                             if column_name == "Can_Be_Sold":
                                 product.sale_ok = can_be_value
@@ -599,7 +599,7 @@ class sync_pricelist:
                         # elif column_name == "SKU":
                             # _logger.error("[sheet_value] SKU: " + sheet_value)
                         elif column_name in ["Publish_CA", "Publish_USA", "Can_Be_Sold", "Can_Be_Rented"]:
-                            product_values[field_info] = utilities.normalize_bools(sheet_value)
+                            product_values[field_info] = utilities.normalize_bools(self, sheet_value)
                         elif column_name == "PriceCAD":
                             product_values[field_info] = float(sheet_value) if sheet_value else 0.0
                         elif column_name == "Store Image" and sheet_value:
