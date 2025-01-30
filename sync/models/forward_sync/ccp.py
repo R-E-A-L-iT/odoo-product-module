@@ -251,8 +251,8 @@ class sync_ccp:
                         elif odoo_field == "expire":
                             
                             # normalize both values (different data types)
-                            normalized_sheet_value = utilities.normalize_date(sheet_value)
-                            normalized_odoo_value = utilities.normalize_date(ccp.expire or "")
+                            normalized_sheet_value = utilities.normalize_dates(self, sheet_value)
+                            normalized_odoo_value = utilities.normalize_dates(self, ccp.expire or "")
 
                             # comprare normalized values
                             if normalized_odoo_value != normalized_sheet_value:
@@ -335,7 +335,7 @@ class sync_ccp:
                             
                         # normalize date
                         elif odoo_field == "expire":
-                            normalized_value = utilities.normalize_date(sheet_value)
+                            normalized_value = utilities.normalize_dates(self, sheet_value)
                             
                         # get product id
                         elif odoo_field == "product_id":
