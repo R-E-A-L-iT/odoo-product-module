@@ -644,14 +644,14 @@
         </xpath>
 
         <!-- format price display for subtotal column -->
-        <!-- <xpath expr="//span[@t-out=&quot;current_subtotal&quot;]" position="replace">
+        <xpath expr="//span[@t-out=&quot;current_subtotal&quot;]" position="replace">
             <t t-if="language == 'en_CA' or language == 'en_US'" t-set="formatted_subtotal"
             t-value="'$ {value:,.2f}'.format(value=current_subtotal)"/>
             <t t-elif="language == 'fr_CA'" t-set="formatted_subtotal"
             t-value="'{value:,.2f} $'.format(value=current_subtotal)"/>
             <span class="is-section-subtotal d-none" t-att-data-section_id="line_section_id"
                 t-out="formatted_subtotal"/>
-        </xpath> -->
+        </xpath>
 
 
         <!--			this will commented and deprecated due to price_total field have no more-->
