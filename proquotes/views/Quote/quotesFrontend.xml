@@ -438,14 +438,22 @@
                 </label>
             </div>
         </xpath>
-        <xpath expr="//tr[hasclass('is-subtotal')]/td" position="inside">
+        <xpath expr="//tr[hasclass('is-subtotal')]/td/span" position="replace">
+            <t t-if="language == 'en_CA' or language == 'en_US'" t-set="formatted_subtotal"
+            t-value="'$ {value:,.2f}'.format(value=current_subtotal)"/>
+            <t t-elif="language == 'fr_CA'" t-set="formatted_subtotal"
+            t-value="'{value:,.2f} $'.format(value=current_subtotal)"/>
+            <span t-out="formatted_subtotal" class="is-section-subtotal d-none" t-att-data-section_id="line_section_id"/>
+        </xpath>
+
+        <!-- <xpath expr="//tr[hasclass('is-subtotal')]/td" position="inside"> -->
             <!-- <span class="is-section-subtotal d-none" t-att-data-section_id="line_section_id"> -->
-            <span t-out="current_subtotal" class="is-section-subtotal d-none" t-att-data-section_id="line_section_id"
+            <!-- <span t-out="current_subtotal" class="is-section-subtotal d-none" t-att-data-section_id="line_section_id"
                   t-options='{"widget": "monetary", "display_currency": sale_order.currency_id}'
-            />
+            /> -->
             <!-- <t t-esc="current_subtotal"/><t t-esc="sale_order.currency_id.symbol"/> -->
             <!-- </span> -->
-        </xpath>
+        <!-- </xpath> -->
         <xpath expr="//t[@t-if=&quot;line.display_type == 'line_note'&quot;]/td" position="inside">
             <span class="line_id" t-attf-id="{{line}}"/>
         </xpath>
