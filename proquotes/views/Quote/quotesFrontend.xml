@@ -349,6 +349,7 @@
         <!--Add Check Box to control fold Section-->
         <xpath expr="//t[@t-if=&quot;line.display_type == 'line_section'&quot;]/td/span" position="replace">
             <div style="width: 75%; float: left;">
+                <t t-set="line_section_id" t-value="line.id"/>
                 <label t-attf-for="fold{{line}}{{line_index}}"
                        style="display: inline-block; width: 100%; height: 100%;">
 
@@ -397,7 +398,7 @@
             </div>
 
             <div style="width: 25%; float: right">
-                <label class="subtotal-label" t-attf-for="fold{{line}}{{line_index}}"
+                <label class="subtotal-label" t-att-data-sec-line="line.id" t-attf-for="fold{{line}}{{line_index}}"
                        style="display: inline-block; width: 100%; height: 100%; text-align: right;">
                     <span>
                         <strong t-if="language == 'en_CA' or language == 'en_US'" class="text-left subtotal-label"
@@ -408,10 +409,18 @@
                             Sous-total
                         </strong>
                     </span>
+                    <span t-if="line.special != 'optional' or line.selected == 'true'"
+                          class="subtotal-destination-span text-left" t-att-data-section_id="line_section_id"
+                          style="font-weight: 400 !important;"/>
+                    <span t-elif="clang == 'en_CA' or clang == 'en_US'" class="text-left"
+                          style="font-weight: 400 !important;">0.00 $
+                    </span>
+                    <span t-elif="clang == 'fr_CA'" class="text-left" style="font-weight: 400 !important;">$ 0.00</span>
+                </label>
                     <!-- <span t-if="line.special != 'optional' or line.selected == 'true'"
                           class="subtotal-destination-span text-left" t-att-data-section_id="line_section_id"
                           style="font-weight: 400 !important;"/> -->
-                    <t t-set="section_subtotal" t-value="0"/>
+                    <!-- <t t-set="section_subtotal" t-value="0"/>
                     <t t-set="flag" t-value="0"/>
                     <t t-foreach="sale_order.order_line" t-as="rec">
                         <t t-if="line_index == rec_index or flag == 1">
@@ -428,14 +437,13 @@
                             </t>
                         </t>
                     </t>
-                    <!-- <t t-esc="section_subtotal"/> -->
                     <span t-if="line.special != 'optional' or line.selected == 'true'"
                           class="subtotal-destination text-left" style="font-weight: 400 !important;"/>
                     <span t-elif="language == 'en_CA' or language == 'en_US'" class="text-left"
                           style="font-weight: 400 !important;">0.00 $
                     </span>
                     <span t-elif="language == 'fr_CA'" class="text-left" style="font-weight: 400 !important;">$ 0.00</span>
-                </label>
+                </label> -->
             </div>
         </xpath>
         <xpath expr="//tr[hasclass('is-subtotal')]/td" position="inside">
