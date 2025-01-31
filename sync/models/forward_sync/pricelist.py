@@ -318,11 +318,16 @@ class sync_pricelist:
                                     "updateProduct: Creating new price rule for Product ID %s on Pricelist '%s'. Value: '%s'.",
                                     product_id, pricelist_name, price
                                 )
+
+                                applied_on = "1_product"
+                                product_variant_id = None
+
                                 self.database.env["product.pricelist.item"].sudo().create({
                                     "pricelist_id": pricelist.id,
+                                    "applied_on": applied_on,
                                     "product_tmpl_id": product.id,
+                                    "product_id": product_variant_id,
                                     "fixed_price": price,
-                                    "applied_on": "0_product_variant",
                                 })
                                 updated_fields.append(f"new price rule ({pricelist_name})")
 
@@ -417,81 +422,81 @@ class sync_pricelist:
                     self.add_to_report("ERROR", f"updateProduct: Error while updating field {odoo_field} for Product ID {product_id}: {str(e)}")
 
             # special handling of margins (not available for all products/pricelists)
-            if "DEALER DISCOUNT" in sheet_columns:
-                try:
-                    # Get column index and value
-                    column_index = sheet_columns.index("DEALER DISCOUNT")
-                    sheet_value = str(row[column_index]).strip()
+            # if "DEALER DISCOUNT" in sheet_columns:
+            #     try:
+            #         # Get column index and value
+            #         column_index = sheet_columns.index("DEALER DISCOUNT")
+            #         sheet_value = str(row[column_index]).strip()
 
-                    # Parse discount value
-                    discount_percentage = float(sheet_value.rstrip('%')) / 100 if '%' in sheet_value else float(sheet_value)
+            #         # Parse discount value
+            #         discount_percentage = float(sheet_value.rstrip('%')) / 100 if '%' in sheet_value else float(sheet_value)
 
-                    # Check if the dealer discount needs updating
-                    if product.dealer_discount != discount_percentage:
-                        # Log the update
-                        _logger.info(
-                            "updateProduct: Updating dealer discount for Product ID %s. Old Value: '%s', New Value: '%s'.",
-                            product_id, product.dealer_discount, discount_percentage
-                        )
+            #         # Check if the dealer discount needs updating
+            #         if product.dealer_discount != discount_percentage:
+            #             # Log the update
+            #             _logger.info(
+            #                 "updateProduct: Updating dealer discount for Product ID %s. Old Value: '%s', New Value: '%s'.",
+            #                 product_id, product.dealer_discount, discount_percentage
+            #             )
 
-                        # Update dealer discount
-                        product.sudo().write({"dealer_discount": discount_percentage})
+            #             # Update dealer discount
+            #             product.sudo().write({"dealer_discount": discount_percentage})
 
-                        # Update the cost price based on the new dealer discount
-                        new_cost_price = product.list_price * (1 - discount_percentage)
-                        product.sudo().write({"standard_price": new_cost_price})
+            #             # Update the cost price based on the new dealer discount
+            #             new_cost_price = product.list_price * (1 - discount_percentage)
+            #             product.sudo().write({"standard_price": new_cost_price})
 
-                        # Update vendor price
-                        vendor_name = "Leica Geosystems Ltd."
-                        vendor = self.database.env['res.partner'].search([('name', '=', vendor_name)], limit=1)
-                        if vendor:
-                            supplierinfo = self.database.env["product.supplierinfo"].search([
-                                ('product_tmpl_id', '=', product.id),
-                                ('partner_id', '=', vendor.id)
-                            ], limit=1)
+            #             # Update vendor price
+            #             vendor_name = "Leica Geosystems Ltd."
+            #             vendor = self.database.env['res.partner'].search([('name', '=', vendor_name)], limit=1)
+            #             if vendor:
+            #                 supplierinfo = self.database.env["product.supplierinfo"].search([
+            #                     ('product_tmpl_id', '=', product.id),
+            #                     ('partner_id', '=', vendor.id)
+            #                 ], limit=1)
 
-                            if supplierinfo:
-                                supplierinfo.write({'price': new_cost_price})
-                                _logger.info(
-                                    "updateProduct: Updated vendor price for Product ID %s and Vendor '%s'. New Price: '%s'.",
-                                    product_id, vendor.name, new_cost_price
-                                )
-                            else:
-                                # Create new supplier info if it doesn't exist
-                                self.database.env["product.supplierinfo"].sudo().create({
-                                    'partner_id': vendor.id,
-                                    'product_tmpl_id': product.id,
-                                    'price': new_cost_price,
-                                    'currency_id': product.currency_id.id,  # Use product's currency
-                                })
-                                _logger.info(
-                                    "updateProduct: Created new vendor price for Product ID %s and Vendor '%s'. Price: '%s'.",
-                                    product_id, vendor.name, new_cost_price
-                                )
+            #                 if supplierinfo:
+            #                     supplierinfo.write({'price': new_cost_price})
+            #                     _logger.info(
+            #                         "updateProduct: Updated vendor price for Product ID %s and Vendor '%s'. New Price: '%s'.",
+            #                         product_id, vendor.name, new_cost_price
+            #                     )
+            #                 else:
+            #                     # Create new supplier info if it doesn't exist
+            #                     self.database.env["product.supplierinfo"].sudo().create({
+            #                         'partner_id': vendor.id,
+            #                         'product_tmpl_id': product.id,
+            #                         'price': new_cost_price,
+            #                         'currency_id': product.currency_id.id,  # Use product's currency
+            #                     })
+            #                     _logger.info(
+            #                         "updateProduct: Created new vendor price for Product ID %s and Vendor '%s'. Price: '%s'.",
+            #                         product_id, vendor.name, new_cost_price
+            #                     )
 
-                        # Log the cost price update
-                        _logger.info(
-                            "updateProduct: Updated cost price for Product ID %s. New Cost Price: '%s'.",
-                            product_id, new_cost_price
-                        )
+            #             # Log the cost price update
+            #             _logger.info(
+            #                 "updateProduct: Updated cost price for Product ID %s. New Cost Price: '%s'.",
+            #                 product_id, new_cost_price
+            #             )
 
-                        # Add updated fields to the report
-                        updated_fields.append("dealer_discount")
-                        updated_fields.append("standard_price")
+            #             # Add updated fields to the report
+            #             updated_fields.append("dealer_discount")
+            #             updated_fields.append("standard_price")
                         
-                except ValueError as e:
-                    _logger.error(
-                        "updateProduct: Invalid DEALER DISCOUNT value '%s' for Product ID %s: %s",
-                        sheet_value, product_id, str(e)
-                    )
-                    self.add_to_report("ERROR", f"Invalid DEALER DISCOUNT value '{sheet_value}' for Product ID {product_id}: {str(e)}")
+            #     except ValueError as e:
+            #         _logger.error(
+            #             "updateProduct: Invalid DEALER DISCOUNT value '%s' for Product ID %s: %s",
+            #             sheet_value, product_id, str(e)
+            #         )
+            #         self.add_to_report("ERROR", f"Invalid DEALER DISCOUNT value '{sheet_value}' for Product ID {product_id}: {str(e)}")
 
-                except Exception as e:
-                    _logger.error(
-                        "updateProduct: Error while processing dealer discount for Product ID %s: %s",
-                        product_id, str(e), exc_info=True
-                    )
-                    self.add_to_report("ERROR", f"Error while processing dealer discount for Product ID {product_id}: {str(e)}")
+            #     except Exception as e:
+            #         _logger.error(
+            #             "updateProduct: Error while processing dealer discount for Product ID %s: %s",
+            #             product_id, str(e), exc_info=True
+            #         )
+            #         self.add_to_report("ERROR", f"Error while processing dealer discount for Product ID {product_id}: {str(e)}")
         
         except Exception as e:
             _logger.error(
