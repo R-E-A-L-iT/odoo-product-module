@@ -81,6 +81,7 @@
                 <field name="is_selected" invisible="0"/>
                 <field name="sectionSelected" invisible="1" optional="hide"/>
                 <field name="quantityLocked" column_invisible="1"/>
+                <field name="demo_selected" column_invisible="1" optional="hide"/>
                 <field name="is_quantityLocked" invisible="0"/>
                 <field name="variant" invisible="1" optional="hide"/>
                 <field name="hiddenSection" invisible="1" optional="hide"/>
