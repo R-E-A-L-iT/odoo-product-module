@@ -26,9 +26,7 @@ publicWidget.registry.fold = publicWidget.Widget.extend({
         var cbl = document.querySelectorAll(".foldInput");
         for (var i = 0; i < cbl.length; i++) {
             var cb = cbl[i];
-            console.log('---ccccbbbbb----')
             if (cb.checked == true) {
-                console.log(cb);
                 TRstyle = "none";
                 expandHTML = "+";
             } else {
@@ -47,7 +45,6 @@ publicWidget.registry.fold = publicWidget.Widget.extend({
                 } else {
                     if (y.style != undefined && y.style != null) {
                         y.style.display = TRstyle;
-                        console.log(y.style.display);
                     }
                 }
                 y = y.nextElementSibling;
@@ -75,7 +72,6 @@ publicWidget.registry.fold = publicWidget.Widget.extend({
             expandHTML = "&#215;";
         }
         var x = cb.currentTarget;
-        console.log('---xxxxxxx----', x)
         while (x.tagName != "TR") {
             x = x.parentNode;
         }

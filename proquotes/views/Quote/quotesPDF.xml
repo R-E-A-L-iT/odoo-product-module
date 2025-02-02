@@ -122,215 +122,219 @@
 
 
                             <t t-foreach="lines_to_report" t-as="line">
-                                <t t-if="line.selected == 'true'">
-                                    <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"/>
 
-                                    <!-- rental calculations -->
-                                    <t t-if="'CAD' in doc.currency_id.name">
-                                        <t t-if="line.selected == 'true'" t-set="rentalValue" t-value="rentalValue + line.product_id.cadVal" />
+                                <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"/>
+
+                                <!-- rental calculations -->
+                                <t t-if="'CAD' in doc.currency_id.name">
+                                    <t t-if="line.selected == 'true'" t-set="rentalValue" t-value="rentalValue + line.product_id.cadVal" />
+                                </t>
+                                <t t-elif="'USD' in doc.currency_id.name">
+                                    <t t-if="line.selected == 'true'" t-set="rentalValue" t-value="rentalValue + line.product_id.usdVal" />
+                                </t>
+                                <t t-if="doc.rental_start != False and doc.rental_end != False" t-set="rentalDayRate" t-value="line.price_subtotal * rentalDays" />
+                                <t t-if="doc.rental_start != False and doc.rental_end != False and (rentalDayRate > line.price_subtotal * 4)" t-set="rentalDayRate" t-value="line.price_subtotal * 4" />
+                                <t t-if="doc.rental_start != False and doc.rental_end != False" t-set="rentalWeekDayRate" t-value="4 * line.price_subtotal * rentalWeeks + rentalDayRate" />
+                                <t t-if="doc.rental_start != False and doc.rental_end != False and (rentalWeekDayRate > line.price_subtotal * 12)" t-set="rentalDayRate" t-value="line.price_subtotal * 12" />
+                                <t t-if="doc.rental_start != False and doc.rental_end != False" t-set="rentalMonthRate" t-value="12 * line.price_subtotal * rentalMonths" />
+                                <t t-if="line.selected == 'true' and doc.rental_start != False and doc.rental_end != False" t-set="rentalRate" t-value="rentalRate + rentalMonthRate + rentalWeekDayRate" />
+
+
+
+                                <tr t-att-class="'bg-200 fw-bold o_line_section' if line.display_type == 'line_section' else 'fst-italic o_line_note' if line.display_type == 'line_note' else ''">
+                                    <t t-if="not line.display_type">
+                                        <!-- <td name="td_name"><span t-field="line.name">Bacon Burger</span></td> -->
+                                        <td name="td_name">
+                                            <t t-if="line.product_id.image_1920">
+                                                <img t-att-src="'data:image/png;base64,' + line.product_id.image_1920.decode('utf-8') if line.product_id.image_1920 else ''"
+                                                     alt="Product Image"
+                                                     style="width: 30px; height: 30px; margin-right: 10px; vertical-align: middle;"/>
+                                            </t>
+                                            <span t-raw="line.product_id.name" />
+                                            <!-- <span t-raw="line.name"/> -->
+                                            <!-- <span dangerouslySetInnerHTML={{ __html: line.name }} /> -->
+                                            <br/>
+                                            <!-- <t t-set="description" t-value="line.name"/> -->
+                                            <style>
+                                                description-root, .description-root *{
+                                                font-size: .75rem;
+                                                margin-top: 0px !important;
+                                                margin-bottom: 0px !important;
+                                                }
+
+                                                .o_line_section {
+                                                    border-bottom: 1px solid #ccc !important;
+                                                }
+                                            </style>
+                                            <div class="description-root" t-raw="line.product_id.description_sale" style="color: #777;"/>
+                                        </td>
+                                        <td name="td_quantity" class="text-end">
+                                            <span t-field="line.product_uom_qty">3</span>
+                                            <span t-field="line.product_uom">units</span>
+                                            <span t-if="line.product_packaging_id">
+                                                (<span t-field="line.product_packaging_qty" t-options="{&quot;widget&quot;: &quot;integer&quot;}"/> <span t-field="line.product_packaging_id"/>)
+                                            </span>
+                                        </td>
+                                        <td name="td_priceunit" class="text-end">
+                                            <span t-field="line.price_unit">3</span>
+                                        </td>
+                                        <td t-if="display_discount" class="text-end">
+                                            <span t-field="line.discount">-</span>
+                                        </td>
+                                        <t t-set="taxes" t-value="', '.join([(tax.invoice_label or tax.name) for tax in line.tax_id])"/>
+                                        <td name="td_taxes" t-attf-class="text-end {{ 'text-nowrap' if len(taxes) &lt; 10 else '' }}">
+                                            <span t-out="taxes">Tax 15%</span>
+                                        </td>
+                                        <td t-if="not line.is_downpayment" name="td_subtotal" class="text-end o_price_total">
+                                            <t t-if="clang == 'en_CA' or clang == 'en_US'" t-set="line_price" t-value="'$ {value:,.2f}'.format(value= line.price_subtotal)" />
+                                            <t t-elif="clang == 'fr_CA'" t-set="line_price" t-value="'{value:,.2f} $'.format(value= line.price_subtotal)" />
+                                            <span t-out="line_price" />
+                                        </td>
                                     </t>
-                                    <t t-elif="'USD' in doc.currency_id.name">
-                                        <t t-if="line.selected == 'true'" t-set="rentalValue" t-value="rentalValue + line.product_id.usdVal" />
-                                    </t>
-                                    <t t-if="doc.rental_start != False and doc.rental_end != False" t-set="rentalDayRate" t-value="line.price_subtotal * rentalDays" />
-                                    <t t-if="doc.rental_start != False and doc.rental_end != False and (rentalDayRate > line.price_subtotal * 4)" t-set="rentalDayRate" t-value="line.price_subtotal * 4" />
-                                    <t t-if="doc.rental_start != False and doc.rental_end != False" t-set="rentalWeekDayRate" t-value="4 * line.price_subtotal * rentalWeeks + rentalDayRate" />
-                                    <t t-if="doc.rental_start != False and doc.rental_end != False and (rentalWeekDayRate > line.price_subtotal * 12)" t-set="rentalDayRate" t-value="line.price_subtotal * 12" />
-                                    <t t-if="doc.rental_start != False and doc.rental_end != False" t-set="rentalMonthRate" t-value="12 * line.price_subtotal * rentalMonths" />
-                                    <t t-if="line.selected == 'true' and doc.rental_start != False and doc.rental_end != False" t-set="rentalRate" t-value="rentalRate + rentalMonthRate + rentalWeekDayRate" />
+                                    <t t-elif="line.display_type == 'line_section'">
 
+                                        <!-- this is probably where to edit section titles -->
+                                        <td t-if="line.name  == '#rental_accessories'" name="td_section_line" colspan="99">
+                                            <span>Rental Accessories</span>
+                                        </td>
+                                        <td t-elif="line.name  == '$block+'" name="td_section_line" colspan="99">
+                                            <span></span>
+                                        </td>
+                                        <td t-elif="(line.name  == '$rental_info') or (line.name == '#rental_info')" name="td_section_line" colspan="99" style="border-color: #fff !important; border-top-color: #000 !important">
+                                            <t t-if="clang == 'en_CA' or clang == 'en_US'">
+                                                <p t-out="'Start of the Rental: ' + str(str(doc.rental_start) if doc.rental_start != False else '')" />
+                                                <p t-out="'End of the Rental: ' + str(str(doc.rental_end) if doc.rental_end != False else '')" />
+                                            </t>
+                                            <t t-elif="clang == 'fr_CA'">
+                                                <p t-out="'Début de la Location: ' + str(str(doc.rental_start) if doc.rental_start != False else '')" />
+                                                <p t-out="'Fin estimée de la Location: ' + str(str(doc.rental_end) if doc.rental_end != False else '')" />
+                                            </t>
+                                            <p class="rental_price_explain" t-if="clang == 'en_CA' or clang == 'en_US'">
+                                                * The final rental cost will be calculated once the equipement is returned.
+                                                Weekly rental cost is equivalent to 4x the indicated daily rental rate (above).
+                                                Monthly (30 days) rental cost is equivalent to 12x the indicated daily rental rate (above).
+                                            </p>
+                                            <p class="rental_price_explain" t-elif="clang == 'fr_CA'">
+                                                * Le coût final sera calculé lorsque l'équipement sera retourné.
+                                                Le taux de location à la semaine est équivalent à 4x le taux journalier ci-haut.
+                                                Le taux de location au mois (30 jours) est équivalent à 12x le taux journalier ci-haut.
+                                            </p>
+                                            <!-- Format Estimated Rental Rate Number -->
+                                            <t t-if="clang == 'en_CA' or clang == 'en_US'" t-set="rentalRateFormated" t-value="'$ {value:,.2f}'.format(value= rentalRate)" />
+                                            <t t-elif="clang == 'fr_CA'" t-set="rentalRateFormated" t-value="'{value:,.2f} $'.format(value= rentalRate)" />
+                                            <t t-if=" clang== 'en_CA' or clang == 'en_US'">
+                                                <span class="rental_price_estimate">Estimated rental cost of chosen hardware + accessories: <span t-out="rentalRateFormated" /></span>
+                                            </t>
+                                            <t t-elif="clang == 'fr_CA'">
+                                                <span class="rental_price_estimate">Coût estimé de la location de l'équipement et les accessoires: <span t-out="rentalRateFormated" /></span>
+                                            </t>
+                                            <br />
+                                            <br />
 
-
-                                    <tr t-att-class="'bg-200 fw-bold o_line_section' if line.display_type == 'line_section' else 'fst-italic o_line_note' if line.display_type == 'line_note' else ''">
-                                        <t t-if="not line.display_type">
-                                            <!-- <td name="td_name"><span t-field="line.name">Bacon Burger</span></td> -->
-                                            <td name="td_name">
-                                                <span t-raw="line.product_id.name" />
-                                                <!-- <span t-raw="line.name"/> -->
-                                                <!-- <span dangerouslySetInnerHTML={{ __html: line.name }} /> -->
-                                                <br/>
-                                                <!-- <t t-set="description" t-value="line.name"/> -->
-                                                <style>
-                                                    description-root, .description-root *{
-                                                    font-size: .75rem;
-                                                    margin-top: 0px !important;
-                                                    margin-bottom: 0px !important;
-                                                    }
-
-                                                    .o_line_section {
-                                                        border-bottom: 1px solid #ccc !important;
-                                                    }
-                                                </style>
-                                                <div class="description-root" t-raw="line.product_id.description_sale" style="color: #777;"/>
-                                            </td>
-                                            <td name="td_quantity" class="text-end">
-                                                <span t-field="line.product_uom_qty">3</span>
-                                                <span t-field="line.product_uom">units</span>
-                                                <span t-if="line.product_packaging_id">
-                                                    (<span t-field="line.product_packaging_qty" t-options="{&quot;widget&quot;: &quot;integer&quot;}"/> <span t-field="line.product_packaging_id"/>)
+                                            <!-- Format Rental Value Number -->
+                                            <t t-if="clang == 'en_CA' or clang == 'en_US'" t-set="rentalValueFormated" t-value="'$ {value:,.2f}'.format(value= rentalValue)" />
+                                            <t t-elif="clang == 'fr_CA'" t-set="rentalValueFormated" t-value="'{value:,.2f} $'.format(value= rentalValue)" />
+                                            <div class="rental_product_value" t-if="clang == 'en_CA' or clang == 'en_US'">
+                                                <span>Total Rental Value:&#160; <span t-out="rentalValueFormated" /></span>
+                                                <br />
+                                                <br />
+                                                <span>
+                                                    Please upload your proof of insurance in the comments section below or send a copy by email.
                                                 </span>
-                                            </td>
-                                            <td name="td_priceunit" class="text-end">
-                                                <span t-field="line.price_unit">3</span>
-                                            </td>
-                                            <td t-if="display_discount" class="text-end">
-                                                <span t-field="line.discount">-</span>
-                                            </td>
-                                            <t t-set="taxes" t-value="', '.join([(tax.invoice_label or tax.name) for tax in line.tax_id])"/>
-                                            <td name="td_taxes" t-attf-class="text-end {{ 'text-nowrap' if len(taxes) &lt; 10 else '' }}">
-                                                <span t-out="taxes">Tax 15%</span>
-                                            </td>
-                                            <td t-if="not line.is_downpayment" name="td_subtotal" class="text-end o_price_total">
-                                                <t t-if="clang == 'en_CA' or clang == 'en_US'" t-set="line_price" t-value="'$ {value:,.2f}'.format(value= line.price_subtotal)" />
-                                                <t t-elif="clang == 'fr_CA'" t-set="line_price" t-value="'{value:,.2f} $'.format(value= line.price_subtotal)" />
-                                                <span t-out="line_price" />
-                                            </td>
-                                        </t>
-                                        <t t-elif="line.display_type == 'line_section'">
-
-                                            <!-- this is probably where to edit section titles -->
-                                            <td t-if="line.name  == '#rental_accessories'" name="td_section_line" colspan="99">
-                                                <span>Rental Accessories</span>
-                                            </td>
-                                            <td t-elif="line.name  == '$block+'" name="td_section_line" colspan="99">
-                                                <span></span>
-                                            </td>
-                                            <td t-elif="(line.name  == '$rental_info') or (line.name == '#rental_info')" name="td_section_line" colspan="99" style="border-color: #fff !important; border-top-color: #000 !important">
-                                                <t t-if="clang == 'en_CA' or clang == 'en_US'">
-                                                    <p t-out="'Start of the Rental: ' + str(str(doc.rental_start) if doc.rental_start != False else '')" />
-                                                    <p t-out="'End of the Rental: ' + str(str(doc.rental_end) if doc.rental_end != False else '')" />
-                                                </t>
-                                                <t t-elif="clang == 'fr_CA'">
-                                                    <p t-out="'Début de la Location: ' + str(str(doc.rental_start) if doc.rental_start != False else '')" />
-                                                    <p t-out="'Fin estimée de la Location: ' + str(str(doc.rental_end) if doc.rental_end != False else '')" />
-                                                </t>
-                                                <p class="rental_price_explain" t-if="clang == 'en_CA' or clang == 'en_US'">
-                                                    * The final rental cost will be calculated once the equipement is returned.
-                                                    Weekly rental cost is equivalent to 4x the indicated daily rental rate (above).
-                                                    Monthly (30 days) rental cost is equivalent to 12x the indicated daily rental rate (above).
-                                                </p>
-                                                <p class="rental_price_explain" t-elif="clang == 'fr_CA'">
-                                                    * Le coût final sera calculé lorsque l'équipement sera retourné.
-                                                    Le taux de location à la semaine est équivalent à 4x le taux journalier ci-haut.
-                                                    Le taux de location au mois (30 jours) est équivalent à 12x le taux journalier ci-haut.
-                                                </p>
-                                                <!-- Format Estimated Rental Rate Number -->
-                                                <t t-if="clang == 'en_CA' or clang == 'en_US'" t-set="rentalRateFormated" t-value="'$ {value:,.2f}'.format(value= rentalRate)" />
-                                                <t t-elif="clang == 'fr_CA'" t-set="rentalRateFormated" t-value="'{value:,.2f} $'.format(value= rentalRate)" />
-                                                <t t-if=" clang== 'en_CA' or clang == 'en_US'">
-                                                    <span class="rental_price_estimate">Estimated rental cost of chosen hardware + accessories: <span t-out="rentalRateFormated" /></span>
-                                                </t>
-                                                <t t-elif="clang == 'fr_CA'">
-                                                    <span class="rental_price_estimate">Coût estimé de la location de l'équipement et les accessoires: <span t-out="rentalRateFormated" /></span>
-                                                </t>
+                                                <br />
+                                            </div>
+                                            <div class="rental_product_value" t-elif="clang == 'fr_ca' or true">
+                                                <span>Valeur locative totale: &#160;<span t-out="rentalValueFormated" /></span>
                                                 <br />
                                                 <br />
+                                                <span>
+                                                    Merci de fournir votre attestation d'assurance :
+                                                </span>
+                                                <br />
+                                            </div>
 
-                                                <!-- Format Rental Value Number -->
-                                                <t t-if="clang == 'en_CA' or clang == 'en_US'" t-set="rentalValueFormated" t-value="'$ {value:,.2f}'.format(value= rentalValue)" />
-                                                <t t-elif="clang == 'fr_CA'" t-set="rentalValueFormated" t-value="'{value:,.2f} $'.format(value= rentalValue)" />
-                                                <div class="rental_product_value" t-if="clang == 'en_CA' or clang == 'en_US'">
-                                                    <span>Total Rental Value:&#160; <span t-out="rentalValueFormated" /></span>
-                                                    <br />
-                                                    <br />
-                                                    <span>
-                                                        Please upload your proof of insurance in the comments section below or send a copy by email.
-                                                    </span>
-                                                    <br />
-                                                </div>
-                                                <div class="rental_product_value" t-elif="clang == 'fr_ca' or true">
-                                                    <span>Valeur locative totale: &#160;<span t-out="rentalValueFormated" /></span>
-                                                    <br />
-                                                    <br />
-                                                    <span>
-                                                        Merci de fournir votre attestation d'assurance :
-                                                    </span>
-                                                    <br />
-                                                </div>
+                                            <t t-if="doc.rental_diff_add == True">
+                                                <span t-if="clang == 'en_CA' or clang == 'en_US'">
+                                                    Shipping To
+                                                </span>
+                                                <span t-elif="clang == 'fr_CA'">
+                                                    Expédition ànvoyez à
+                                                </span>
+                                                <br />
+                                                <span t-field="doc.rental_street" />
+                                                <br />
+                                                <span t-if="doc.rental_city != False" t-esc="doc.rental_city + ','" />
+                                                <span t-esc="doc.rental_state.code" />
+                                                <span t-field="doc.rental_zip" />
+                                                <span t-field="doc.rental_country" />
+                                            </t>
+                                        </td>
+                                        <td t-elif="line.name  == '#rental_software'" name="td_section_line" colspan="99">
+                                            <span>Software rental: choose desired software along with quantities (in weeks)</span>
+                                        </td>
+                                        <td t-elif="line.name  == '$subscription'" name="td_section_line" colspan="99">
+                                            <span>Subscription</span>
+                                        </td>
+                                        <td t-elif="line.name  == '$hardware'" name="td_section_line" colspan="99">
+                                            <span>Hardware</span>
+                                        </td>
+                                        <td t-elif="line.name  == '$block'" name="td_section_line"  colspan="99">
+                                            <span></span>
+                                        </td>
 
-                                                <t t-if="doc.rental_diff_add == True">
-                                                    <span t-if="clang == 'en_CA' or clang == 'en_US'">
-                                                        Shipping To
-                                                    </span>
-                                                    <span t-elif="clang == 'fr_CA'">
-                                                        Expédition ànvoyez à
-                                                    </span>
-                                                    <br />
-                                                    <span t-field="doc.rental_street" />
-                                                    <br />
-                                                    <span t-if="doc.rental_city != False" t-esc="doc.rental_city + ','" />
-                                                    <span t-esc="doc.rental_state.code" />
-                                                    <span t-field="doc.rental_zip" />
-                                                    <span t-field="doc.rental_country" />
-                                                </t>
-                                            </td>
-                                            <td t-elif="line.name  == '#rental_software'" name="td_section_line" colspan="99">
-                                                <span>Software rental: choose desired software along with quantities (in weeks)</span>
-                                            </td>
-                                            <td t-elif="line.name  == '$subscription'" name="td_section_line" colspan="99">
-                                                <span>Subscription</span>
-                                            </td>
-                                            <td t-elif="line.name  == '$hardware'" name="td_section_line" colspan="99">
-                                                <span>Hardware</span>
-                                            </td>
-                                            <td t-elif="line.name  == '$block'" name="td_section_line"  colspan="99">
-                                                <span></span>
-                                            </td>
+                                        <!-- translate -->
 
-                                            <!-- translate -->
+                                        <!-- 
+                                        
+                                        if line.name contains "translate":
 
-                                            <!-- 
-                                            
-                                            if line.name contains "translate":
+                                            terms =  line.name.split("+",2)
 
-                                                terms =  line.name.split("+",2)
+                                            if terms[0] == "#translate":
+                                                english = terms[1]
+                                                french = terms[2]
 
-                                                if terms[0] == "#translate":
-                                                    english = terms[1]
-                                                    french = terms[2]
+                                                if clang == 'fr_CA':
+                                                    return french
+                                                else:
+                                                    return english
+                                        
+                                         -->
 
-                                                    if clang == 'fr_CA':
-                                                        return french
-                                                    else:
-                                                        return english
-                                            
-                                            -->
+                                        <td t-elif="'#translate' in line.name" name="td_section_line" colspan="99">
+                                            <t t-set="title" t-value="doc.get_translated_term(line.name, clang)" />
+                                            <span t-esc="title">Translated Title</span>
+                                        </td>
 
-                                            <td t-elif="'#translate' in line.name" name="td_section_line" colspan="99">
-                                                <t t-set="title" t-value="doc.get_translated_term(line.name, clang)" />
-                                                <span t-esc="title">Translated Title</span>
-                                            </td>
+                                        <!-- ccp label -->
 
-                                            <!-- ccp label -->
+                                        <td t-elif="line.name  == '$subscription'" name="td_section_line" colspan="99">
+                                            <span>Subscription</span>
+                                        </td>
 
-                                            <td t-elif="line.name  == '$subscription'" name="td_section_line" colspan="99">
-                                                <span>Subscription</span>
-                                            </td>
-
-                                            <td t-else="" name="td_section_line" colspan="99">
-                                                <span t-field="line.name">A section title</span>
-                                            </td>
-                                            <t t-set="current_section" t-value="line"/>
-                                            <t t-set="current_subtotal" t-value="0"/>
-                                        </t>
-                                        <t t-elif="line.display_type == 'line_note'">
-                                            <td name="td_note_line" colspan="99">
-                                                <span t-field="line.name">A note, whose content usually applies to the section or product above.</span>
-                                            </td>
-                                        </t>
-                                        <t else="">
-
-                                        </t>
-                                    </tr>
-
-                                    <t t-if="current_section and (line_last or lines_to_report[line_index+1].display_type == 'line_section') and not line.is_downpayment and current_subtotal > 0">
-                                        <tr class="is-subtotal text-end">
-                                            <td name="td_section_subtotal" colspan="99">
-                                                <strong class="mr16">Subtotal</strong>
-                                                <span t-out="current_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}">31.05</span>
-                                            </td>
-                                        </tr>
+                                        <td t-else="" name="td_section_line" colspan="99">
+                                            <span t-field="line.name">A section title</span>
+                                        </td>
+                                        <t t-set="current_section" t-value="line"/>
+                                        <t t-set="current_subtotal" t-value="0"/>
                                     </t>
+                                    <t t-elif="line.display_type == 'line_note'">
+                                        <td name="td_note_line" colspan="99">
+                                            <span t-field="line.name">A note, whose content usually applies to the section or product above.</span>
+                                        </td>
+                                    </t>
+                                    <t else="">
+
+                                    </t>
+                                </tr>
+
+                                <t t-if="current_section and (line_last or lines_to_report[line_index+1].display_type == 'line_section') and not line.is_downpayment and current_subtotal > 0">
+                                    <tr class="is-subtotal text-end">
+                                        <td name="td_section_subtotal" colspan="99">
+                                            <strong class="mr16">Subtotal</strong>
+                                            <span t-out="current_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}">31.05</span>
+                                        </td>
+                                    </tr>
                                 </t>
                             </t>
                         </tbody>
@@ -476,9 +480,7 @@
 
                     <div class="oe_structure"/>
 
-                    <!-- removed original signature -->
-
-                    <!-- <div t-if="not doc.signature" class="oe_structure"/>
+                    <div t-if="not doc.signature" class="oe_structure"/>
                     <div t-else="" class="mt-4 ml64 mr4" name="signature">
                         <div class="offset-8">
                             <strong>Signature</strong>
@@ -489,7 +491,7 @@
                         <div class="offset-8 text-center">
                             <span t-field="doc.signed_by">Oscar Morgan</span>
                         </div>
-                    </div> -->
+                    </div>
                     <div>
                         <span t-field="doc.note" t-attf-style="#{'text-align:justify;text-justify:inter-word;' if doc.company_id.terms_type != 'html' else ''}" name="order_note"/>
                         <p t-if="not is_html_empty(doc.payment_term_id.note)">
