@@ -53,7 +53,6 @@ try:
 except ImportError:
     from .tools._vendor.send_file import send_file as _send_file
 
-
 # Domain operators.
 NOT_OPERATOR = '!'
 OR_OPERATOR = '|'
